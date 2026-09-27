@@ -100,7 +100,8 @@ describe("module.json styles", () => {
       for ( const [, selectors] of css.matchAll(/(?:^|})\s*([^{}@]+?)\s*\{/g) ) {
         for ( const sel of splitSelectors(selectors) ) {
           if ( !sel || /^(from|to|\d+%)$/.test(sel) ) continue;
-          const scoped = [".scb-root", "#tooltip.scb-tooltip", ".scb-event-dialog", ".scb-trackers-config"]
+          const scoped = [".scb-root", "#tooltip.scb-tooltip", ".scb-event-dialog", ".scb-trackers-config",
+            "body.scb-hide-calendar"]
             .some(p => sel.startsWith(p));
           if ( !scoped ) bad.push(`${file}: ${sel}`);
         }

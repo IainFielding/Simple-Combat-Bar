@@ -58,6 +58,7 @@ export function registerSettings(getBar) {
   register("hideUnseenFirstRound", { type: Boolean });
   register("hideDefeated", { type: Boolean });
   register("groupTeams", { type: String, choices: choices("groupTeams", ["off", "visual", "bg3"]) });
+  register("hideCalendar", { type: Boolean });
   register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["collapse", "leave"]) });
   register("debug", { scope: "user", type: Boolean });
 

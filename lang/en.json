@@ -117,6 +117,10 @@
           "bg3": "Shared frame (group turns)"
         }
       },
+      "hideCalendar": {
+        "name": "Hide the D&D Calendar During Combat",
+        "hint": "The D&D 5e calendar sits at the top of the screen with the combat bar. Hide it while a combat is running; it comes back when the combat ends."
+      },
       "sidebarOnCombat": {
         "name": "Sidebar When Combat Starts",
         "hint": "Collapse the sidebar when combat starts, to give the scene more room.",

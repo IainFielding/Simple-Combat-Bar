@@ -312,3 +312,34 @@ export async function setTrackerSettings(values) {
   for ( const [k, v] of Object.entries(values) ) await game.settings.set(MODULE_ID, k, v);
   await settle(200);
 }
+
+/* -------------------------------------------- */
+/*  Settings window and the dnd5e calendar      */
+/* -------------------------------------------- */
+
+/** Turn dnd5e's calendar HUD on, so there is something to hide. */
+export async function calendarSetup() {
+  const config = game.settings.get("dnd5e", "calendarConfig");
+  await game.settings.set("dnd5e", "calendarConfig", { ...config, enabled: true });
+  const prefs = game.settings.get("dnd5e", "calendarPreferences");
+  await game.settings.set("dnd5e", "calendarPreferences", { ...prefs, visible: true });
+  await dnd5e.ui.calendar?.render({ force: true });
+  await settle(300);
+}
+
+/** Whether the calendar HUD is in the page and visible. */
+export function calendarVisible() {
+  const el = document.getElementById("calendar-hud");
+  return { present: !!el, visible: !!el && (getComputedStyle(el).display !== "none") };
+}
+
+export async function startTestCombat() {
+  await freshCombat({ allies: 2, enemies: 2 });
+  return calendarVisible();
+}
+
+export async function endTestCombat() {
+  await cleanup();
+  await settle(200);
+  return calendarVisible();
+}

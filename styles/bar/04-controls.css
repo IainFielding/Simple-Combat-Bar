@@ -199,3 +199,11 @@
 #tooltip.scb-tooltip .scb-tt-label {
   color: #9a978f;
 }
+
+/* ---------------------------------------------------------------- dnd5e calendar
+   The calendar HUD (dnd5e's #calendar-hud) sits in #ui-top with the bar. While a combat is running
+   and the hideCalendar setting is on, the bar puts this class on <body> and the calendar steps
+   aside; it comes back when the combat ends. */
+body.scb-hide-calendar #calendar-hud {
+  display: none;
+}

@@ -26,11 +26,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers").split(",");
+const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers,settingsUi").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers", "settingsUi"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -202,6 +202,40 @@ const SUITES = {
     await gm.eval(() => __scb.resetTrackers());
     await gm.eval(() => __scbFixtures.cleanup());
     return { pass: !failures.length, failures, lines: [...lines, ...failures] };
+  },
+
+  /** Saving our settings in core's window never asks for a reload; the dnd5e calendar steps aside. */
+  async settingsUi(gm) {
+    const failures = [];
+    const check = (ok, message) => ok || failures.push(message);
+    const page = gm.page;
+
+    // Change the portrait style in core's own Settings window and save.
+    await gm.eval(id => new foundry.applications.settings.SettingsConfig({ initialCategory: id }).render({ force: true }),
+      MODULE_ID);
+    const form = page.locator("#settings-config");
+    await form.waitFor({ timeout: 10_000 });
+    const select = form.locator(`select[name="${MODULE_ID}.portraitStyle"]`);
+    const current = await select.inputValue();
+    await select.selectOption(current === "card" ? "medallion" : "card");
+    await form.locator('button[type="submit"]').click();
+    await page.waitForTimeout(1200);
+    const prompt = await page.locator("#reload-world-confirm").count();
+    check(prompt === 0, "saving the portrait style asked for a reload");
+    if ( prompt ) await page.locator('#reload-world-confirm button[data-action="no"]').click().catch(() => {});
+    const saved = await gm.eval(id => game.settings.get(id, "portraitStyle"), MODULE_ID);
+    check(saved !== current, "the portrait style didn't save");
+    await gm.eval(([id, v]) => game.settings.set(id, "portraitStyle", v), [MODULE_ID, current]);
+
+    // The calendar hides during combat and comes back after.
+    await gm.eval(() => __scb.calendarSetup());
+    let cal = await gm.eval(() => __scb.calendarVisible());
+    check(cal.present && cal.visible, `calendar not showing before combat: ${JSON.stringify(cal)}`);
+    cal = await gm.eval(() => __scb.startTestCombat());
+    check(!cal.visible, "calendar still showing during combat");
+    cal = await gm.eval(() => __scb.endTestCombat());
+    check(cal.visible, "calendar didn't come back after combat");
+    return { pass: !failures.length, failures, lines: failures };
   },
 
   /** Add an event through the real dialog, then watch it count down and expire. */

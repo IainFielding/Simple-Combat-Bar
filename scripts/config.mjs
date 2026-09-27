@@ -48,7 +48,7 @@ export const DEFAULTS = Object.freeze({
   trackEconomy: true,
   autoSpendEconomy: true,
   effectDescriptions: "owner",
-  hideConflictingUI: true,
+  hideCalendar: true,
   sidebarOnCombat: "collapse",
   debug: false
 });
