@@ -206,7 +206,7 @@ const SUITES = {
       `other cards should show only the reaction: ${JSON.stringify(view[ids.other])}`);
 
     if ( ids.activity ) {
-      await gm.eval(uuid => __scb.useActivity(uuid), ids.activity);
+      await gm.eval(uuid => __scb.useActivity(uuid, false), ids.activity);
       view = await pips();
       check(view[ids.hero].action === "spent", `using an action didn't spend the Action pip: ${JSON.stringify(view[ids.hero])}`);
       check(view[ids.hero].bonus === "available", "using an action touched the Bonus Action pip");

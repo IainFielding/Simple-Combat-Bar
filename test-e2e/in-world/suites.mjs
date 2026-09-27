@@ -394,10 +394,16 @@ export async function economySetup() {
   return { hero: hero.id, other: combat.turns[1].id, activity: activity?.uuid ?? null, turns: combat.turns.length };
 }
 
-/** Use an activity without dialogs or chat, as a player clicking it would (spends a slot). */
-export async function useActivity(uuid) {
+/**
+ * Use an activity without dialogs or chat, as a player clicking it would.
+ * @param {string} uuid
+ * @param {boolean} [consume=true]  Spend its uses, slots or ammunition. The world persists between
+ *   runs, so a test that only needs the use itself passes false: otherwise the hero runs out of
+ *   spell slots or arrows after a few runs and dnd5e refuses the activity.
+ */
+export async function useActivity(uuid, consume = true) {
   const activity = await fromUuid(uuid);
-  await activity.use({}, { configure: false }, { create: false });
+  await activity.use(consume ? {} : { consume: false }, { configure: false }, { create: false });
   await settle(300);
 }
 
