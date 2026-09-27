@@ -4,7 +4,7 @@ import { DEFAULTS } from "../scripts/config.mjs";
 import { buildPortraitModel } from "../scripts/model/portrait-model.mjs";
 import { PortraitView } from "../scripts/ui/portrait-view.mjs";
 import { portraitStyle } from "../scripts/ui/portrait-styles.mjs";
-import { runPosition, trackWidth } from "../scripts/ui/combat-bar.mjs";
+import { fitSize, runPosition, trackWidth } from "../scripts/ui/combat-bar.mjs";
 
 const model = (over = {}) => buildPortraitModel({
   id: "c1", name: "Lae'zel", img: "laezel.webp", side: "ally", isGM: false, isOwner: true, canObserve: true,
@@ -74,6 +74,38 @@ describe("trackWidth", () => {
 
   it("grows when someone joins", () => {
     expect(trackWidth([...items(0), { type: "combatant" }], 72)).toBeGreaterThan(trackWidth(items(0), 72));
+  });
+});
+
+describe("fitSize", () => {
+  /** A started combat of n combatants: one current, a divider part-way. */
+  const items = n => {
+    const list = Array.from({ length: n }, (_, i) => ({ type: "combatant", current: i === 0 }));
+    if ( n > 1 ) list.splice(Math.ceil(n / 2), 0, { type: "divider" });
+    return list;
+  };
+  const BAR_CHROME = 22;
+
+  it("always fits: the bar at the fitted size is never wider than the space, for 1 to 40 combatants", () => {
+    for ( const width of [700, 960, 1152, 1500] ) {
+      for ( let n = 1; n <= 40; n++ ) {
+        const size = fitSize(items(n), width);
+        if ( size < 1 ) continue;
+        expect(trackWidth(items(n), size) + BAR_CHROME, `${n} combatants in ${width}px`).toBeLessThanOrEqual(width);
+      }
+    }
+  });
+
+  it("is as large as possible: one pixel bigger no longer fits", () => {
+    for ( const n of [4, 9, 10, 16] ) {
+      const size = fitSize(items(n), 1152);
+      expect(trackWidth(items(n), size + 2) + BAR_CHROME).toBeGreaterThan(1152 - 1);
+    }
+  });
+
+  it("shrinks as combatants join, with no step at ten (the reported bug)", () => {
+    const sizes = [8, 9, 10, 11, 12].map(n => fitSize(items(n), 1152));
+    for ( let i = 1; i < sizes.length; i++ ) expect(sizes[i]).toBeLessThan(sizes[i - 1]);
   });
 });
 

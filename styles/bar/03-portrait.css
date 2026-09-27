@@ -516,3 +516,10 @@
   border-color: var(--scb-open);
   box-shadow: 0 0 0 1px var(--scb-open), 0 0 10px var(--scb-open-glow);
 }
+
+/* ---------------------------------------------------------------- compact (small portraits)
+   When a crowded fight shrinks the cards below 48px, everyone but the current combatant drops the
+   name, effect icons and legendary badges; the tooltip still has all of it. */
+.scb-root.is-compact .scb-portrait:not(.is-current) :is(.scb-name, .scb-effects, .scb-legendary) {
+  display: none;
+}

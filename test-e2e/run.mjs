@@ -340,16 +340,43 @@ const SUITES = {
     await page.setViewportSize(original);
     const back = await gm.eval(() => __scb.barMetrics());
 
+    // The reported bug: at around ten combatants the portraits stopped shrinking and the bar ran off.
+    // Add combatants at a full-HD window; the bar and its tabs must always fit, or scroll, never clip.
+    await page.setViewportSize({ width: 1920, height: original.height });
+    const sizes = [];
+    for ( const n of [6, 8, 9, 10, 11, 12, 14, 16] ) {
+      const m = await gm.eval(k => __scb.metricsAt(k), n);
+      sizes.push(`${n}:${m.size}`);
+      const inside = (m.tabsLeft >= m.hostLeft - 1) && (m.tabsRight <= m.hostRight + 1)
+        && (m.tabsLeft >= m.sceneNavRight) && (m.tabsRight <= m.sidebarLeft);
+      check(inside, `${n} combatants: the bar and tabs run outside their space (${Math.round(m.tabsLeft)}..${
+        Math.round(m.tabsRight)}; scene pill ends ${Math.round(m.sceneNavRight)}, sidebar starts ${Math.round(m.sidebarLeft)})`);
+      check((m.trackContent <= m.trackWidth + 1) || m.scrollable, `${n} combatants: cards clipped without scrolling`);
+    }
+
+    // The reported case: "Scroll sideways", 100px portraits, 12 combatants, an 1180px window. The
+    // track's px width stretched #interface to 1860px and pushed the sidebar off screen.
+    await page.setViewportSize({ width: 1180, height: original.height });
+    const sc = await gm.eval(() => __scb.scrollModeCheck());
+    check(sc.interfaceWidth <= sc.window + 1, `scroll mode stretched the interface to ${sc.interfaceWidth}px in a ${sc.window}px window`);
+    check(sc.sidebarRight <= sc.window + 1, `scroll mode pushed the sidebar off screen (right edge ${sc.sidebarRight})`);
+    check(sc.scrollable, "scroll mode isn't scrolling");
+    check((sc.tabsLeft >= sc.sceneNavRight) && (sc.tabsRight <= sc.sidebarLeft),
+      "scroll mode: the bar runs over the scene pill or the sidebar");
+    await page.setViewportSize(original);
+
     check(narrow.size < wide.size, `portraits didn't shrink with the window (${wide.size}px -> ${narrow.size}px)`);
     // Either everything fits, or (at the smallest portrait size) the track scrolls: never clipped.
     const fits = narrow.trackContent <= narrow.trackWidth + 1;
     check(fits || narrow.scrollable, `cards are clipped when narrow (${narrow.trackContent} > ${narrow.trackWidth}, not scrollable)`);
     check(back.overflow === "autofit", `still scrolling after the window grew back (${back.overflow})`);
     check((narrow.barLeft >= narrow.hostLeft - 1) && (narrow.barRight <= narrow.hostRight + 1), "the bar spills out of its space when narrow");
+    check(narrow.tabsLeft >= narrow.sceneNavRight, `when narrow the GM tabs cover the scene pill (${Math.round(narrow.tabsLeft)} < ${Math.round(narrow.sceneNavRight)})`);
     check(back.size === wide.size, `portraits didn't grow back (${back.size}px, was ${wide.size}px)`);
     await gm.eval(() => __scbFixtures.cleanup());
     return { pass: !failures.length, failures,
-      lines: [`portrait size ${wide.size} -> ${narrow.size} -> ${back.size}px; narrow mode ${narrow.overflow}`, ...failures] };
+      lines: [`portrait size ${wide.size} -> ${narrow.size} -> ${back.size}px; narrow mode ${narrow.overflow}`,
+        `at 1920px, combatants:size ${sizes.join(" ")}`, ...failures] };
   },
 
   /** Configure the trackers through their real window, then check the bars and the tooltip. */

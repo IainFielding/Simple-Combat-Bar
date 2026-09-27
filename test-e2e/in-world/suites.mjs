@@ -377,8 +377,37 @@ export async function barMetrics() {
     scrollable: getComputedStyle(track).overflowX === "auto",
     trackWidth: track.clientWidth,
     trackContent: track.scrollWidth,
-    barLeft: bar.left, barRight: bar.right, hostLeft: host.left, hostRight: host.right
+    barLeft: bar.left, barRight: bar.right, hostLeft: host.left, hostRight: host.right,
+    // The GM tabs stick out of the bar's ends; they have to fit too.
+    tabsLeft: root.querySelector(".scb-tabs-start")?.getBoundingClientRect().left ?? bar.left,
+    tabsRight: root.querySelector(".scb-tabs-end")?.getBoundingClientRect().right ?? bar.right,
+    sceneNavRight: document.getElementById("scene-navigation")?.getBoundingClientRect().right ?? 0,
+    sidebarLeft: document.getElementById("sidebar")?.getBoundingClientRect().left ?? innerWidth
   };
+}
+
+/**
+ * GM: the reported case. "Scroll sideways" with large portraits and a crowded fight: the page's
+ * interface layer must stay the window's width, and the sidebar on screen.
+ */
+export async function scrollModeCheck() {
+  const id = MODULE_ID;
+  const before = { overflow: game.settings.get(id, "overflow"), size: game.settings.get(id, "portraitSize") };
+  await game.settings.set(id, "overflow", "scroll");
+  await game.settings.set(id, "portraitSize", 100);
+  await freshCombat({ allies: 4, enemies: 8 });
+  const m = await barMetrics();
+  const iface = document.getElementById("interface").getBoundingClientRect();
+  const sidebar = document.getElementById("sidebar")?.getBoundingClientRect();
+  await game.settings.set(id, "overflow", before.overflow);
+  await game.settings.set(id, "portraitSize", before.size);
+  return { ...m, window: innerWidth, interfaceWidth: Math.round(iface.width), sidebarRight: Math.round(sidebar?.right ?? 0) };
+}
+
+/** GM: a combat of `n` combatants, then the bar's measurements. */
+export async function metricsAt(n) {
+  await freshCombat({ allies: 4, enemies: Math.max(0, n - 4) });
+  return { n, ...(await barMetrics()) };
 }
 
 /* -------------------------------------------- */

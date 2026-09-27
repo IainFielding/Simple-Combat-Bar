@@ -33,6 +33,9 @@
 
 .scb-root.is-gm .scb-bar {
   border-radius: 0;
+  /* Tall enough for a full tab (six buttons at their smallest, 18px + 2px margin, plus padding),
+     however small the portraits get. */
+  min-height: calc((6 * 20px) + 8px);
 }
 
 .scb-root .scb-tabs-start {

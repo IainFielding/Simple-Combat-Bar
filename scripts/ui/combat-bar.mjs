@@ -42,7 +42,22 @@ const DIVIDER_WIDTH = 36;
 const TRACK_PAD = 12;
 
 /** The smallest a portrait gets when fitting the bar to the window; past this the track scrolls. */
-const MIN_SIZE = 40;
+const MIN_SIZE = 32;
+
+/** Portrait size below which the bar goes compact (see 03-portrait.css). */
+const COMPACT_BELOW = 48;
+
+/** Space kept clear between the bar (or its tabs) and the scene pill or sidebar, in screen px. */
+const CLEARANCE = 12;
+
+/**
+ * The bar's own width around the track: its side padding (10px each, 02-layout.css) and borders.
+ * Must match the CSS, like TRACK_PAD and DIVIDER_WIDTH.
+ */
+const BAR_CHROME = (10 * 2) + 2;
+
+/** Width of each GM tab sticking out of the bar's ends (04-controls.css). */
+const TAB_WIDTH = 38;
 
 /** Duration of the slide when portraits change places. */
 const MOVE_MS = 260;
@@ -408,11 +423,13 @@ export class CombatBar {
     const max = Number(cfg.portraitSize) || 72;
     let size = max;
     let overflow = cfg.overflow;
+    // The bar's widest: clear of the scene pill and the sidebar, with room for the GM tabs. A
+    // scrolling bar stops here too, rather than growing to the whole middle column.
+    const available = this.#availableWidth() - (game.user.isGM ? TAB_WIDTH * 2 : 0);
+    this.root.style.setProperty("--scb-bar-max", `${Math.max(0, available)}px`);
     if ( cfg.overflow === "autofit" ) {
-      const count = Math.max(1, this.#portraits.size);
-      // 0.1 gap per portrait, plus the current portrait's extra 0.18 width.
-      const available = (this.root.parentElement?.clientWidth ?? window.innerWidth) * 0.8;
-      const fit = Math.floor(available / ((count * 1.1) + 0.18));
+      // Exactly the size at which the bar fits that space.
+      const fit = fitSize(this.#items, available);
       size = Math.max(MIN_SIZE, Math.min(max, fit));
       // Fit to width until the portraits are as small as they go, then scroll rather than clip.
       if ( fit < MIN_SIZE ) overflow = "scroll";
@@ -421,9 +438,31 @@ export class CombatBar {
     this.root.classList.toggle("has-bar2", !!cfg.secondaryResource);
     this.root.style.setProperty("--scb-bar2", safeColor(cfg.secondaryColor, "#5aa9e6"));
     this.root.style.setProperty("--scb-size", `${size}px`);
+    // Below this, cards other than the current one drop their name, effects and legendary badges.
+    this.root.classList.toggle("is-compact", size < COMPACT_BELOW);
     this.root.style.setProperty("--scb-aspect", String(style.aspect));
     this.root.style.setProperty("--scb-divider-width", `${DIVIDER_WIDTH}px`);
     this.track.style.width = `${trackWidth(this.#items, size)}px`;
+  }
+
+  /**
+   * The width the bar may take, centred as it is: core's middle column, narrowed so it stays clear
+   * of the scene-name pill at the top left and the sidebar at the right. Those are measured on
+   * screen, and #ui-middle is scaled by the UI scale setting, so screen px are converted back.
+   * @returns {number}  In the bar's own (unscaled) px.
+   */
+  #availableWidth() {
+    const host = this.root.parentElement;
+    if ( !host ) return window.innerWidth;
+    const box = host.getBoundingClientRect();
+    const scale = host.clientWidth ? (box.width / host.clientWidth) : 1;
+    const centre = box.left + (box.width / 2);
+    let half = box.width / 2;
+    const pill = document.getElementById("scene-navigation")?.getBoundingClientRect();
+    if ( pill?.width && (pill.right < centre) ) half = Math.min(half, centre - pill.right - CLEARANCE);
+    const sidebar = document.getElementById("sidebar")?.getBoundingClientRect();
+    if ( sidebar?.width && (sidebar.left > centre) ) half = Math.min(half, sidebar.left - centre - CLEARANCE);
+    return Math.max(0, Math.floor((half * 2) / (scale || 1)));
   }
 
   /* -------------------------------------------- */
@@ -474,8 +513,12 @@ export class CombatBar {
     const host = document.getElementById("ui-top");
     if ( host ) host.prepend(this.root);
     else document.body.append(this.root);
-    // Watch whatever the bar now sits in: its width is what autofit divides between portraits.
-    this.#resizeObserver?.observe(this.root.parentElement);
+    // Watch what bounds the bar: its container, and the scene pill and sidebar it keeps clear of
+    // (opening or closing the sidebar changes the space without resizing the window).
+    for ( const el of [this.root.parentElement, document.getElementById("scene-navigation"),
+      document.getElementById("sidebar")] ) {
+      if ( el ) this.#resizeObserver?.observe(el);
+    }
   }
 
   /** Delegated listeners on the root, registered once per session (R3). */
@@ -796,6 +839,25 @@ export function trackWidth(items, size) {
   const gap = size * 0.1;
   return Math.ceil((portraits.length * size) + (current * size * 0.18) + (dividers * DIVIDER_WIDTH)
     + (Math.max(0, items.length - 1) * gap) + (TRACK_PAD * 2));
+}
+
+/**
+ * The largest portrait size at which the bar fits in `width` px: {@link trackWidth} solved for size,
+ * plus the bar's own padding and border. Uses the same measurements as trackWidth, so the two can't
+ * disagree about whether the cards fit.
+ * @param {Array<{type: string, current?: boolean}>} items
+ * @param {number} width  Space for the bar, px.
+ * @returns {number}  Whole px; may be below the minimum, meaning "too many to fit".
+ */
+export function fitSize(items, width) {
+  const portraits = items.filter(i => i.type === "combatant");
+  const current = portraits.filter(i => i.current).length;
+  const dividers = items.length - portraits.length;
+  const perPx = portraits.length + (current * 0.18) + (Math.max(0, items.length - 1) * 0.1);
+  const fixed = (dividers * DIVIDER_WIDTH) + (TRACK_PAD * 2) + BAR_CHROME;
+  if ( perPx <= 0 ) return Number.POSITIVE_INFINITY;
+  // -1 for trackWidth's rounding up.
+  return Math.floor((width - fixed - 1) / perPx);
 }
 
 /**
