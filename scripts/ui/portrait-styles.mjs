@@ -6,12 +6,13 @@
  * lives in `styles/portrait/<id>.css`, scoped under `.scb-root[data-style="<id>"]`.
  *
  * Slots a style must contain (each marked with `data-slot`):
- *   img, initiative, hp, bar2, name, damage (and, from the shared flags, rounds)
+ *   img, initiative, hp, bar2, name, damage (and, from the shared flags, rounds and arrives)
  * Buttons it may contain (each marked with `data-action`): rollInitiative.
  */
 
 const SHARED_FLAGS = `
   <span class="scb-rounds" aria-hidden="true"><i class="fa-solid fa-hourglass-half"></i><span data-slot="rounds"></span></span>
+  <span class="scb-arrives" aria-hidden="true"><i class="fa-solid fa-door-open"></i><span data-slot="arrives"></span></span>
   <span class="scb-flag scb-flag-hidden" aria-hidden="true"><i class="fa-solid fa-eye-slash"></i></span>
   <span class="scb-flag scb-flag-defeated" aria-hidden="true"><i class="fa-solid fa-skull"></i></span>`;
 

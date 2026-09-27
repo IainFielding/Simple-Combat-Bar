@@ -6,6 +6,7 @@
 import { MODULE_ID } from "../config.mjs";
 import { sideOf } from "../model/visibility.mjs";
 import { roundsLeft } from "../model/events.mjs";
+import { arrivalRound } from "../model/arrivals.mjs";
 import { secondaryBar } from "../model/trackers.mjs";
 import { economyProvider } from "../systems/economy.mjs";
 
@@ -29,7 +30,9 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
   let img = combatant.img;
   if ( (settings.portraitImage === "actor") && actor?.img && !isEvent ) img = actor.img;
 
-  const eventRoundsLeft = isEvent ? roundsLeft(flags, combatant.combat?.round ?? 0) : null;
+  const arrivesRound = arrivalRound(flags);
+  // A waiting event's countdown starts when it arrives.
+  const eventRoundsLeft = isEvent && (arrivesRound === null) ? roundsLeft(flags, combatant.combat?.round ?? 0) : null;
 
   return {
     id: combatant.id,
@@ -55,7 +58,8 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
     economy: settings.trackEconomy && !isEvent ? safe(() => economyProvider().read(combatant)) : null,
     description: actor && !isEvent ? safe(() => adapter.describe(actor)) : null,
     isEvent,
-    eventRoundsLeft
+    eventRoundsLeft,
+    arrivesRound
   };
 }
 
@@ -94,6 +98,16 @@ export function readEffects(actor, { card = false } = {}) {
 export function sideOfCombatant(combatant) {
   if ( combatant.flags?.[MODULE_ID]?.event ) return "neutral";
   return sideOf(combatant.token?.disposition ?? 0, !!combatant.actor?.hasPlayerOwner);
+}
+
+/**
+ * A combatant's side for team runs. One that hasn't arrived yet counts as neutral, so it never
+ * joins a group turn it isn't there for.
+ * @param {Combatant} combatant
+ */
+export function runSideOf(combatant) {
+  if ( arrivalRound(combatant.flags?.[MODULE_ID]) !== null ) return "neutral";
+  return sideOfCombatant(combatant);
 }
 
 /** Adapter code is the most likely to meet data it doesn't expect; never let it break a render. */

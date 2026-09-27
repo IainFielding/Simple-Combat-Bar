@@ -10,7 +10,9 @@
       "configure": "Combat Bar Settings"
     },
     "context": {
-      "setCurrent": "Make Current Turn"
+      "setCurrent": "Make Current Turn",
+      "arrivesLater": "Arrives in Round…",
+      "arriveNow": "Arrive Now"
     },
     "tooltip": {
       "hp": "HP",
@@ -172,6 +174,9 @@
         "duration": "Duration (rounds)",
         "durationHint": "It's removed at the start of the round after this many rounds. Leave blank to keep it until you remove it.",
         "untilRemoved": "Until removed",
+        "arrivesRound": "Arrives in round",
+        "arrivesRoundHint": "Leave blank for now. Until then it's hidden from players and its turns are skipped, and its duration counts from that round.",
+        "now": "Now",
         "img": "Image",
         "hidden": "Hidden from players",
         "hiddenHint": "Players won't see it on the bar until you reveal it."
@@ -179,7 +184,21 @@
       "errors": {
         "name": "Give the event a name.",
         "initiative": "Give the event an initiative number.",
-        "duration": "Duration must be a whole number of rounds, or blank."
+        "duration": "Duration must be a whole number of rounds, or blank.",
+        "arrivesRound": "The arrival round must be a whole number, this round or later."
+      }
+    },
+    "arrivals": {
+      "title": "When Does {name} Arrive?",
+      "schedule": "Schedule",
+      "badge": "R{round}",
+      "arrived": "{name} arrives, and is revealed to the players.",
+      "fields": {
+        "round": "Arrives in round",
+        "roundHint": "Until then it's hidden from players and its turns are skipped. It's revealed when its turn comes up in that round."
+      },
+      "errors": {
+        "round": "The round must be a whole number, {round} or later."
       }
     },
     "trackers": {

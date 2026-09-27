@@ -6,8 +6,9 @@
  *   node run.mjs playwright-combat --suites=lifecycle,budget
  *   node run.mjs --iterations=20                      # longer churn for the lifecycle suite
  *
- * Suites: lifecycle, budget, ordering, permissions. The CTD world runs lifecycle and budget only —
- * the others test behaviour that is ours.
+ * Suites: lifecycle, budget, ordering, permissions, events, arrivals, trackers, settingsUi, responsive,
+ * economy, legendary, groupTurns, effects. The CTD world runs lifecycle and budget only — the others
+ * test behaviour that is ours.
  *
  * The canvas stays off (`core.noCanvas`, set by lib/session.mjs): the bar lives in #ui-top and
  * none of these suites look at the board, and a software-rendered canvas is what made the
@@ -26,11 +27,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers,settingsUi,responsive,economy,legendary,groupTurns,effects").split(",");
+const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,arrivals,trackers,settingsUi,responsive,economy,legendary,groupTurns,effects").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns", "effects"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events", "arrivals", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns", "effects"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -514,6 +515,69 @@ const SUITES = {
     check(s.expiryMessages === 1, `expected exactly 1 expiry message, found ${s.expiryMessages}`);
 
     await gm.eval(() => __scbFixtures.cleanup());
+    return { pass: !failures.length, failures, lines: failures };
+  },
+
+  /**
+   * A Death Tyrant erupting on count 0 of round 2: scheduled from the portrait's menu, skipped in
+   * round 1 (forwards and back), unseen by the player, then revealed as its turn comes in round 2.
+   */
+  async arrivals(gm) {
+    const failures = [];
+    const check = (ok, message) => ok || failures.push(message);
+    const { tyrant } = await gm.eval(() => __scb.arrivalsSetup());
+    const page = gm.page;
+    const state = () => gm.eval(id => __scb.arrivalsState(id), tyrant);
+    let player = null;
+    try {
+      // Schedule it through the real menu and dialog.
+      await page.click(`#scb-root .scb-portrait[data-combatant-id="${tyrant}"]`, { button: "right" });
+      await page.locator("#context-menu .context-item", { hasText: "Arrives in Round" }).click();
+      const dialog = page.locator('.application.dialog:has([name="round"])');
+      await dialog.waitFor({ timeout: 10_000 });
+      await dialog.locator('[name="round"]').fill("2");
+      await dialog.locator('button[data-action="ok"]').click();
+      await dialog.waitFor({ state: "detached", timeout: 10_000 });
+
+      let s = await state();
+      check(s.arrival?.round === 2, `arrival not stored: ${JSON.stringify(s.arrival)}`);
+      check(s.hidden === true, "scheduled combatant isn't hidden from players");
+      check(s.waiting === true, "GM's card isn't marked as waiting");
+      check(s.badge === "R2", `badge reads "${s.badge}", expected R2`);
+
+      await gm.eval(() => __scb.startCombat());
+      player = await Session.open({ user: PLAYER_USER });
+      await loadSuites(player);
+      let view = await player.eval(() => __scb.playerView());
+      check(!view.portraits.some(p => p.id === tyrant), "player sees the tyrant before it arrives");
+
+      // Round 1: four turns take the pointer past the last combatant here, and on into round 2.
+      await gm.eval(n => __scb.advance(n), 4);
+      s = await state();
+      check((s.round === 2) && (s.turn === 0), `round 1's tyrant turn wasn't skipped: round ${s.round}, turn ${s.turn}`);
+      check(s.hidden === true, "tyrant revealed before its turn in round 2");
+
+      // Stepping back from the top of round 2 skips it too.
+      await gm.eval(() => __scb.previousTurn());
+      s = await state();
+      check((s.round === 1) && (s.turn === 3), `previous turn landed on round ${s.round}, turn ${s.turn}`);
+      await gm.eval(n => __scb.advance(n), 1);
+
+      // Round 2, count 0: it arrives.
+      await gm.eval(n => __scb.advance(n), 4);
+      s = await state();
+      check(s.current === tyrant, `round 2's last turn isn't the tyrant's: ${s.current}`);
+      check(s.hidden === false, "tyrant still hidden on its turn in round 2");
+      check(s.tokenHidden === false, "tyrant's token still hidden on the map");
+      check(s.arrival === null, `arrival flag not cleared: ${JSON.stringify(s.arrival)}`);
+      check(s.waiting === false, "GM's card still marked as waiting");
+      check(s.whispers === 1, `expected 1 arrival whisper, found ${s.whispers}`);
+      view = await player.eval(() => __scb.playerView());
+      check(view.portraits.some(p => p.id === tyrant), "player doesn't see the tyrant once it has arrived");
+    } finally {
+      if ( player ) await player.close({ shutDownWorld: false });
+      await gm.eval(() => __scbFixtures.cleanup());
+    }
     return { pass: !failures.length, failures, lines: failures };
   },
 

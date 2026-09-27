@@ -6,6 +6,8 @@
  * active GM removes it once that many rounds have passed.
  */
 
+import { normaliseArrival } from "./arrivals.mjs";
+
 /** Recent events the Add Event dialog remembers. */
 export const RECENT_LIMIT = 10;
 
@@ -19,14 +21,16 @@ export const DEFAULT_EVENT_IMG = "icons/svg/clockwork.svg";
  * @property {number} initiative
  * @property {number|null} [duration]  Rounds; null or 0 lasts until removed.
  * @property {boolean} [hidden]
+ * @property {number|null} [arrivesRound]  Round it arrives in (model/arrivals.mjs); null for now.
  */
 
 /**
  * Validate and normalise what the dialog submitted.
  * @param {object} form  Raw form data.
+ * @param {number} [round=0]  The combat's current round, which an arrival can't be before.
  * @returns {{data: EventData|null, error: string|null}}  `error` is an i18n key under `events.errors`.
  */
-export function normaliseEvent(form) {
+export function normaliseEvent(form, round = 0) {
   const name = String(form?.name ?? "").trim();
   if ( !name ) return { data: null, error: "name" };
   const initiative = Number(form.initiative);
@@ -37,8 +41,10 @@ export function normaliseEvent(form) {
     ? null : Number(form.duration);
   if ( (duration !== null) && (!Number.isInteger(duration) || (duration < 0)) ) return { data: null, error: "duration" };
   if ( duration === 0 ) duration = null;
+  const arrival = normaliseArrival(form.arrivesRound, round);
+  if ( arrival.error ) return { data: null, error: "arrivesRound" };
   const img = String(form.img ?? "").trim() || DEFAULT_EVENT_IMG;
-  return { data: { name, img, initiative, duration, hidden: !!form.hidden }, error: null };
+  return { data: { name, img, initiative, duration, hidden: !!form.hidden, arrivesRound: arrival.round }, error: null };
 }
 
 /**

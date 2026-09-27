@@ -9,7 +9,7 @@
 
 import { MODULE_ID, settings, t } from "../config.mjs";
 import { activeRun, afterEnd, canActivate, groupState } from "../model/group-turns.mjs";
-import { sideOfCombatant } from "./facts.mjs";
+import { runSideOf } from "./facts.mjs";
 
 export const GROUP_QUERY = `${MODULE_ID}.groupTurn`;
 
@@ -25,7 +25,7 @@ export function registerGroupQuery() {
  */
 export function groupContext(combat) {
   if ( (settings().groupTeams !== "bg3") || !combat?.started ) return null;
-  const turns = combat.turns.map(c => ({ id: c.id, side: sideOfCombatant(c) }));
+  const turns = combat.turns.map(c => ({ id: c.id, side: runSideOf(c) }));
   const run = activeRun(turns, combat.turn);
   if ( !run ) return null;
   return {

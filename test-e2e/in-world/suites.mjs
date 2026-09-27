@@ -255,6 +255,56 @@ export async function nextRound() {
 }
 
 /* -------------------------------------------- */
+/*  Late arrivals                               */
+/* -------------------------------------------- */
+
+/**
+ * GM: the Death Tyrant's fight. Four combatants, then a monster at -0.01 (count 0, losing ties) whose
+ * token is hidden on the map. Not started, so the GM can schedule it first. Clears the chat so the
+ * arrival whisper can be counted.
+ */
+export async function arrivalsSetup() {
+  const ids = game.messages.map(m => m.id);
+  if ( ids.length ) await ChatMessage.deleteDocuments(ids);
+  const combat = await freshCombat({ allies: 2, enemies: 3, initiative: [20, 18, 15, 12, -0.01], start: false });
+  const tyrant = combat.turns.at(-1);
+  await tyrant.token.update({ hidden: true });
+  await settle(150);
+  return { tyrant: tyrant.id, name: tyrant.name };
+}
+
+/** Where the turn is, and everything about the late arrival. */
+export async function arrivalsState(id) {
+  await settle(250);
+  const combat = game.combat;
+  const c = combat.combatants.get(id);
+  const li = document.querySelector(`#scb-root .scb-portrait[data-combatant-id="${id}"]`);
+  return {
+    round: combat.round,
+    turn: combat.turn,
+    current: combat.combatant?.id ?? null,
+    hidden: c.hidden,
+    tokenHidden: c.token?.hidden ?? null,
+    arrival: c.getFlag(MODULE_ID, "arrival") ?? null,
+    waiting: li?.classList.contains("is-waiting") ?? null,
+    badge: li?.querySelector('[data-slot="arrives"]')?.textContent ?? null,
+    whispers: game.messages.filter(m => m.whisper.length && m.content.includes(c.name)).length
+  };
+}
+
+/** GM: start the combat. */
+export async function startCombat() {
+  await game.combat.startCombat();
+  await settle(300);
+}
+
+/** GM: back one turn. */
+export async function previousTurn() {
+  await game.combat.previousTurn();
+  await settle(300);
+}
+
+/* -------------------------------------------- */
 /*  Trackers                                    */
 /* -------------------------------------------- */
 

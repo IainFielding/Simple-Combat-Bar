@@ -61,6 +61,18 @@ running out. Give it a name, an initiative (19.5 slots it between two combatants
 rounds, and an image. It counts down on its card and is removed when its time is up, with a
 whisper to the GM. Your recent events are kept as one-click presets.
 
+### Late Arrivals
+Some things join a fight part-way through, like a Death Tyrant bursting out of the canal on
+initiative count 0 of round 2. Add it to the combat now, give it its initiative (−0.01 means count 0,
+losing ties), then right-click its portrait and choose **Arrives in Round…**.
+
+- Until then its turns are skipped, and players don't see it. You see it greyed out, with the round
+  it arrives in.
+- When its turn comes up in that round, it and its token are revealed, and you get a whisper to
+  read the boxed text.
+- **Arrive Now** brings it in early. Events can arrive late too: set **Arrives in round** when you
+  add one.
+
 
 ## On Each Card
 

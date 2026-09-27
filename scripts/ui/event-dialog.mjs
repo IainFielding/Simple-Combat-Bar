@@ -1,6 +1,6 @@
 /**
- * The Add Event dialog: name, initiative, duration, image, hidden, plus the GM's recent events as
- * one-click presets.
+ * The Add Event dialog: name, initiative, duration, arrival round, image, hidden, plus the GM's
+ * recent events as one-click presets.
  */
 
 import { MODULE_ID, t } from "../config.mjs";
@@ -40,6 +40,8 @@ export async function openEventDialog(bar) {
     t("events.fields.initiativeHint"))}
       ${field(t("events.fields.duration"), `<input type="number" name="duration" min="0" step="1" placeholder="${
     esc(t("events.fields.untilRemoved"))}">`, t("events.fields.durationHint"))}
+      ${field(t("events.fields.arrivesRound"), `<input type="number" name="arrivesRound" min="${
+    Math.max(bar.combat.round, 1)}" step="1" placeholder="${esc(t("events.fields.now"))}">`, t("events.fields.arrivesRoundHint"))}
       ${field(t("events.fields.img"), `<file-picker name="img" type="image" value="${DEFAULT_EVENT_IMG}"></file-picker>`)}
       ${field(t("events.fields.hidden"), `<input type="checkbox" name="hidden">`, t("events.fields.hiddenHint"))}
     </div>`;
@@ -70,7 +72,7 @@ export async function openEventDialog(bar) {
   });
   if ( !form ) return null;
 
-  const { data, error } = normaliseEvent(form);
+  const { data, error } = normaliseEvent(form, bar.combat.round);
   if ( error ) {
     ui.notifications.error(t(`events.errors.${error}`));
     return null;

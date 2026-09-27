@@ -5,7 +5,14 @@ import { DEFAULT_EVENT_IMG, RECENT_LIMIT, expiredEvents, normaliseEvent, remembe
 describe("normaliseEvent", () => {
   it("accepts a complete event", () => {
     expect(normaliseEvent({ name: " Ceiling collapses ", img: "a.webp", initiative: "20", duration: "3", hidden: true }))
-      .toEqual({ data: { name: "Ceiling collapses", img: "a.webp", initiative: 20, duration: 3, hidden: true }, error: null });
+      .toEqual({ data: { name: "Ceiling collapses", img: "a.webp", initiative: 20, duration: 3, hidden: true,
+        arrivesRound: null }, error: null });
+  });
+
+  it("takes an arrival round, no earlier than the current round", () => {
+    expect(normaliseEvent({ name: "Tyrant", initiative: -0.01, arrivesRound: "2" }).data.arrivesRound).toBe(2);
+    expect(normaliseEvent({ name: "Tyrant", initiative: -0.01, arrivesRound: "2" }, 3))
+      .toEqual({ data: null, error: "arrivesRound" });
   });
 
   it("defaults the image and treats a blank or zero duration as until removed", () => {
@@ -23,7 +30,8 @@ describe("normaliseEvent", () => {
     [{ name: "Fog", initiative: "" }, "initiative"],
     [{ name: "Fog", initiative: "soon" }, "initiative"],
     [{ name: "Fog", initiative: 10, duration: -1 }, "duration"],
-    [{ name: "Fog", initiative: 10, duration: 1.5 }, "duration"]
+    [{ name: "Fog", initiative: 10, duration: 1.5 }, "duration"],
+    [{ name: "Fog", initiative: 10, arrivesRound: 1.5 }, "arrivesRound"]
   ])("rejects %o with %s", (form, error) => {
     expect(normaliseEvent(form)).toEqual({ data: null, error });
   });
