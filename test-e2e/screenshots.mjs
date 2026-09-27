@@ -1,8 +1,10 @@
 /**
  * Capture the bar for visual review (not pixel-diffed).
  *
- *   node screenshots.mjs                 # GM and player views into results/shots/
+ *   node screenshots.mjs                 # GM and player views into results/shots/ (not tracked)
  *   node screenshots.mjs --style=medallion
+ *   node screenshots.mjs --group         # a BG3 group turn in progress
+ *   node screenshots.mjs --docs          # the README's images, into docs/screenshots/ (tracked)
  *
  * Sets up a mid-fight combat (a few wounded combatants, round 2, a player's turn) and screenshots
  * the top of the screen at 2× for the GM and for the player.
@@ -16,10 +18,13 @@ import { startFoundry } from "./lib/server.mjs";
 import { Session } from "./lib/session.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const out = path.join(here, "results", "shots");
+const docs = process.argv.includes("--docs");
+const out = docs ? path.join(here, "..", "docs", "screenshots") : path.join(here, "results", "shots");
 fs.mkdirSync(out, { recursive: true });
 const style = process.argv.find(a => a.startsWith("--style="))?.split("=")[1] ?? null;
 const group = process.argv.includes("--group");
+/** File name for a shot: README-stable names under --docs, a prefix for the group-turn set. */
+const shot = name => path.join(out, `${group ? "group-turn-" : ""}${name}.png`);
 const viewport = { width: 1680, height: 960 };
 
 const server = await startFoundry("playwright-combat");
@@ -29,6 +34,7 @@ try {
   gm = await Session.open({ viewport, deviceScaleFactor: 2 });
   await gm.eval(async ({ id, style, group }) => {
     const f = await import(`/modules/${id}/test-e2e/in-world/fixtures.mjs`);
+    if ( game.paused ) game.togglePause(false, { broadcast: true });
     if ( style ) await game.settings.set(id, "portraitStyle", style);
     await game.settings.set(id, "groupTeams", group ? "bg3" : "off");
     await game.settings.set(id, "secondaryResource", "resources.legact");
@@ -69,12 +75,14 @@ try {
     }
   }, { id: MODULE_ID, style, group });
   await gm.page.waitForTimeout(800);
-  await gm.page.screenshot({ path: path.join(out, "gm.png"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
+  await gm.page.screenshot({ path: shot("gm"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
 
+  // The group-turn set is only the bar itself; the tooltip and windows look the same either way.
+  if ( !group ) {
   // Hover tooltip on the first hero (the current combatant).
   await gm.page.hover("#scb-root .scb-portrait.is-current");
   await gm.page.waitForTimeout(900);
-  await gm.page.screenshot({ path: path.join(out, "tooltip.png"), clip: { x: 300, y: 0, width: 1100, height: 520 } });
+  await gm.page.screenshot({ path: shot("tooltip"), clip: { x: 300, y: 0, width: 1100, height: 520 } });
   await gm.page.mouse.move(5, 700);
 
   // Configure Trackers window.
@@ -85,19 +93,20 @@ try {
   const trackers = gm.page.locator("#scb-trackers-config");
   await trackers.waitFor();
   await gm.page.waitForTimeout(400);
-  await trackers.screenshot({ path: path.join(out, "trackers.png") });
+  await trackers.screenshot({ path: shot("trackers") });
   await trackers.locator('.header-control[data-action="close"]').first().click().catch(() => {});
 
   await gm.page.click("#scb-root .scb-tab.addEvent");
   const dialog = gm.page.locator(".scb-event-dialog");
   await dialog.waitFor();
   await gm.page.waitForTimeout(400);
-  await dialog.screenshot({ path: path.join(out, "event-dialog.png") });
+  await dialog.screenshot({ path: shot("event-dialog") });
   await dialog.locator('button[data-action="close"], .header-control[data-action="close"]').first().click().catch(() => {});
+  }
 
   player = await Session.open({ viewport, deviceScaleFactor: 2, user: PLAYER_USER });
   await player.page.waitForTimeout(1200);
-  await player.page.screenshot({ path: path.join(out, "player.png"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
+  await player.page.screenshot({ path: shot("player"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
   console.log(`Saved to ${path.relative(process.cwd(), out)}`);
 } finally {
   if ( player ) await player.close({ shutDownWorld: false });
