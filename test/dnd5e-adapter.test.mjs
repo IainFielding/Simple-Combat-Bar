@@ -46,6 +46,16 @@ describe("dnd5e adapter", () => {
   it("returns null HP for actors without it (vehicles, groups)", () => {
     expect(dnd5eAdapter.hp({ system: { attributes: {} } })).toBeNull();
   });
+
+  it("reads an NPC's XP, and none for anything else", () => {
+    expect(dnd5eAdapter.xp({ type: "npc", system: { details: { xp: { value: 450 } } } })).toBe(450);
+    expect(dnd5eAdapter.xp({ type: "npc", system: { details: {} } })).toBeNull();
+    expect(dnd5eAdapter.xp({ type: "character", system: { details: { xp: { value: 900 } } } })).toBeNull();
+  });
+
+  it("writes the award enricher", () => {
+    expect(dnd5eAdapter.awardCommand(450)).toBe("[[/award 450xp]]");
+  });
 });
 
 describe("adapter registry", () => {

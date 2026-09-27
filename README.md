@@ -104,6 +104,10 @@ names, hit points, effect descriptions and initiative, the portrait style and si
 sidebar collapses and the D&D calendar hides during combat, and the action pips, legendary badges
 and effect icons.
 
+Turn on **XP Summary When Combat Ends** and ending a combat whispers the GM a card listing the
+defeated enemies and their total XP, with dnd5e's Award button to hand it out (the same as typing
+`/award`). The players' own creatures and friendly NPCs aren't counted.
+
 ## Support Information
 
 ### Supported Versions

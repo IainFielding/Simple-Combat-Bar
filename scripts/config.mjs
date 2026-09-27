@@ -51,6 +51,7 @@ export const DEFAULTS = Object.freeze({
   showEffects: true,
   effectDescriptions: "owner",
   sidebarOnCombat: "collapse",
+  xpSummary: false,
   debug: false
 });
 
