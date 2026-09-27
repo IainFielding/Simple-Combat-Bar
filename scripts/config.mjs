@@ -50,7 +50,6 @@ export const DEFAULTS = Object.freeze({
   legendaryBadges: true,
   showEffects: true,
   effectDescriptions: "owner",
-  hideCalendar: true,
   sidebarOnCombat: "collapse",
   debug: false
 });

@@ -2,6 +2,20 @@
 
 All notable changes to Simple Combat Bar.
 
+## 0.2.0
+
+### New
+
+- **Late arrivals.** Right-click a portrait and choose **Arrives in Round…** to have a combatant
+  join a fight part-way through, such as a monster erupting on count 0 of round 2. Until then its
+  turns are skipped and players don't see it. When its turn comes in that round, it and its token are
+  revealed, and the GM gets a whisper. Add Event takes an arrival round too.
+
+### Changed
+
+- **D&D 5e's calendar always steps aside** while the bar shows a combat, from rolling initiative
+  until the combat ends. It's no longer a setting.
+
 ## 0.1.0 — First Release
 
 ### New

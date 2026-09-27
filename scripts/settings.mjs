@@ -63,7 +63,6 @@ export function registerSettings(getBar) {
   register("showEffects", { type: Boolean });
   register("effectDescriptions", { type: String, choices: choices("effectDescriptions", ["none", "owner", "all"]) });
   register("groupTeams", { type: String, choices: choices("groupTeams", ["off", "visual", "bg3"]) });
-  register("hideCalendar", { type: Boolean });
   register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["collapse", "leave"]) });
   register("debug", { scope: "user", type: Boolean });
 

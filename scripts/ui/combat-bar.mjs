@@ -17,10 +17,11 @@ import { buildPortraitModel } from "../model/portrait-model.mjs";
 import { isShown } from "../model/visibility.mjs";
 import { wantsInitiativeDialog } from "../model/initiative.mjs";
 import { adapterFor } from "../systems/adapter.mjs";
-import { combatantFacts, readEffects, sideOfCombatant } from "./facts.mjs";
+import { combatantFacts, readEffects, runSideOf } from "./facts.mjs";
 import { showsDescriptions } from "../model/effects.mjs";
 import { effectDescriptions } from "./effect-text.mjs";
 import { groupContext, requestGroupTurn } from "./group-service.mjs";
+import { arrive, isWaiting, openArrivalDialog } from "./arrival-service.mjs";
 import { PortraitView } from "./portrait-view.mjs";
 import { portraitStyle } from "./portrait-styles.mjs";
 import { buildTooltip } from "./tooltip.mjs";
@@ -62,7 +63,7 @@ const TAB_WIDTH = 38;
 /** Duration of the slide when portraits change places. */
 const MOVE_MS = 260;
 
-/** Body class that hides the dnd5e calendar HUD while a combat is running (`hideCalendar`). */
+/** Body class that hides the dnd5e calendar HUD while the bar shows a combat. */
 const HIDE_CALENDAR = `${CSS}-hide-calendar`;
 
 /** Hover delay before a portrait tooltip opens, matching core's TooltipManager. */
@@ -171,6 +172,8 @@ export class CombatBar {
     life.hook("hoverToken", (token, hovered) => this.#toggleTokenClass(token, "is-hovered", hovered));
     life.hook("controlToken", (token, controlled) => this.#toggleTokenClass(token, "is-controlled", controlled));
     life.add(() => this.#scheduler.cancel());
+    // The dnd5e calendar shares #ui-top with the bar; step it aside from the initiative roll on.
+    document.body.classList.add(HIDE_CALENDAR);
     life.add(() => document.body.classList.remove(HIDE_CALENDAR));
 
     this.root.hidden = false;
@@ -393,7 +396,7 @@ export class CombatBar {
       const disposition = c.token?.disposition ?? 0;
       return {
         id: c.id,
-        side: sideOfCombatant(c),
+        side: runSideOf(c),
         defeated: c.isDefeated,
         groupId: c.group?.id ?? null,
         shown: isShown({ isGM: user.isGM, hidden: c.hidden, canObserve, hasActed,
@@ -410,8 +413,6 @@ export class CombatBar {
     const root = this.root;
     root.classList.toggle("is-started", combat.started);
     root.classList.toggle("is-gm", game.user.isGM);
-    // The dnd5e calendar shares #ui-top with the bar; step it aside while the fight is on.
-    document.body.classList.toggle(HIDE_CALENDAR, combat.started && settings().hideCalendar);
     const current = combat.combatant;
     const canEnd = combat.started && (game.user.isGM || !!current?.isOwner);
     root.querySelector(".scb-endturn").hidden = !canEnd;
@@ -720,16 +721,21 @@ export class CombatBar {
   async addEvent(data) {
     const combat = this.combat;
     if ( !game.user.isGM || !combat ) return null;
+    const arrives = data.arrivesRound ?? null;
     const [combatant] = await combat.createEmbeddedDocuments("Combatant", [{
       name: data.name,
       img: data.img,
       initiative: data.initiative,
-      hidden: !!data.hidden,
-      // Before combat starts the round is 0; the countdown starts with round 1.
-      flags: { [MODULE_ID]: { event: true, duration: data.duration ?? null, roundCreated: Math.max(combat.round, 1) } }
+      // A late event is hidden until it arrives (arrival-service.mjs), then goes back to the GM's choice.
+      hidden: !!data.hidden || (arrives !== null),
+      // Before combat starts the round is 0; the countdown starts with round 1, or when it arrives.
+      flags: { [MODULE_ID]: { event: true, duration: data.duration ?? null,
+        roundCreated: Math.max(combat.round, 1, arrives ?? 0),
+        arrival: arrives === null ? null : { round: arrives, hidden: !!data.hidden } } }
     }]);
+    // The arrival round belongs to this fight, not to the preset.
     const recent = game.settings.get(MODULE_ID, "recentEvents") ?? [];
-    await game.settings.set(MODULE_ID, "recentEvents", rememberEvent(recent, data));
+    await game.settings.set(MODULE_ID, "recentEvents", rememberEvent(recent, { ...data, arrivesRound: null }));
     return combatant ?? null;
   }
 
@@ -750,7 +756,9 @@ export class CombatBar {
       {
         name: "sogrom-simple-combat-bar.context.setCurrent",
         icon: '<i class="fa-solid fa-hourglass-start"></i>',
-        condition: li => gm() && this.combat?.started && (combatantOf(li) !== this.combat.combatant),
+        // One that hasn't arrived would only be stepped straight past: bring it in first.
+        condition: li => gm() && this.combat?.started && (combatantOf(li) !== this.combat.combatant)
+          && !isWaiting(combatantOf(li)),
         callback: li => {
           const index = this.combat.turns.findIndex(c => c.id === li.dataset.combatantId);
           if ( index >= 0 ) this.combat.update({ turn: index });
@@ -783,6 +791,18 @@ export class CombatBar {
         icon: '<i class="fa-solid fa-eraser"></i>',
         condition: li => gm() && (combatantOf(li)?.initiative !== null),
         callback: li => combatantOf(li)?.update({ initiative: null })
+      },
+      {
+        name: "sogrom-simple-combat-bar.context.arrivesLater",
+        icon: '<i class="fa-solid fa-door-open"></i>',
+        condition: li => gm() && !!combatantOf(li) && (combatantOf(li) !== this.combat?.combatant),
+        callback: li => openArrivalDialog(combatantOf(li))
+      },
+      {
+        name: "sogrom-simple-combat-bar.context.arriveNow",
+        icon: '<i class="fa-solid fa-person-walking-arrow-right"></i>',
+        condition: li => gm() && isWaiting(combatantOf(li)),
+        callback: li => arrive(combatantOf(li))
       },
       {
         name: "COMBATANT.Hide",

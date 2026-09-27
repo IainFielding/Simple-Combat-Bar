@@ -38,6 +38,7 @@ import { effectIcons } from "./effects.mjs";
  * @property {string|null} description
  * @property {boolean} isEvent          An "Add Event" pseudo-combatant.
  * @property {number|null} eventRoundsLeft
+ * @property {number|null} [arrivesRound]  Round it arrives in, if it hasn't yet (model/arrivals.mjs).
  */
 
 /**
@@ -124,7 +125,8 @@ export function buildPortraitModel(facts, { settings, current, acted, run, activ
     damagePct,
     description: (viewer.canObserve || facts.isGM) ? (facts.description ?? null) : null,
     isEvent: facts.isEvent,
-    eventRoundsLeft: facts.eventRoundsLeft ?? null
+    eventRoundsLeft: facts.eventRoundsLeft ?? null,
+    arrivesRound: facts.arrivesRound ?? null
   };
 }
 

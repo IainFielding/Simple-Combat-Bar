@@ -481,6 +481,43 @@
   transform: translateX(-50%);
 }
 
+/* ---------------------------------------------------------------- late arrivals
+   A combatant that arrives in a later round (arrival-service.mjs). Only the GM sees it before then:
+   greyed out, with the round it arrives in on a badge in the middle. */
+.scb-root .scb-portrait.is-waiting .scb-img {
+  filter: grayscale(0.7) brightness(0.5);
+}
+
+.scb-root .scb-arrives {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  display: none;
+  align-items: center;
+  gap: 3px;
+  padding: 0 5px;
+  border-radius: 8px;
+  border: 1px solid var(--scb-bright);
+  background: rgba(10, 10, 12, 0.9);
+  font-family: var(--scb-font-display);
+  font-size: max(11px, calc(var(--scb-size) * 0.17));
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--scb-bright);
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.scb-root .scb-arrives i {
+  font-size: 0.8em;
+}
+
+.scb-root .scb-portrait.is-waiting .scb-arrives {
+  display: inline-flex;
+}
+
 /* ---------------------------------------------------------------- BG3 group turns
    The member acting gets the large card (is-current). The rest of the run sharing the turn gets a
    gold frame; those who have ended dim behind a tick; and a member this viewer may send in next

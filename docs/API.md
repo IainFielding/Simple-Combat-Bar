@@ -63,7 +63,8 @@ Hooks.once("simpleCombatBar.init", api => {
 
 A style supplies markup and CSS; the bar supplies the data. The markup must contain elements marked
 `data-slot="img"`, `"initiative"`, `"hp"`, `"name"` and `"damage"`. It may also contain `"bar2"` (the
-second tracker bar), `"rounds"` (an event's rounds left) and a `data-action="rollInitiative"` button;
+second tracker bar), `"rounds"` (an event's rounds left), `"arrives"` (the round a late arrival comes
+in, shown to the GM; the portrait also gets `is-waiting`) and a `data-action="rollInitiative"` button;
 the bar skips any it doesn't find. Scope your stylesheet under `.scb-root[data-style="<id>"]`.
 
 ```js

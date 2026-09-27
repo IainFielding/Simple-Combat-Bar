@@ -88,6 +88,11 @@ export class PortraitView {
           if ( this.#slots.rounds ) this.#slots.rounds.textContent = model.eventRoundsLeft ?? "";
           el.classList.toggle("has-rounds", model.eventRoundsLeft !== null);
           break;
+        case "arrivesRound":
+          if ( this.#slots.arrives ) this.#slots.arrives.textContent = model.arrivesRound === null ? ""
+            : game.i18n.format("sogrom-simple-combat-bar.arrivals.badge", { round: model.arrivesRound });
+          el.classList.toggle("is-waiting", model.arrivesRound !== null);
+          break;
         case "hpState":
           el.dataset.hp = model.hpState;
           break;
