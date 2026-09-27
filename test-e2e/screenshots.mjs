@@ -40,12 +40,21 @@ try {
     await hurt(npcs[1], 0.6);
     await hurt(pcs[1], 0.45);
     await hurt(npcs[2], 0);
+    await game.modules.get(id).api.bar.addEvent({ name: "Collapsing Ceiling", img: "icons/svg/hazard.svg",
+      initiative: 21.5, duration: 3, hidden: false });
     await combat.nextRound();
     await combat.update({ turn: combat.turns.findIndex(c => c.id === pcs[0].id) });
     await f.settle(400);
   }, { id: MODULE_ID, style });
   await gm.page.waitForTimeout(800);
   await gm.page.screenshot({ path: path.join(out, "gm.png"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
+
+  await gm.page.click("#scb-root .scb-tab.addEvent");
+  const dialog = gm.page.locator(".scb-event-dialog");
+  await dialog.waitFor();
+  await gm.page.waitForTimeout(400);
+  await dialog.screenshot({ path: path.join(out, "event-dialog.png") });
+  await dialog.locator('button[data-action="close"], .header-control[data-action="close"]').first().click().catch(() => {});
 
   player = await Session.open({ viewport, deviceScaleFactor: 2, user: PLAYER_USER });
   await player.page.waitForTimeout(1200);

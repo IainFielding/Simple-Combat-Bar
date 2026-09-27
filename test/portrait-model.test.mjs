@@ -38,9 +38,12 @@ describe("buildPortraitModel", () => {
     expect(buildPortraitModel(facts(), ctx()).initiative).toBe("14");
   });
 
-  it("formats decimal initiative", () => {
-    const m = buildPortraitModel(facts({ initiative: 14.02 }), { ...ctx(), decimals: 2 });
-    expect(m.initiative).toBe("14.02");
+  it("shows only the decimals each initiative has", () => {
+    const at = initiative => buildPortraitModel(facts({ initiative }), { ...ctx(), decimals: 2 }).initiative;
+    expect(at(14.02)).toBe("14.02");
+    expect(at(21.5)).toBe("21.5");
+    expect(at(25)).toBe("25");
+    expect(at(10.004)).toBe("10");
   });
 
   it("offers the roll button only to owners and the GM, and only before rolling", () => {

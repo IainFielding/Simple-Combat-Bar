@@ -81,6 +81,10 @@ export class PortraitView {
           if ( this.#slots.initiative ) this.#slots.initiative.textContent = model.initiative ?? "";
           el.classList.toggle("has-initiative", model.initiative !== null);
           break;
+        case "eventRoundsLeft":
+          if ( this.#slots.rounds ) this.#slots.rounds.textContent = model.eventRoundsLeft ?? "";
+          el.classList.toggle("has-rounds", model.eventRoundsLeft !== null);
+          break;
         case "hpState":
           el.dataset.hp = model.hpState;
           break;

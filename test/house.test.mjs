@@ -93,14 +93,15 @@ describe("module.json styles", () => {
     expect(listed.filter(f => f.startsWith("styles/portrait/")).sort()).toEqual(onDisk.sort());
   });
 
-  it("scopes every rule under .scb-root or the tooltip (spec R10)", () => {
+  it("scopes every rule under .scb-root, the tooltip or the event dialog (spec R10)", () => {
     const bad = [];
     for ( const file of listed.filter(f => f !== "styles/fonts.css") ) {
       const css = stripComments(readFileSync(file, "utf8"));
       for ( const [, selectors] of css.matchAll(/(?:^|})\s*([^{}@]+?)\s*\{/g) ) {
         for ( const sel of splitSelectors(selectors) ) {
           if ( !sel || /^(from|to|\d+%)$/.test(sel) ) continue;
-          if ( !sel.startsWith(".scb-root") && !sel.startsWith("#tooltip.scb-tooltip") ) bad.push(`${file}: ${sel}`);
+          const scoped = [".scb-root", "#tooltip.scb-tooltip", ".scb-event-dialog"].some(p => sel.startsWith(p));
+          if ( !scoped ) bad.push(`${file}: ${sel}`);
         }
       }
     }

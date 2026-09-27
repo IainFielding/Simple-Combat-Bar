@@ -57,6 +57,9 @@ export function registerSettings(getBar) {
   register("groupTeams", { type: String, choices: choices("groupTeams", ["off", "visual", "bg3"]) });
   register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["collapse", "leave"]) });
   register("debug", { scope: "user", type: Boolean });
+
+  // The Add Event dialog's recent events. Not shown in the settings window.
+  game.settings.register(MODULE_ID, "recentEvents", { scope: "world", config: false, type: Array, default: [] });
 }
 
 /**

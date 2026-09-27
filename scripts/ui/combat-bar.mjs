@@ -21,6 +21,8 @@ import { combatantFacts } from "./facts.mjs";
 import { PortraitView } from "./portrait-view.mjs";
 import { portraitStyle } from "./portrait-styles.mjs";
 import { buildTooltip } from "./tooltip.mjs";
+import { openEventDialog } from "./event-dialog.mjs";
+import { rememberEvent } from "../model/events.mjs";
 
 /** Combatant fields whose change can move a combatant or change who is shown. */
 const ORDER_FIELDS = ["initiative", "hidden", "defeated", "tokenId", "actorId", "group"];
@@ -44,6 +46,7 @@ const GM_CONTROLS_END = [
   ["nextRound", "fa-solid fa-angles-right", "COMBAT.RoundNext"],
   ["startCombat", "fa-solid fa-play", "COMBAT.Begin"],
   ["endCombat", "fa-solid fa-flag-checkered", "COMBAT.End"],
+  ["addEvent", "fa-solid fa-hourglass-half", "sogrom-simple-combat-bar.events.title"],
   ["configure", "fa-solid fa-gear", "sogrom-simple-combat-bar.controls.configure"]
 ];
 
@@ -514,6 +517,7 @@ export class CombatBar {
       case "nextRound": return combat.nextRound();
       case "startCombat": return combat.startCombat();
       case "endCombat": return combat.endCombat();
+      case "addEvent": return openEventDialog(this);
     }
   }
 
@@ -532,6 +536,27 @@ export class CombatBar {
     } finally {
       if ( dialog ) adapter.clearInitiative?.(actor);
     }
+  }
+
+  /**
+   * Add a timed event to the bound combat, and remember it in the GM's recent events.
+   * @param {import("../model/events.mjs").EventData} data  Already normalised.
+   * @returns {Promise<Combatant|null>}
+   */
+  async addEvent(data) {
+    const combat = this.combat;
+    if ( !game.user.isGM || !combat ) return null;
+    const [combatant] = await combat.createEmbeddedDocuments("Combatant", [{
+      name: data.name,
+      img: data.img,
+      initiative: data.initiative,
+      hidden: !!data.hidden,
+      // Before combat starts the round is 0; the countdown starts with round 1.
+      flags: { [MODULE_ID]: { event: true, duration: data.duration ?? null, roundCreated: Math.max(combat.round, 1) } }
+    }]);
+    const recent = game.settings.get(MODULE_ID, "recentEvents") ?? [];
+    await game.settings.set(MODULE_ID, "recentEvents", rememberEvent(recent, data));
+    return combatant ?? null;
   }
 
   /** End the current turn, if this user may. */

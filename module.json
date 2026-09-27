@@ -33,6 +33,7 @@
     "styles/bar/02-layout.css",
     "styles/bar/03-portrait.css",
     "styles/bar/04-controls.css",
+    "styles/bar/05-event-dialog.css",
     "styles/portrait/medallion.css",
     "styles/portrait/card.css"
   ],

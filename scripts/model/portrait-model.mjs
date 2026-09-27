@@ -73,11 +73,13 @@ export function buildPortraitModel(facts, { settings, current, acted, run, decim
   const rolled = (facts.initiative !== null) && (facts.initiative !== undefined);
   const initVisible = showsInitiative(settings.hideEnemyInitiative, viewer);
   let initiative = null;
-  if ( rolled ) initiative = initVisible ? Number(facts.initiative).toFixed(decimals) : "?";
+  // Each value shows only the decimals it has: one event at 21.5 mustn't turn every 25 into "25.00".
+  if ( rolled ) initiative = initVisible ? String(Number(Number(facts.initiative).toFixed(decimals))) : "?";
 
   return {
     id: facts.id,
-    name: displayName(settings.nameVisibility, { ...facts, ...viewer }, unknownName),
+    // An event is the GM's announcement, not a creature: anyone who can see it can read it.
+    name: facts.isEvent ? facts.name : displayName(settings.nameVisibility, { ...facts, ...viewer }, unknownName),
     img: facts.img,
     side: facts.side,
     pc: facts.isPC,

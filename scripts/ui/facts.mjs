@@ -5,6 +5,7 @@
 
 import { MODULE_ID } from "../config.mjs";
 import { sideOf } from "../model/visibility.mjs";
+import { roundsLeft } from "../model/events.mjs";
 
 /**
  * @param {Combatant} combatant
@@ -26,10 +27,7 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
   let img = combatant.img;
   if ( (settings.portraitImage === "actor") && actor?.img && !isEvent ) img = actor.img;
 
-  let eventRoundsLeft = null;
-  if ( isEvent && flags.duration ) {
-    eventRoundsLeft = Math.max(0, flags.duration - ((combatant.combat?.round ?? 0) - (flags.roundCreated ?? 0)));
-  }
+  const eventRoundsLeft = isEvent ? roundsLeft(flags, combatant.combat?.round ?? 0) : null;
 
   return {
     id: combatant.id,

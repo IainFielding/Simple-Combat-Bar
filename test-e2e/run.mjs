@@ -26,11 +26,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,ordering,permissions").split(",");
+const wanted = option("suites", "lifecycle,budget,ordering,permissions,events").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -152,6 +152,46 @@ const SUITES = {
     const { failures } = await session.eval(() => __scb.ordering());
     return { pass: !failures.length, failures,
       lines: failures.slice(0, 5).map(f => JSON.stringify(f)) };
+  },
+
+  /** Add an event through the real dialog, then watch it count down and expire. */
+  async events(gm) {
+    const failures = [];
+    const check = (ok, message) => ok || failures.push(message);
+    await gm.eval(() => __scb.eventsSetup());
+    const page = gm.page;
+
+    await page.click("#scb-root .scb-tab.addEvent");
+    const dialog = page.locator(".scb-event-dialog");
+    await dialog.waitFor({ timeout: 10_000 });
+    await dialog.locator('[name="name"]').fill("Collapsing Ceiling");
+    await dialog.locator('[name="initiative"]').fill("30");
+    await dialog.locator('[name="duration"]').fill("2");
+    await dialog.locator('button[data-action="ok"]').click();
+    await dialog.waitFor({ state: "detached", timeout: 10_000 });
+
+    let s = await gm.eval(() => __scb.eventsState());
+    const event = s.combatants[0];
+    check(s.combatants.length === 1, `expected 1 event combatant, found ${s.combatants.length}`);
+    check(event?.initiative === 30, `event initiative ${event?.initiative}`);
+    check(event?.flags.duration === 2, `event duration ${event?.flags.duration}`);
+    check(s.portraits[0]?.name === "Collapsing Ceiling", `event portrait name "${s.portraits[0]?.name}"`);
+    check(s.portraits[0]?.rounds === "2", `rounds badge shows "${s.portraits[0]?.rounds}", expected 2`);
+    check(s.recent[0] === "Collapsing Ceiling", "event not remembered in recent events");
+
+    await gm.eval(() => __scb.nextRound());
+    s = await gm.eval(() => __scb.eventsState());
+    check(s.portraits[0]?.rounds === "1", `after one round the badge shows "${s.portraits[0]?.rounds}", expected 1`);
+    check(s.expiryMessages === 0, "expiry message posted too early");
+
+    await gm.eval(() => __scb.nextRound());
+    s = await gm.eval(() => __scb.eventsState());
+    check(s.combatants.length === 0, "event not removed after its duration");
+    check(s.portraits.length === 0, "event portrait still on the bar");
+    check(s.expiryMessages === 1, `expected exactly 1 expiry message, found ${s.expiryMessages}`);
+
+    await gm.eval(() => __scbFixtures.cleanup());
+    return { pass: !failures.length, failures, lines: failures };
   },
 
   /** The GM builds the combat; a second browser, logged in as the player, checks what it sees. */

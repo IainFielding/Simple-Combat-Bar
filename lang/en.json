@@ -124,6 +124,28 @@
         "name": "Debug Logging",
         "hint": "Write the bar's internal events to the browser console. Only affects you."
       }
+    },
+    "events": {
+      "title": "Add Event",
+      "add": "Add to Initiative",
+      "recent": "Recent",
+      "expired": "Ended, and removed from initiative: {names}.",
+      "fields": {
+        "name": "Name",
+        "initiative": "Initiative",
+        "initiativeHint": "Where it takes its turn. Use a decimal, such as 19.5, to place it between two combatants.",
+        "duration": "Duration (rounds)",
+        "durationHint": "It's removed at the start of the round after this many rounds. Leave blank to keep it until you remove it.",
+        "untilRemoved": "Until removed",
+        "img": "Image",
+        "hidden": "Hidden from players",
+        "hiddenHint": "Players won't see it on the bar until you reveal it."
+      },
+      "errors": {
+        "name": "Give the event a name.",
+        "initiative": "Give the event an initiative number.",
+        "duration": "Duration must be a whole number of rounds, or blank."
+      }
     }
   }
 }

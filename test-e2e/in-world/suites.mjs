@@ -207,3 +207,39 @@ export async function playerEndTurn() {
   await settle(300);
   return { turn: game.combat.turn, current: game.combat.combatant?.id };
 }
+
+/* -------------------------------------------- */
+/*  Events                                      */
+/* -------------------------------------------- */
+
+/** GM: a started combat to add events to. Clears the chat so expiry messages can be counted. */
+export async function eventsSetup() {
+  const ids = game.messages.map(m => m.id);
+  if ( ids.length ) await ChatMessage.deleteDocuments(ids);
+  await freshCombat({ allies: 2, enemies: 2 });
+  return { round: game.combat.round };
+}
+
+/** The event portraits on the bar, and the event combatants in the combat. */
+export async function eventsState() {
+  await settle(150);
+  const combat = game.combat;
+  return {
+    round: combat.round,
+    combatants: combat.combatants.filter(c => c.flags?.[MODULE_ID]?.event)
+      .map(c => ({ id: c.id, name: c.name, initiative: c.initiative, flags: c.flags[MODULE_ID] })),
+    portraits: Array.from(document.querySelectorAll("#scb-root .scb-portrait.is-event"), li => ({
+      id: li.dataset.combatantId,
+      name: li.querySelector(".scb-name")?.textContent,
+      rounds: li.querySelector(".scb-rounds")?.textContent ?? null
+    })),
+    expiryMessages: game.messages.filter(m => m.content?.includes("Collapsing Ceiling")).length,
+    recent: game.settings.get(MODULE_ID, "recentEvents").map(e => e.name)
+  };
+}
+
+/** GM: next round. */
+export async function nextRound() {
+  await game.combat.nextRound();
+  await settle(300);
+}

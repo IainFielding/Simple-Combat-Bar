@@ -1,0 +1,46 @@
+/* The Add Event dialog. It is a core DialogV2 window, outside .scb-root, so its rules are scoped by
+   the class the bar gives it instead. Only the recent-events chips need styling; the form itself
+   uses core's standard form layout. */
+
+.scb-event-dialog .scb-event-recent {
+  display: grid;
+  gap: 6px;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--color-border, #474d57);
+}
+
+.scb-event-dialog .scb-event-recent-label {
+  font-size: var(--font-size-12, 12px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary, #9a978f);
+}
+
+.scb-event-dialog .scb-event-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.scb-event-dialog .scb-event-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 2px 10px 2px 3px;
+  line-height: 1.4;
+  border-radius: 999px;
+  font-size: var(--font-size-13, 13px);
+}
+
+.scb-event-dialog .scb-event-chip img {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  object-fit: cover;
+}

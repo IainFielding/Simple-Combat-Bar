@@ -243,3 +243,44 @@
   background: color-mix(in srgb, var(--scb-settled) 14%, transparent);
   border-color: var(--scb-settled);
 }
+
+/* ---------------------------------------------------------------- events
+   A timed event (Add Event) wears the dnd5e gold frame and a rounds-left badge instead of HP. */
+.scb-root .scb-portrait.is-event {
+  --scb-side: var(--dnd5e-color-gold, #9f9275);
+}
+
+.scb-root .scb-portrait.is-event .scb-img {
+  object-fit: contain;
+  padding: 14%;
+  background: radial-gradient(circle at 50% 40%, #2b2a24, #111114 75%);
+}
+
+.scb-root .scb-rounds {
+  position: absolute;
+  z-index: 1;
+  left: 3px;
+  top: 3px;
+  display: none;
+  align-items: center;
+  gap: 3px;
+  padding: 0 5px;
+  border-radius: 8px;
+  border: 1px solid var(--dnd5e-color-gold, #9f9275);
+  background: rgba(10, 10, 12, 0.9);
+  font-family: var(--scb-font-display);
+  font-size: max(11px, calc(var(--scb-size) * 0.17));
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--scb-bright);
+  pointer-events: none;
+}
+
+.scb-root .scb-rounds i {
+  font-size: 0.8em;
+  color: var(--dnd5e-color-gold, #9f9275);
+}
+
+.scb-root .scb-portrait.has-rounds .scb-rounds {
+  display: inline-flex;
+}
