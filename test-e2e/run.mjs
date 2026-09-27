@@ -463,10 +463,13 @@ const SUITES = {
     check(saved !== current, "the portrait style didn't save");
     await gm.eval(([id, v]) => game.settings.set(id, "portraitStyle", v), [MODULE_ID, current]);
 
-    // The calendar hides during combat and comes back after.
+    // The calendar hides from the initiative roll on, and comes back after the combat.
     await gm.eval(() => __scb.calendarSetup());
     let cal = await gm.eval(() => __scb.calendarVisible());
     check(cal.present && cal.visible, `calendar not showing before combat: ${JSON.stringify(cal)}`);
+    cal = await gm.eval(() => __scb.startTestCombat(false));
+    check(!cal.visible, "calendar still showing while initiative is rolled");
+    await gm.eval(() => __scb.endTestCombat());
     cal = await gm.eval(() => __scb.startTestCombat());
     check(!cal.visible, "calendar still showing during combat");
     cal = await gm.eval(() => __scb.endTestCombat());

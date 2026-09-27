@@ -2,6 +2,13 @@
 
 All notable changes to Simple Combat Bar.
 
+## 0.2.0
+
+### Changed
+
+- **D&D 5e's calendar always steps aside** while the bar shows a combat, from rolling initiative
+  until the combat ends. It's no longer a setting.
+
 ## 0.1.0 — First Release
 
 ### New

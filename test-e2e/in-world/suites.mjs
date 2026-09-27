@@ -333,8 +333,10 @@ export function calendarVisible() {
   return { present: !!el, visible: !!el && (getComputedStyle(el).display !== "none") };
 }
 
-export async function startTestCombat() {
-  await freshCombat({ allies: 2, enemies: 2 });
+/** @param {boolean} [start=true]  False leaves the combat at the initiative stage. */
+export async function startTestCombat(start = true) {
+  await freshCombat({ allies: 2, enemies: 2, start });
+  await settle(200);
   return calendarVisible();
 }
 

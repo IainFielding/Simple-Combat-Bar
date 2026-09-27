@@ -62,7 +62,7 @@ const TAB_WIDTH = 38;
 /** Duration of the slide when portraits change places. */
 const MOVE_MS = 260;
 
-/** Body class that hides the dnd5e calendar HUD while a combat is running (`hideCalendar`). */
+/** Body class that hides the dnd5e calendar HUD while the bar shows a combat. */
 const HIDE_CALENDAR = `${CSS}-hide-calendar`;
 
 /** Hover delay before a portrait tooltip opens, matching core's TooltipManager. */
@@ -171,6 +171,8 @@ export class CombatBar {
     life.hook("hoverToken", (token, hovered) => this.#toggleTokenClass(token, "is-hovered", hovered));
     life.hook("controlToken", (token, controlled) => this.#toggleTokenClass(token, "is-controlled", controlled));
     life.add(() => this.#scheduler.cancel());
+    // The dnd5e calendar shares #ui-top with the bar; step it aside from the initiative roll on.
+    document.body.classList.add(HIDE_CALENDAR);
     life.add(() => document.body.classList.remove(HIDE_CALENDAR));
 
     this.root.hidden = false;
@@ -410,8 +412,6 @@ export class CombatBar {
     const root = this.root;
     root.classList.toggle("is-started", combat.started);
     root.classList.toggle("is-gm", game.user.isGM);
-    // The dnd5e calendar shares #ui-top with the bar; step it aside while the fight is on.
-    document.body.classList.toggle(HIDE_CALENDAR, combat.started && settings().hideCalendar);
     const current = combat.combatant;
     const canEnd = combat.started && (game.user.isGM || !!current?.isOwner);
     root.querySelector(".scb-endturn").hidden = !canEnd;
