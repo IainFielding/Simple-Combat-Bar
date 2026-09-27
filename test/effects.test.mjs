@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { MAX_ICONS, effectIcons, plainText, remainingPct, showsDescriptions } from "../scripts/model/effects.mjs";
+import { MAX_ICONS, effectIcons, plainText, remainingPct, showsDescriptions, stripEnrichers } from "../scripts/model/effects.mjs";
 import { DEFAULTS } from "../scripts/config.mjs";
 import { buildPortraitModel } from "../scripts/model/portrait-model.mjs";
 import { PortraitView } from "../scripts/ui/portrait-view.mjs";
@@ -45,6 +45,19 @@ describe("plainText", () => {
     const text = plainText("word ".repeat(100), 20);
     expect(text.length).toBeLessThanOrEqual(20);
     expect(text.endsWith("…")).toBe(true);
+  });
+});
+
+describe("stripEnrichers (the fallback when a description can't be enriched)", () => {
+  it("reads links as their labels, drops unlabelled references, and keeps roll formulas", () => {
+    expect(stripEnrichers("See @UUID[Compendium.dnd5e.rules.X]{Concentration} rules."))
+      .toBe("See Concentration rules.");
+    expect(stripEnrichers("Maintaining 'Bless'. @Embed[Actor.g89.Item.1U5 inline]").trim()).toBe("Maintaining 'Bless'.");
+    expect(stripEnrichers("Add [[/r 1d4]] to the roll, or [[/r 2d6]]{two dice}.")).toBe("Add 1d4 to the roll, or two dice.");
+  });
+
+  it("is applied by plainText, so no raw enricher reaches a tooltip", () => {
+    expect(plainText("<p>@Embed[Actor.x.Item.y inline]</p>")).toBe("");
   });
 });
 

@@ -175,8 +175,14 @@ const SUITES = {
       // Tooltip lists it.
       await page.hover(`#scb-root .scb-portrait[data-combatant-id="${ids.hero}"]`);
       await page.waitForTimeout(900);
-      const tip = await page.locator("#tooltip.scb-tooltip").innerText().catch(() => "");
+      const tipBox = page.locator("#tooltip.scb-tooltip");
+      const tip = await tipBox.innerText().catch(() => "");
       check(/Test Blessing/.test(tip), `the tooltip doesn't list the effect: ${JSON.stringify(tip)}`);
+      check(tip.includes("the Blessed One"), "a @UUID link in the description didn't read as its label");
+      check(!/@(UUID|Embed)\[/.test(tip), `raw enricher syntax reached the tooltip: ${JSON.stringify(tip)}`);
+      check(tip.includes(ids.embedded), `the embedded item's text isn't in the tooltip (expected "${ids.embedded}")`);
+      const overflow = await tipBox.evaluate(el => el.scrollWidth - el.clientWidth).catch(() => 0);
+      check(overflow <= 1, `the tooltip scrolls sideways by ${overflow}px`);
       await page.mouse.move(5, 700);
 
       // A player sees the goblin's condition too: it's on the token for everyone.

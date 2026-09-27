@@ -44,13 +44,27 @@ export function effectIcons(effects, max = MAX_ICONS) {
 }
 
 /**
- * An effect's description as plain text, short enough for a tooltip line. Tags are stripped, not
- * rendered: nothing in a tooltip is enriched, so nothing a description contains can run.
- * @param {string} html
- * @param {number} [max=160]
+ * Enricher syntax reduced to what it would read as, for text that couldn't be enriched:
+ * `@UUID[…]{Label}` → "Label", `@Check[…]` and `@Embed[…]` (no label) → dropped, `[[/r 1d4]]` → "1d4".
+ * @param {string} text
  */
-export function plainText(html, max = 160) {
-  const text = String(html ?? "")
+export function stripEnrichers(text) {
+  return String(text ?? "")
+    .replace(/@\w+\[[^\]]*\]\{([^}]*)\}/g, "$1")
+    .replace(/@\w+\[[^\]]*\]/g, "")
+    .replace(/\[\[\/\w+\s+([^\]]*)\]\](?:\{([^}]*)\})?/g, (_m, formula, label) => label ?? formula)
+    .replace(/\[\[([^\]]*)\]\]/g, "$1");
+}
+
+/**
+ * An effect's description as plain text, short enough for a tooltip. Give it *enriched* HTML
+ * (ui/effect-text.mjs) so embeds and links read as their content; tags are then stripped rather
+ * than rendered, so nothing in a description can run, and any enricher syntax left over is tidied.
+ * @param {string} html
+ * @param {number} [max=220]
+ */
+export function plainText(html, max = 220) {
+  const text = stripEnrichers(html)
     .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")

@@ -528,12 +528,17 @@ export async function effectsSetup() {
   const hero = combat.combatants.find(c => c.actor?.type === "character");
   const goblin = combat.combatants.find(c => c.actor?.type === "npc");
   for ( const e of hero.actor.effects.filter(e => e.name === "Test Blessing") ) await e.delete();
+  // Described like dnd5e's Concentrating effect: a link, and an inline embed of one of the hero's items.
+  const item = hero.actor.items.find(i => i.system.description?.value?.length > 40);
   await hero.actor.createEmbeddedDocuments("ActiveEffect", [{
-    name: "Test Blessing", img: "icons/svg/aura.svg", duration: { value: 3, units: "rounds" }
+    name: "Test Blessing", img: "icons/svg/aura.svg", duration: { value: 3, units: "rounds" },
+    description: `<p>See @UUID[${hero.actor.uuid}]{the Blessed One}.</p><p>@Embed[${item.uuid} inline]</p>`
   }]);
   await goblin.actor.toggleStatusEffect("poisoned", { active: true });
   await settle(300);
-  return { hero: hero.id, goblin: goblin.id };
+  const embedded = item.system.description.value.replace(/<[^>]*>/g, " ").replace(/@\w+\[[^\]]*\](\{[^}]*\})?/g, " ")
+    .replace(/\s+/g, " ").trim().split(" ").slice(0, 4).join(" ");
+  return { hero: hero.id, goblin: goblin.id, embedded };
 }
 
 /** The effect icons on one card, as drawn. */

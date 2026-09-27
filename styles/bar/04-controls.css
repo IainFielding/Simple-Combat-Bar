@@ -155,8 +155,12 @@
 /* ---------------------------------------------------------------- tooltip
    Rendered by core's TooltipManager into #tooltip, outside .scb-root, so it is scoped by the
    cssClass the bar passes instead. */
+/* Core's tooltip doesn't wrap; ours must, or a long description scrolls sideways. */
 #tooltip.scb-tooltip {
-  max-width: 280px;
+  max-width: 320px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
   padding: 8px 10px;
   border: 1px solid #656e7b;
   background: rgba(21, 22, 26, 0.96);

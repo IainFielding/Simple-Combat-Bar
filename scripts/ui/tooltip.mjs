@@ -16,9 +16,11 @@ import { plainText } from "../model/effects.mjs";
  * @param {object} [options]
  * @param {import("../model/effects.mjs").EffectInfo[]} [options.effects]  All effects, read at hover.
  * @param {boolean} [options.descriptions]  Show each effect's description (as plain text).
+ * @param {Map<string, string>} [options.texts]  Enriched descriptions by effect uuid
+ *   (ui/effect-text.mjs); an effect missing from it falls back to its raw description, tidied.
  * @returns {HTMLElement}
  */
-export function buildTooltip(model, attributes = [], { effects = [], descriptions = false } = {}) {
+export function buildTooltip(model, attributes = [], { effects = [], descriptions = false, texts = new Map() } = {}) {
   const root = el("div", "scb-tooltip-body");
 
   const header = el("header", "scb-tt-header");
@@ -66,7 +68,7 @@ export function buildTooltip(model, attributes = [], { effects = [], description
       line.append(img, el("span", "scb-tt-effect-name", e.name));
       if ( Number.isFinite(e.remaining) && e.label ) line.append(el("span", "scb-tt-effect-time", e.label));
       list.append(line);
-      const text = descriptions ? plainText(e.description) : "";
+      const text = descriptions ? (texts.get(e.uuid) ?? plainText(e.description)) : "";
       if ( text ) list.append(el("p", "scb-tt-effect-desc", text));
     }
     root.append(list);

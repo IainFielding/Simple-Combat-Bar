@@ -19,6 +19,7 @@ import { wantsInitiativeDialog } from "../model/initiative.mjs";
 import { adapterFor } from "../systems/adapter.mjs";
 import { combatantFacts, readEffects, sideOfCombatant } from "./facts.mjs";
 import { showsDescriptions } from "../model/effects.mjs";
+import { effectDescriptions } from "./effect-text.mjs";
 import { groupContext, requestGroupTurn } from "./group-service.mjs";
 import { PortraitView } from "./portrait-view.mjs";
 import { portraitStyle } from "./portrait-styles.mjs";
@@ -94,6 +95,8 @@ export class CombatBar {
   #items = [];
   #styleId = null;
   #tooltipTimer = null;
+  /** Bumped whenever the tooltip closes, so a tooltip still being prepared knows it's stale. */
+  #tooltipGeneration = 0;
   #contextMenu = null;
   /** @type {ResizeObserver|null} */
   #resizeObserver = null;
@@ -572,7 +575,8 @@ export class CombatBar {
 
   #openTooltipSoon(li) {
     this.#closeTooltip();
-    this.#tooltipTimer = this.#session.timeout(() => {
+    const generation = this.#tooltipGeneration;
+    this.#tooltipTimer = this.#session.timeout(async () => {
       this.#tooltipTimer = null;
       const view = this.#portraits.get(li.dataset.combatantId);
       if ( !view?.model || !li.isConnected ) return;
@@ -587,12 +591,16 @@ export class CombatBar {
       const cfg = settings();
       const effects = cfg.showEffects && actor ? readEffects(actor) : [];
       const descriptions = showsDescriptions(cfg.effectDescriptions, view.model.trusted);
-      game.tooltip.activate(li, { html: buildTooltip(view.model, attributes, { effects, descriptions }),
+      // Enriched only now, for this combatant's effects, and cached until an effect changes.
+      const texts = descriptions && effects.length ? await effectDescriptions(effects) : new Map();
+      if ( (generation !== this.#tooltipGeneration) || !li.isConnected ) return;
+      game.tooltip.activate(li, { html: buildTooltip(view.model, attributes, { effects, descriptions, texts }),
         direction: "DOWN", cssClass: `${CSS}-tooltip` });
     }, TOOLTIP_DELAY);
   }
 
   #closeTooltip() {
+    this.#tooltipGeneration++;
     if ( this.#tooltipTimer !== null ) this.#session.clearTimeout(this.#tooltipTimer);
     this.#tooltipTimer = null;
     if ( game.tooltip?.element && this.root.contains(game.tooltip.element) ) game.tooltip.deactivate();

@@ -82,7 +82,7 @@ export function readEffects(actor, { card = false } = {}) {
     .map(e => ({
       id: e.id, uuid: e.uuid, img: e.img, name: e.name,
       remaining: e.duration?.remaining ?? null, total: e.duration?.value ?? null,
-      label: e.duration?.label ?? "", description: e.description ?? ""
+      label: e.duration?.label ?? "", description: e.description ?? "", modified: e._stats?.modifiedTime ?? null
     }));
 }
 
