@@ -51,6 +51,7 @@ export function registerSettings(getBar) {
   register("hpVisibility", { type: String, choices: choices("hpVisibility", ["all", "owner", "ownerOnly"]) });
   register("damageFill", { type: Boolean });
   register("hideEnemyInitiative", { type: Boolean });
+  register("initiativeDialog", { type: String, choices: choices("initiativeDialog", ["none", "npcs", "players", "all"]) });
   register("hideUnseenFirstRound", { type: Boolean });
   register("hideDefeated", { type: Boolean });
   register("groupTeams", { type: String, choices: choices("groupTeams", ["off", "visual", "bg3"]) });

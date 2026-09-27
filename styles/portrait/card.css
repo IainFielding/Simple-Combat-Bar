@@ -1,8 +1,6 @@
 /* Portrait style: card — tall portraits with a name plate, closer to combat-tracker-dock. */
 
 .scb-root[data-style="card"] .scb-frame {
-  width: var(--scb-size);
-  height: calc(var(--scb-size) * var(--scb-aspect));
   border-radius: 6px;
 }
 

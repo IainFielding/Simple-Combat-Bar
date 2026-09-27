@@ -1,71 +1,133 @@
-/* GM controls, the End Turn button, and the portrait tooltip. */
+/* GM tabs, the round / End Turn hanger, and the portrait tooltip. */
 
-.scb-root .scb-controls {
+/* ---------------------------------------------------------------- GM tabs
+   Drawn like the dnd5e sheet's vertical tabs (`.dnd5e2.vertical-tabs nav.tabs`): a black column
+   in a gold frame, sticking out of the bar's end, with gold icons that invert on hover. The colours
+   come from dnd5e's own tokens when the system is loaded, so they follow its theme. */
+.scb-root .scb-tabs {
+  --scb-tab-gold: var(--dnd5e-color-gold, #9f9275);
+  --scb-tab-black: var(--dnd5e-color-black, #000);
+  position: absolute;
+  top: 6px;
   display: none;
-  flex-wrap: wrap;
-  gap: 2px;
-  max-width: 88px;
+  flex-direction: column;
+  align-items: stretch;
+  width: 38px;
+  padding-block: 2px;
+  background: var(--scb-tab-black);
+  border: 1px solid var(--scb-tab-gold);
+  pointer-events: auto;
 }
 
-.scb-root.is-gm .scb-controls {
+.scb-root.is-gm .scb-tabs {
   display: flex;
 }
 
-.scb-root .scb-control {
-  display: grid;
-  place-items: center;
-  width: 26px;
+.scb-root .scb-tabs-start {
+  right: 100%;
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+}
+
+.scb-root .scb-tabs-end {
+  left: 100%;
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+}
+
+.scb-root .scb-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 26px;
+  width: auto;
   height: 26px;
   min-height: 0;
+  margin: 2px 5px;
   padding: 0;
-  margin: 0;
   line-height: 1;
-  border: 1px solid var(--scb-line);
-  border-radius: 6px;
-  background: var(--scb-panel);
-  color: var(--scb-muted);
-  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--scb-tab-gold);
+  font-size: 13px;
+  box-shadow: none;
+  transition: all 250ms ease;
 }
 
-.scb-root .scb-control:hover,
-.scb-root .scb-control:focus-visible {
-  color: var(--scb-bright);
-  border-color: var(--scb-line-2);
-  background: var(--scb-panel-2);
+.scb-root .scb-tab:hover,
+.scb-root .scb-tab:focus-visible {
+  background: var(--scb-tab-gold);
+  color: var(--scb-tab-black);
+  text-shadow: none;
+  outline: none;
 }
 
-/* Start shows before combat, the turn and round controls during it. */
-.scb-root .scb-control.startCombat { color: var(--scb-open-bright); border-color: var(--scb-open); }
-.scb-root.is-started .scb-control.startCombat,
-.scb-root:not(.is-started) .scb-control:is(.previousTurn, .nextTurn, .previousRound, .nextRound, .endCombat) {
+/* Start shows before combat; the turn and round controls during it. */
+.scb-root .scb-tab.startCombat { color: var(--scb-open-bright); }
+.scb-root .scb-tab.startCombat:hover { background: var(--scb-open); color: #0b1413; }
+.scb-root.is-started .scb-tab.startCombat,
+.scb-root:not(.is-started) .scb-tab:is(.previousTurn, .nextTurn, .previousRound, .nextRound, .endCombat) {
   display: none;
 }
 
-/* ---------------------------------------------------------------- End Turn */
-.scb-root .scb-footer {
+/* ---------------------------------------------------------------- round / End Turn hanger
+   A small tab hanging from the middle of the bar's bottom edge: the round always, and End Turn
+   beside it when this user may end the current turn. */
+.scb-root .scb-hanger {
   display: flex;
-  justify-content: center;
-  margin-top: 6px;
-  pointer-events: none;
+  align-items: stretch;
+  margin-top: -1px;
+  pointer-events: auto;
+  background: var(--scb-bg);
+  border: 1px solid var(--scb-line);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.scb-root .scb-round {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 14px 4px;
+  font-family: var(--scb-font-display);
+  line-height: 1.2;
+}
+
+.scb-root .scb-round-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--scb-muted);
+}
+
+.scb-root .scb-round-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--scb-settled-bright);
+  font-variant-numeric: tabular-nums;
 }
 
 .scb-root .scb-endturn {
-  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   width: auto;
   min-height: 0;
-  padding: 4px 18px;
-  border: 1px solid var(--scb-open);
-  border-radius: 999px;
+  margin: 0;
+  padding: 3px 16px 4px;
+  border: none;
+  border-left: 1px solid var(--scb-line);
+  border-radius: 0;
   background: linear-gradient(180deg, #17332f, #0f1f1d);
   color: var(--scb-open-bright);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  box-shadow: 0 0 10px var(--scb-open-glow), 0 3px 8px rgba(0, 0, 0, 0.6);
+  line-height: 1.2;
 }
 
 .scb-root .scb-endturn:hover,

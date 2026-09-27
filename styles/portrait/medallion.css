@@ -1,8 +1,6 @@
 /* Portrait style: medallion — BG3's round turn-order portraits. */
 
 .scb-root[data-style="medallion"] .scb-frame {
-  width: var(--scb-size);
-  height: var(--scb-size);
   border-radius: 50%;
 }
 

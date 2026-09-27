@@ -61,6 +61,30 @@ export const dnd5eAdapter = {
     return "healthy";
   },
 
+  /**
+   * dnd5e's own initiative dialog, as `Actor5e#rollInitiativeDialog` builds it. That method then
+   * rolls through the actor's *canvas tokens*; the bar rolls through the combat instead, so it only
+   * borrows the dialog half. dnd5e's `Combatant5e#getInitiativeRoll` asks the actor, which returns
+   * the roll cached here (spec R12 exception: `Actor5e#_cachedInitiativeRoll`).
+   */
+  async configureInitiative(actor, event) {
+    const rollConfig = actor.getInitiativeRollConfig?.({ event });
+    if ( !rollConfig ) return false;
+    if ( rollConfig.options?.fixed !== undefined ) return true;
+    const config = { evaluate: false, event, hookNames: ["initiativeDialog", "abilityCheck", "d20Test"],
+      rolls: [rollConfig], subject: actor };
+    const rolls = await CONFIG.Dice.D20Roll.build(config,
+      { options: { title: game.i18n.localize("DND5E.InitiativeRoll") } },
+      { rollMode: CONFIG.Dice.BasicRoll.getMessageMode?.() });
+    if ( !rolls?.length ) return false;
+    actor._cachedInitiativeRoll = rolls[0];
+    return true;
+  },
+
+  clearInitiative(actor) {
+    delete actor._cachedInitiativeRoll;
+  },
+
   watchedPaths() {
     return WATCHED;
   }

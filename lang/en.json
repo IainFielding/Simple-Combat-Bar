@@ -84,6 +84,16 @@
         "name": "Hide Enemy Initiative",
         "hint": "Players don't see initiative values for combatants they don't own."
       },
+      "initiativeDialog": {
+        "name": "Initiative Roll Window",
+        "hint": "Who gets the roll window (advantage, disadvantage, situational bonus) when they press a portrait's d20. Hold Shift or Ctrl on the d20 to skip it, as elsewhere in D&D 5e.",
+        "choices": {
+          "none": "Nobody: roll straight away",
+          "npcs": "Non-player characters only",
+          "players": "Player characters only",
+          "all": "Everyone"
+        }
+      },
       "hideUnseenFirstRound": {
         "name": "Reveal Enemies as They Act",
         "hint": "In the first round, players only see a hostile or neutral combatant on the bar once it has taken its turn."

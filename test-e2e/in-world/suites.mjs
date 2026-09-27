@@ -194,7 +194,7 @@ export async function playerView() {
   }));
   return {
     visible: !!root && !root.hidden,
-    gmControls: root ? getComputedStyle(root.querySelector(".scb-controls")).display !== "none" : null,
+    gmControls: root ? getComputedStyle(root.querySelector(".scb-tabs")).display !== "none" : null,
     endTurnShown: root ? !root.querySelector(".scb-endturn").hidden : null,
     unknownName: game.i18n.localize("COMBATANT.Unknown"),
     portraits

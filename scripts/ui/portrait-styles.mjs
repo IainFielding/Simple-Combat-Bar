@@ -43,12 +43,12 @@ export function registerPortraitStyle(style) {
 }
 
 /**
- * The style with this id, falling back to the medallion.
+ * The style with this id, falling back to the card (the default).
  * @param {string} id
  * @returns {PortraitStyle & {template: HTMLTemplateElement}}
  */
 export function portraitStyle(id) {
-  const style = styles.get(id) ?? styles.get("medallion");
+  const style = styles.get(id) ?? styles.get("card");
   // Parsed once per style per session; each portrait is a cheap clone of it.
   if ( !style.template && (typeof document !== "undefined") ) {
     style.template = document.createElement("template");

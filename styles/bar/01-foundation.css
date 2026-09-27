@@ -51,7 +51,7 @@
   /* Set by the controller: portrait width and the active style's height ÷ width. */
   --scb-size: 72px;
   --scb-aspect: 1;
-  --scb-gap: calc(var(--scb-size) * 0.12);
+  --scb-gap: calc(var(--scb-size) * 0.1);
   --scb-motion: 220ms cubic-bezier(0.22, 1, 0.36, 1);
 
   color: var(--scb-text);

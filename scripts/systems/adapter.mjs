@@ -8,6 +8,10 @@
  * @property {(actor: Actor) => ("healthy"|"bloodied"|"critical"|"down"|null)} [healthState]
  *           Coarse health from data every user receives (statuses), for viewers who can't observe
  *           the actor and so never receive its HP.
+ * @property {(actor: Actor, event?: Event) => Promise<boolean>} [configureInitiative]
+ *           Show the system's initiative roll dialog and prepare the roll the next initiative
+ *           roll for this actor will use. Resolves false if the user cancelled.
+ * @property {(actor: Actor) => void} [clearInitiative]  Drop a roll prepared by configureInitiative.
  * @property {(actor: Actor) => Set<string>} [watchedPaths]  Top-level `system` keys whose change
  *           should refresh a portrait. Anything else in an actor update is ignored.
  */

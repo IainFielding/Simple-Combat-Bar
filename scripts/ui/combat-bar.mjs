@@ -15,6 +15,7 @@ import { applyOrder } from "../core/reconcile.mjs";
 import { buildOrder } from "../model/turn-order.mjs";
 import { buildPortraitModel } from "../model/portrait-model.mjs";
 import { isShown, sideOf } from "../model/visibility.mjs";
+import { wantsInitiativeDialog } from "../model/initiative.mjs";
 import { adapterFor } from "../systems/adapter.mjs";
 import { combatantFacts } from "./facts.mjs";
 import { PortraitView } from "./portrait-view.mjs";
@@ -334,8 +335,9 @@ export class CombatBar {
     let size = max;
     if ( cfg.overflow === "autofit" ) {
       const count = Math.max(1, this.#portraits.size);
-      const available = (this.root.parentElement?.clientWidth ?? window.innerWidth) * 0.7;
-      size = Math.max(40, Math.min(max, Math.floor(available / (count * 1.15))));
+      // 0.1 gap per portrait, plus the current portrait's extra 0.18 width.
+      const available = (this.root.parentElement?.clientWidth ?? window.innerWidth) * 0.8;
+      size = Math.max(40, Math.min(max, Math.floor(available / ((count * 1.1) + 0.18))));
     }
     this.root.dataset.overflow = cfg.overflow;
     this.root.style.setProperty("--scb-size", `${size}px`);
@@ -352,20 +354,24 @@ export class CombatBar {
     root.className = `${CSS}-root`;
     root.hidden = true;
     root.setAttribute("aria-label", t("title"));
-    const button = ([action, icon, label]) => `<button type="button" class="${CSS}-control ${action}"`
-      + ` data-action="${action}" data-tooltip="${label}" aria-label="${game.i18n.localize(label)}">`
-      + `<i class="${icon}"></i></button>`;
+    const button = direction => ([action, icon, label]) => `<button type="button" class="${CSS}-tab ${action}"`
+      + ` data-action="${action}" data-tooltip="${label}" data-tooltip-direction="${direction}"`
+      + ` aria-label="${game.i18n.localize(label)}"><i class="${icon}"></i></button>`;
+    // The GM controls are side tabs sticking out of the bar's ends, drawn like the dnd5e sheet's
+    // vertical tabs; the round and End Turn hang from the bar's bottom edge.
+    const tabs = (side, list) => `<nav class="${CSS}-tabs ${CSS}-tabs-${side}">${
+      list.map(button(side === "start" ? "LEFT" : "RIGHT")).join("")}</nav>`;
     root.innerHTML = `
       <div class="${CSS}-bar">
-        <div class="${CSS}-controls ${CSS}-controls-start">${GM_CONTROLS_START.map(button).join("")}</div>
-        <div class="${CSS}-round" data-tooltip="${t("round")}">
+        ${tabs("start", GM_CONTROLS_START)}
+        <ol class="${CSS}-track" aria-live="polite"></ol>
+        ${tabs("end", GM_CONTROLS_END)}
+      </div>
+      <div class="${CSS}-hanger">
+        <div class="${CSS}-round">
           <span class="${CSS}-round-label">${t("round")}</span>
           <span class="${CSS}-round-value">–</span>
         </div>
-        <ol class="${CSS}-track" aria-live="polite"></ol>
-        <div class="${CSS}-controls ${CSS}-controls-end">${GM_CONTROLS_END.map(button).join("")}</div>
-      </div>
-      <div class="${CSS}-footer">
         <button type="button" class="${CSS}-endturn" data-action="endTurn" hidden>
           <i class="fa-solid fa-hourglass-end"></i> ${game.i18n.localize("COMBAT.TurnEnd")}
         </button>
@@ -493,7 +499,7 @@ export class CombatBar {
     const combat = this.combat;
     if ( !combat ) return;
     switch ( action ) {
-      case "rollInitiative": return combatant && combat.rollInitiative([combatant.id], { event });
+      case "rollInitiative": return combatant && this.#rollInitiative(combatant, event);
       case "endTurn": return this.endTurn();
       case "configure": return openSettings();
     }
@@ -508,6 +514,23 @@ export class CombatBar {
       case "nextRound": return combat.nextRound();
       case "startCombat": return combat.startCombat();
       case "endCombat": return combat.endCombat();
+    }
+  }
+
+  /**
+   * Roll one combatant's initiative, through the system's roll dialog when the
+   * `initiativeDialog` setting asks for it (so the roller can pick advantage or disadvantage).
+   */
+  async #rollInitiative(combatant, event) {
+    const adapter = adapterFor(game.system.id);
+    const actor = combatant.actor;
+    const dialog = !!actor && !!adapter.configureInitiative
+      && wantsInitiativeDialog(settings().initiativeDialog, !!actor.hasPlayerOwner);
+    if ( dialog && !(await adapter.configureInitiative(actor, event)) ) return;
+    try {
+      await this.combat?.rollInitiative([combatant.id], { event });
+    } finally {
+      if ( dialog ) adapter.clearInitiative?.(actor);
     }
   }
 
