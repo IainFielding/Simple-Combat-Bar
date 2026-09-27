@@ -26,11 +26,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers,settingsUi,responsive").split(",");
+const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers,settingsUi,responsive,economy").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers", "settingsUi", "responsive"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers", "settingsUi", "responsive", "economy"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -152,6 +152,40 @@ const SUITES = {
     const { failures } = await session.eval(() => __scb.ordering());
     return { pass: !failures.length, failures,
       lines: failures.slice(0, 5).map(f => JSON.stringify(f)) };
+  },
+
+  /** Pips spend on use, flip on click, show the reaction everywhere, and reset on the turn. */
+  async economy(gm) {
+    const failures = [];
+    const check = (ok, message) => ok || failures.push(message);
+    const ids = await gm.eval(() => __scb.economySetup());
+    const pips = () => gm.eval(list => __scb.pipView(list), [ids.hero, ids.other]);
+
+    let view = await pips();
+    check(JSON.stringify(view[ids.hero]) === JSON.stringify({ action: "available", bonus: "available", reaction: "available" }),
+      `current card should show three available pips: ${JSON.stringify(view[ids.hero])}`);
+    check(view[ids.other].action === null && view[ids.other].bonus === null && view[ids.other].reaction === "available",
+      `other cards should show only the reaction: ${JSON.stringify(view[ids.other])}`);
+
+    if ( ids.activity ) {
+      await gm.eval(uuid => __scb.useActivity(uuid), ids.activity);
+      view = await pips();
+      check(view[ids.hero].action === "spent", `using an action didn't spend the Action pip: ${JSON.stringify(view[ids.hero])}`);
+      check(view[ids.hero].bonus === "available", "using an action touched the Bonus Action pip");
+    } else failures.push("no action-costing activity on the first hero to test auto-spend with");
+
+    await gm.page.click(`#scb-root .scb-portrait[data-combatant-id="${ids.hero}"] .scb-pip-bonus`);
+    view = await pips();
+    check(view[ids.hero].bonus === "spent", "clicking the Bonus Action pip didn't spend it");
+
+    // A full round later it's the hero's turn again: everything is back.
+    await gm.eval(n => __scb.advance(n), ids.turns);
+    view = await pips();
+    check(Object.values(view[ids.hero]).every(s => s === "available"),
+      `pips didn't reset at the start of the hero's next turn: ${JSON.stringify(view[ids.hero])}`);
+
+    await gm.eval(() => __scbFixtures.cleanup());
+    return { pass: !failures.length, failures, lines: failures };
   },
 
   /** Shrinking the window shrinks the portraits; the bar never overflows its space. */

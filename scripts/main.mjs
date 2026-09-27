@@ -11,6 +11,8 @@ import { CombatBar } from "./ui/combat-bar.mjs";
 import { registerPortraitStyle } from "./ui/portrait-styles.mjs";
 import { registerAdapter } from "./systems/adapter.mjs";
 import { expiredEvents } from "./model/events.mjs";
+import { activationSlot, anySpent, emptyEconomy } from "./model/economy.mjs";
+import { economyProvider, spendSlot } from "./systems/economy.mjs";
 
 /** The session's bar. Null until `ready`, and stays null if the bar mustn't mount. */
 let bar = null;
@@ -50,6 +52,12 @@ Hooks.once("ready", () => {
     const viewed = ui.combat?.viewed ?? null;
     if ( viewed !== bar.combat ) sync();
   });
+  // Action economy: spend on use (on the client that used it, which owns the combatant), and
+  // restore at the start of each combatant's turn (on the active GM's client only).
+  Hooks.on("dnd5e.postUseActivity", activity => spendForActivity(activity));
+  Hooks.on("combatTurnChange", (combat, _previous, current) => resetEconomy(combat, current?.combatantId));
+  Hooks.on("combatStart", combat => resetEconomy(combat, combat.combatant?.id));
+
   Hooks.on("combatStart", () => {
     if ( settings().sidebarOnCombat === "collapse" ) ui.sidebar?.collapse();
   });
@@ -57,6 +65,37 @@ Hooks.once("ready", () => {
   sync();
   Hooks.callAll(HOOKS.ready, api);
 });
+
+/**
+ * Spend the slot a used activity costs, for its actor's combatant in the bar's combat.
+ * @param {Activity} activity
+ */
+async function spendForActivity(activity) {
+  const cfg = settings();
+  const provider = economyProvider();
+  if ( !cfg.trackEconomy || !cfg.autoSpendEconomy || provider.spendsItself ) return;
+  const slot = activationSlot(activity?.activation?.type);
+  const combat = bar?.combat;
+  if ( !slot || !combat?.started ) return;
+  const actor = activity.actor;
+  const combatant = combat.combatants.find(c => c.actor === actor);
+  if ( !combatant?.isOwner ) return;
+  await spendSlot(combatant, slot);
+}
+
+/**
+ * Restore a combatant's action economy as their turn begins.
+ * @param {Combat} combat
+ * @param {string} combatantId
+ */
+async function resetEconomy(combat, combatantId) {
+  if ( !game.users.activeGM?.isSelf || !settings().trackEconomy ) return;
+  const provider = economyProvider();
+  if ( provider.resetsItself ) return;
+  const combatant = combat.combatants.get(combatantId);
+  const state = combatant && provider.read(combatant);
+  if ( state && anySpent(state) ) await provider.write(combatant, emptyEconomy());
+}
 
 /**
  * Remove events whose duration has run out, and tell the GMs. Only the active GM does this, so a

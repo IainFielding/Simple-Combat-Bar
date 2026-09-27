@@ -45,6 +45,9 @@ try {
       initiative: 21.5, duration: 3, hidden: false });
     await combat.nextRound();
     await combat.update({ turn: combat.turns.findIndex(c => c.id === pcs[0].id) });
+    // A spent Action on the current hero, and a spent Reaction on a goblin, to show both looks.
+    await pcs[0].update({ [`flags.${id}.economy`]: { action: true, bonus: false, reaction: false } });
+    await npcs[0].update({ [`flags.${id}.economy`]: { action: false, bonus: false, reaction: true } });
     await f.settle(400);
   }, { id: MODULE_ID, style });
   await gm.page.waitForTimeout(800);

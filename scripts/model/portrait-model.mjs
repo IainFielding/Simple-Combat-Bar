@@ -11,6 +11,7 @@
  */
 
 import { displayName, healthState, hpDetail, showsInitiative } from "./visibility.mjs";
+import { pipStates } from "./economy.mjs";
 
 /**
  * @typedef {object} CombatantFacts
@@ -31,6 +32,7 @@ import { displayName, healthState, hpDetail, showsInitiative } from "./visibilit
  *           Coarse health from statuses, for viewers who don't receive HP numbers.
  * @property {{value: number, max: number, pct: number}|null} [secondary]  The second bar, if any.
  * @property {boolean} [trusted]  This viewer receives the actor's data (GM, owner, observer).
+ * @property {{action: boolean, bonus: boolean, reaction: boolean}|null} [economy]  Spent slots.
  * @property {string|null} description
  * @property {boolean} isEvent          An "Add Event" pseudo-combatant.
  * @property {number|null} eventRoundsLeft
@@ -100,6 +102,9 @@ export function buildPortraitModel(facts, { settings, current, acted, run, decim
     secValue: facts.secondary?.value ?? null,
     secMax: facts.secondary?.max ?? null,
     trusted: !!facts.trusted,
+    // Action pips: like HP numbers, only for viewers who receive the actor's data.
+    ...pipStates(facts.economy ?? null, { current, shown: !!facts.trusted }),
+    canTogglePips: !!facts.economy && (facts.isOwner || facts.isGM),
     hpState,
     hpPct: hpMode === "none" ? null : hpPct,
     hpValue,

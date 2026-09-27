@@ -92,6 +92,7 @@ export class PortraitView {
     }
     if ( changed.some(f => f.startsWith("hp") || (f === "damagePct")) ) this.#patchHP(model);
     if ( changed.includes("secPct") ) this.#patchBar2(model);
+    if ( changed.some(f => f.startsWith("pip") || (f === "canTogglePips")) ) this.#patchPips(model);
     this.model = model;
     return changed;
   }
@@ -110,6 +111,20 @@ export class PortraitView {
     bar.style.setProperty("--scb-hp-pct", `${model.hpPct ?? 0}%`);
     const tempPct = model.hpTemp && model.hpMax ? Math.min(100, Math.round((model.hpTemp / model.hpMax) * 100)) : 0;
     bar.style.setProperty("--scb-hp-temp-pct", `${tempPct}%`);
+  }
+
+  #patchPips(model) {
+    const pips = this.#slots.pips;
+    if ( !pips ) return;
+    const states = { action: model.pipAction, bonus: model.pipBonus, reaction: model.pipReaction };
+    for ( const pip of pips.querySelectorAll(".scb-pip") ) {
+      const state = states[pip.dataset.pip];
+      if ( state ) pip.dataset.state = state;
+      else delete pip.dataset.state;
+      pip.disabled = !model.canTogglePips;
+      pip.dataset.tooltip = state ? `sogrom-simple-combat-bar.economy.${pip.dataset.pip}` : "";
+    }
+    pips.classList.toggle("is-empty", !Object.values(states).some(Boolean));
   }
 
   #patchBar2(model) {

@@ -7,6 +7,7 @@ import { MODULE_ID } from "../config.mjs";
 import { sideOf } from "../model/visibility.mjs";
 import { roundsLeft } from "../model/events.mjs";
 import { secondaryBar } from "../model/trackers.mjs";
+import { economyProvider } from "../systems/economy.mjs";
 
 /**
  * @param {Combatant} combatant
@@ -48,6 +49,7 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
     // Like HP numbers: only for viewers who actually receive the actor's data.
     secondary: actor && !isEvent && trustsHP ? safe(() => secondaryBar(actor.system, settings.secondaryResource)) : null,
     trusted: trustsHP,
+    economy: settings.trackEconomy && !isEvent ? safe(() => economyProvider().read(combatant)) : null,
     description: actor && !isEvent ? safe(() => adapter.describe(actor)) : null,
     isEvent,
     eventRoundsLeft

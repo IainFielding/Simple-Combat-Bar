@@ -108,6 +108,14 @@
         "name": "Remove Defeated Combatants",
         "hint": "Take defeated combatants off the bar instead of showing them greyed out."
       },
+      "trackEconomy": {
+        "name": "Action Pips",
+        "hint": "Show Action, Bonus Action and Reaction on the current combatant's card, and each combatant's Reaction on theirs. Shown to the GM and to those who can see the creature's sheet; the owner and the GM can click a pip to flip it."
+      },
+      "autoSpendEconomy": {
+        "name": "Spend Pips Automatically",
+        "hint": "Using an ability spends the pip its activation needs. Pips come back at the start of each combatant's turn. With midi-qol active, midi-qol does this itself and the pips follow it."
+      },
       "groupTeams": {
         "name": "Group Turns",
         "hint": "Like Baldur's Gate 3: allies or enemies next to each other in the order share one frame on the bar.",
@@ -174,6 +182,13 @@
       "secondaryHint": "A second bar under each portrait's hit points, for a resource with a maximum: legendary actions, spell slots, a class resource. Like hit points, it's shown only to those who can see the creature's sheet.",
       "tooltip": "Tooltip Values",
       "tooltipHint": "Shown when hovering a portrait, to the GM and to those who can see the creature's sheet. Pick an attribute from the list or type its path; leave the label blank to show the path."
+    },
+    "economy": {
+      "action": "Action",
+      "bonus": "Bonus Action",
+      "reaction": "Reaction",
+      "bonusUsed": "Bonus Action Used",
+      "reactionUsed": "Reaction Used"
     }
   }
 }

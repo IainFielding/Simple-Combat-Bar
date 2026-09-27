@@ -184,6 +184,57 @@
   transition: width 400ms ease-out;
 }
 
+/* ---------------------------------------------------------------- action pips
+   Top-left of the card: all three on the current combatant, the reaction alone on everyone else.
+   BG3's shapes and colours: a green circle, an orange triangle, a magenta sparkle. Spent pips go
+   dim and grey, so the state never rests on colour alone. */
+.scb-root .scb-pips {
+  position: absolute;
+  z-index: 1;
+  top: 3px;
+  left: 3px;
+  display: flex;
+  gap: 2px;
+  padding: 2px 3px;
+  border-radius: 8px;
+  background: rgba(10, 10, 12, 0.82);
+}
+
+.scb-root .scb-pips.is-empty {
+  display: none;
+}
+
+.scb-root .scb-pip {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: max(12px, calc(var(--scb-size) * 0.17));
+  height: max(12px, calc(var(--scb-size) * 0.17));
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: max(9px, calc(var(--scb-size) * 0.13));
+  line-height: 1;
+  box-shadow: none;
+}
+
+.scb-root .scb-pip[data-state] { display: inline-flex; }
+.scb-root .scb-pip:not(:disabled) { cursor: pointer; }
+.scb-root .scb-pip-action { color: #4caf6a; }
+.scb-root .scb-pip-bonus { color: #e8923a; }
+.scb-root .scb-pip-reaction { color: #d45ed4; }
+
+.scb-root .scb-pip[data-state="spent"] {
+  color: #5d6068;
+  opacity: 0.7;
+}
+
+.scb-root .scb-pip:not(:disabled):hover {
+  filter: brightness(1.35);
+}
+
 /* ---------------------------------------------------------------- initiative / roll */
 .scb-root .scb-init {
   position: absolute;

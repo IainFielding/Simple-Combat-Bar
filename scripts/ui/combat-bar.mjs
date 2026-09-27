@@ -24,6 +24,7 @@ import { buildTooltip } from "./tooltip.mjs";
 import { openEventDialog } from "./event-dialog.mjs";
 import { rememberEvent } from "../model/events.mjs";
 import { readAttributes, safeColor } from "../model/trackers.mjs";
+import { toggleSlot } from "../systems/economy.mjs";
 
 /** Combatant fields whose change can move a combatant or change who is shown. */
 const ORDER_FIELDS = ["initiative", "hidden", "defeated", "tokenId", "actorId", "group"];
@@ -218,7 +219,8 @@ export class CombatBar {
     const ids = this.#combatantIdsFor(c => c.actor === actor);
     if ( !ids.length ) return;
     const watched = adapterFor(game.system.id).watchedPaths?.(actor);
-    const relevant = ("name" in changes) || ("img" in changes) || ("ownership" in changes)
+    // "flags": midi-qol keeps its action economy in actor flags.
+    const relevant = ("name" in changes) || ("img" in changes) || ("ownership" in changes) || ("flags" in changes)
       || !watched || Object.keys(changes.system ?? {}).some(k => watched.has(k));
     if ( relevant ) for ( const id of ids ) this.#scheduler.markDirty(id);
   }
@@ -583,6 +585,11 @@ export class CombatBar {
     if ( !combat ) return;
     switch ( action ) {
       case "rollInitiative": return combatant && this.#rollInitiative(combatant, event);
+      case "togglePip": {
+        const slot = event.target.closest("[data-pip]")?.dataset.pip;
+        if ( combatant && slot && (combatant.isOwner || game.user.isGM) ) return toggleSlot(combatant, slot);
+        return;
+      }
       case "endTurn": return this.endTurn();
       case "configure": return openSettings();
     }

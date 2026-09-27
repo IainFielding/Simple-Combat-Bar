@@ -380,3 +380,41 @@ export async function barMetrics() {
     barLeft: bar.left, barRight: bar.right, hostLeft: host.left, hostRight: host.right
   };
 }
+
+/* -------------------------------------------- */
+/*  Action economy                              */
+/* -------------------------------------------- */
+
+/** GM: a combat with the party first; the current hero's action-costing activity. */
+export async function economySetup() {
+  const combat = await freshCombat({ allies: 2, enemies: 2 });
+  const hero = combat.combatant;
+  const activity = hero.actor.items.contents.flatMap(i => i.system.activities?.contents ?? [])
+    .find(a => a.activation?.type === "action");
+  return { hero: hero.id, other: combat.turns[1].id, activity: activity?.uuid ?? null, turns: combat.turns.length };
+}
+
+/** Use an activity without dialogs or chat, as a player clicking it would (spends a slot). */
+export async function useActivity(uuid) {
+  const activity = await fromUuid(uuid);
+  await activity.use({}, { configure: false }, { create: false });
+  await settle(300);
+}
+
+/** Each portrait's pips, as drawn. */
+export async function pipView(ids) {
+  await settle(200);
+  const read = id => Object.fromEntries(Array.from(
+    document.querySelectorAll(`#scb-root .scb-portrait[data-combatant-id="${id}"] .scb-pip`),
+    pip => [pip.dataset.pip, pip.dataset.state ?? null]));
+  return Object.fromEntries(ids.map(id => [id, read(id)]));
+}
+
+/** GM: advance a number of turns. */
+export async function advance(turns) {
+  for ( let i = 0; i < turns; i++ ) {
+    await game.combat.nextTurn();
+    await settle(60);
+  }
+  await settle(300);
+}

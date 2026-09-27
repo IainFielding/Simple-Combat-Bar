@@ -35,3 +35,11 @@
 .scb-root[data-style="medallion"] .scb-portrait:is(.is-current, :hover, :focus-visible) .scb-name {
   visibility: visible;
 }
+
+/* Pips at the bottom centre of the ring: a circle has no top-left corner to put them in. */
+.scb-root[data-style="medallion"] .scb-pips {
+  top: auto;
+  left: 50%;
+  bottom: 6%;
+  transform: translateX(-50%);
+}

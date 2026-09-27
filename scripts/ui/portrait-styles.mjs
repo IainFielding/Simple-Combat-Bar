@@ -23,6 +23,20 @@ const BARS = `
   <div class="scb-hp" data-slot="hp"><div class="scb-hp-fill"></div><div class="scb-hp-temp"></div></div>
   <div class="scb-bar2" data-slot="bar2"><div class="scb-bar2-fill"></div></div>`;
 
+/**
+ * Action pips (BG3's shapes, so colour is never the only cue): the current card shows all three,
+ * every other card only the reaction. Owners and the GM can click one to flip it.
+ */
+const PIPS = `
+  <div class="scb-pips" data-slot="pips">
+    <button type="button" class="scb-pip scb-pip-action" data-action="togglePip" data-pip="action" tabindex="-1">
+      <i class="fa-solid fa-circle"></i></button>
+    <button type="button" class="scb-pip scb-pip-bonus" data-action="togglePip" data-pip="bonus" tabindex="-1">
+      <i class="fa-solid fa-triangle"></i></button>
+    <button type="button" class="scb-pip scb-pip-reaction" data-action="togglePip" data-pip="reaction" tabindex="-1">
+      <i class="fa-solid fa-sparkle"></i></button>
+  </div>`;
+
 const ROLL_BUTTON = `
   <button type="button" class="scb-roll" data-action="rollInitiative" tabindex="-1">
     <i class="fa-solid fa-dice-d20"></i>
@@ -77,6 +91,7 @@ registerPortraitStyle({
       <img class="scb-img" data-slot="img" alt="" draggable="false">
       ${DAMAGE_FILL}
       ${SHARED_FLAGS}
+      ${PIPS}
     </div>
     <span class="scb-init" data-slot="initiative"></span>
     ${ROLL_BUTTON}
@@ -93,6 +108,7 @@ registerPortraitStyle({
       <img class="scb-img" data-slot="img" alt="" draggable="false">
       ${DAMAGE_FILL}
       ${SHARED_FLAGS}
+      ${PIPS}
       <span class="scb-init" data-slot="initiative"></span>
       ${ROLL_BUTTON}
       <span class="scb-name" data-slot="name"></span>
