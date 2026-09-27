@@ -110,4 +110,13 @@ export function registerKeybindings(getBar) {
       return true;
     }
   });
+  // Flips the per-user "Show the Combat Bar" setting. Unbound by default, to stay clear of other modules.
+  game.keybindings.register(MODULE_ID, "toggleBar", {
+    name: `${MODULE_ID}.keybindings.toggleBar`,
+    editable: [],
+    onDown: () => {
+      game.settings.set(MODULE_ID, "enabled", !game.settings.get(MODULE_ID, "enabled"));
+      return true;
+    }
+  });
 }

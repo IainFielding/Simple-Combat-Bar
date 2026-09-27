@@ -31,7 +31,8 @@
     },
     "keybindings": {
       "previousTurn": "Previous Turn",
-      "endTurn": "End Turn"
+      "endTurn": "End Turn",
+      "toggleBar": "Toggle Combat Bar"
     },
     "settings": {
       "enabled": {

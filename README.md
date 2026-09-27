@@ -95,7 +95,8 @@ roll for everyone or for NPCs, reset initiative, step back a turn or a round, st
 combat, add an event, and open the settings. Right-click a portrait to make it the current turn,
 ping or pan to its token, re-roll or clear its initiative, hide it, mark it defeated, or remove it.
 
-Keyboard: **Shift+M** ends the turn and **Shift+N** goes back one (GM).
+Keyboard: **Shift+M** ends the turn and **Shift+N** goes back one (GM). **Toggle Combat Bar** shows
+or hides the bar for you alone; it has no key until you give it one in Configure Controls.
 
 ## Settings
 

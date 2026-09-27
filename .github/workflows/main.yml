@@ -63,7 +63,31 @@ on:
 
 
 jobs:
+  # Run the same checks as CI (ci.yml) against the tagged commit, so a release can't ship a
+  # manifest, language file, lint error or failing unit test that slipped past a branch push.
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Validate JSON, Lint and Unit Tests
+        run: npm run check
+
+
   build:
+    # Only package the release once the checks above have passed.
+    needs: check
     runs-on: ubuntu-latest
     permissions:
       contents: write

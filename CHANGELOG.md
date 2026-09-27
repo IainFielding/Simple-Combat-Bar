@@ -2,6 +2,28 @@
 
 All notable changes to Simple Combat Bar.
 
+## 0.4.0
+
+### New
+
+- **Show or hide the bar from the keyboard.** A new **Toggle Combat Bar** keybinding switches the
+  *Show the Combat Bar* setting for you alone. It has no key by default; pick one in Configure
+  Controls.
+
+## 0.3.0
+
+### New
+
+- **XP summary when combat ends.** Turn on *XP Summary When Combat Ends* and ending a combat
+  whispers the GM a card listing the defeated enemies and their total XP, with D&D 5e's Award
+  button to hand it out (the same as typing `/award`). The players' own creatures and friendly NPCs
+  aren't counted. Off by default.
+
+### Changed
+
+- **Observers see names.** A player with Observer permission on a creature now sees its name on the
+  bar, whatever the name setting, just as its owner does.
+
 ## 0.2.0
 
 ### New
