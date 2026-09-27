@@ -343,3 +343,40 @@ export async function endTestCombat() {
   await settle(200);
   return calendarVisible();
 }
+
+/* -------------------------------------------- */
+/*  Before the start, and resizing              */
+/* -------------------------------------------- */
+
+/** GM: a combat that hasn't started and has no initiative rolled yet. */
+export async function unstartedCombat() {
+  await freshCombat({ allies: 2, enemies: 2, initiative: false, start: false });
+  return game.combat.id;
+}
+
+/** Player: whether the bar shows, and which portraits offer this user a d20. */
+export async function playerRollView() {
+  await settle(300);
+  const root = document.getElementById("scb-root");
+  return {
+    visible: !!root && !root.hidden,
+    canRoll: Array.from(document.querySelectorAll("#scb-root .scb-portrait.can-roll"), li => li.dataset.combatantId)
+  };
+}
+
+/** The bar's measurements, for the resize check. */
+export async function barMetrics() {
+  await settle(400);
+  const root = document.getElementById("scb-root");
+  const track = root.querySelector(".scb-track");
+  const host = root.parentElement.getBoundingClientRect();
+  const bar = root.querySelector(".scb-bar").getBoundingClientRect();
+  return {
+    size: parseFloat(root.style.getPropertyValue("--scb-size")),
+    overflow: root.dataset.overflow,
+    scrollable: getComputedStyle(track).overflowX === "auto",
+    trackWidth: track.clientWidth,
+    trackContent: track.scrollWidth,
+    barLeft: bar.left, barRight: bar.right, hostLeft: host.left, hostRight: host.right
+  };
+}

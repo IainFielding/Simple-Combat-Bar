@@ -37,6 +37,9 @@ const DIVIDER_WIDTH = 36;
 /** Side padding of the track, in px. Must match `--scb-track-pad` in 02-layout.css. */
 const TRACK_PAD = 12;
 
+/** The smallest a portrait gets when fitting the bar to the window; past this the track scrolls. */
+const MIN_SIZE = 40;
+
 /** Duration of the slide when portraits change places. */
 const MOVE_MS = 260;
 
@@ -89,6 +92,8 @@ export class CombatBar {
   #styleId = null;
   #tooltipTimer = null;
   #contextMenu = null;
+  /** @type {ResizeObserver|null} */
+  #resizeObserver = null;
 
   constructor() {
     this.#scheduler = new RenderScheduler(batch => this.#flush(batch));
@@ -114,8 +119,9 @@ export class CombatBar {
   /** Bind to whichever combat the user is viewing now. Safe to call from any hook. */
   sync() {
     const combat = ui.combat?.viewed ?? game.combat ?? null;
-    const visible = combat && (game.user.isGM || combat.started);
-    this.bind(visible ? combat : null);
+    // Everyone sees a combat as soon as it exists: players need the bar before it starts, to roll
+    // their initiative.
+    this.bind(combat);
   }
 
   /**
@@ -391,13 +397,17 @@ export class CombatBar {
   #autosize(cfg, style) {
     const max = Number(cfg.portraitSize) || 72;
     let size = max;
+    let overflow = cfg.overflow;
     if ( cfg.overflow === "autofit" ) {
       const count = Math.max(1, this.#portraits.size);
       // 0.1 gap per portrait, plus the current portrait's extra 0.18 width.
       const available = (this.root.parentElement?.clientWidth ?? window.innerWidth) * 0.8;
-      size = Math.max(40, Math.min(max, Math.floor(available / ((count * 1.1) + 0.18))));
+      const fit = Math.floor(available / ((count * 1.1) + 0.18));
+      size = Math.max(MIN_SIZE, Math.min(max, fit));
+      // Fit to width until the portraits are as small as they go, then scroll rather than clip.
+      if ( fit < MIN_SIZE ) overflow = "scroll";
     }
-    this.root.dataset.overflow = cfg.overflow;
+    this.root.dataset.overflow = overflow;
     this.root.classList.toggle("has-bar2", !!cfg.secondaryResource);
     this.root.style.setProperty("--scb-bar2", safeColor(cfg.secondaryColor, "#5aa9e6"));
     this.root.style.setProperty("--scb-size", `${size}px`);
@@ -454,6 +464,8 @@ export class CombatBar {
     const host = document.getElementById("ui-top");
     if ( host ) host.prepend(this.root);
     else document.body.append(this.root);
+    // Watch whatever the bar now sits in: its width is what autofit divides between portraits.
+    this.#resizeObserver?.observe(this.root.parentElement);
   }
 
   /** Delegated listeners on the root, registered once per session (R3). */
@@ -467,10 +479,10 @@ export class CombatBar {
     life.listen(root, "pointerout", event => this.#onPointer(event, false));
     life.add(() => this.#closeTooltip());
 
+    // Attached to the bar's container in #mount: at this point the root isn't in the page yet.
     if ( typeof ResizeObserver !== "undefined" ) {
-      const observer = new ResizeObserver(() => this.refreshSize());
+      const observer = this.#resizeObserver = new ResizeObserver(() => this.refreshSize());
       life.add(() => observer.disconnect());
-      life.timeout(() => this.root.parentElement && observer.observe(this.root.parentElement), 0);
     }
 
     this.#contextMenu = new foundry.applications.ux.ContextMenu(root, `.${CSS}-portrait`, this.#contextOptions(),

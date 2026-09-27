@@ -26,11 +26,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers,settingsUi").split(",");
+const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers,settingsUi,responsive").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers", "settingsUi"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers", "settingsUi", "responsive"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -152,6 +152,31 @@ const SUITES = {
     const { failures } = await session.eval(() => __scb.ordering());
     return { pass: !failures.length, failures,
       lines: failures.slice(0, 5).map(f => JSON.stringify(f)) };
+  },
+
+  /** Shrinking the window shrinks the portraits; the bar never overflows its space. */
+  async responsive(gm) {
+    const failures = [];
+    const check = (ok, message) => ok || failures.push(message);
+    const page = gm.page;
+    const original = page.viewportSize();
+    await gm.eval(() => __scbFixtures.freshCombat({ allies: 4, enemies: 10 }));
+    const wide = await gm.eval(() => __scb.barMetrics());
+    await page.setViewportSize({ width: 1100, height: original.height });
+    const narrow = await gm.eval(() => __scb.barMetrics());
+    await page.setViewportSize(original);
+    const back = await gm.eval(() => __scb.barMetrics());
+
+    check(narrow.size < wide.size, `portraits didn't shrink with the window (${wide.size}px -> ${narrow.size}px)`);
+    // Either everything fits, or (at the smallest portrait size) the track scrolls: never clipped.
+    const fits = narrow.trackContent <= narrow.trackWidth + 1;
+    check(fits || narrow.scrollable, `cards are clipped when narrow (${narrow.trackContent} > ${narrow.trackWidth}, not scrollable)`);
+    check(back.overflow === "autofit", `still scrolling after the window grew back (${back.overflow})`);
+    check((narrow.barLeft >= narrow.hostLeft - 1) && (narrow.barRight <= narrow.hostRight + 1), "the bar spills out of its space when narrow");
+    check(back.size === wide.size, `portraits didn't grow back (${back.size}px, was ${wide.size}px)`);
+    await gm.eval(() => __scbFixtures.cleanup());
+    return { pass: !failures.length, failures,
+      lines: [`portrait size ${wide.size} -> ${narrow.size} -> ${back.size}px; narrow mode ${narrow.overflow}`, ...failures] };
   },
 
   /** Configure the trackers through their real window, then check the bars and the tooltip. */
@@ -291,13 +316,18 @@ const SUITES = {
 
   /** The GM builds the combat; a second browser, logged in as the player, checks what it sees. */
   async permissions(gm) {
-    const setup = await gm.eval(() => __scb.permissionsSetup());
+    // Before the combat starts: the player must see the bar, with a d20 on their own characters.
+    await gm.eval(() => __scb.unstartedCombat());
     const player = await Session.open({ user: PLAYER_USER });
     const failures = [];
+    const check = (ok, message) => ok || failures.push(message);
     try {
       await loadSuites(player);
-      const check = (ok, message) => ok || failures.push(message);
+      const before = await player.eval(() => __scb.playerRollView());
+      check(before.visible, "player doesn't see the bar before the combat starts");
+      check(before.canRoll.length === 2, `player should get a d20 on their 2 heroes, got ${before.canRoll.length}`);
 
+      const setup = await gm.eval(() => __scb.permissionsSetup());
       await gm.eval(id => __scb.setTurn(id), setup.goblins[0]);
       let view = await player.eval(() => __scb.playerView());
       check(view.visible, "player doesn't see the bar");
