@@ -49,8 +49,11 @@ try {
     await combat.update({ turn: combat.turns.findIndex(c => c.id === pcs[0].id) });
     // Effects: a timed one on the current hero (its ring drains), conditions on a goblin.
     for ( const e of pcs[0].actor.effects.filter(e => e.name === "Shot Blessing") ) await e.delete();
+    const spell = pcs[0].actor.items.find(i => i.type === "spell" && i.system.description?.value?.length > 40)
+      ?? pcs[0].actor.items.find(i => i.system.description?.value?.length > 40);
     await pcs[0].actor.createEmbeddedDocuments("ActiveEffect", [{ name: "Shot Blessing", img: "icons/svg/aura.svg",
-      duration: { value: 3, units: "rounds" } }]);
+      duration: { value: 3, units: "rounds" },
+      description: `<p>You are maintaining concentration on the effects of the '${spell.name}' Spell.</p><p>@Embed[${spell.uuid} inline]</p>` }]);
     await npcs[0].actor.toggleStatusEffect("poisoned", { active: true });
     await npcs[0].actor.toggleStatusEffect("prone", { active: true });
     // A spent Action on the current hero, and a spent Reaction on a goblin, to show both looks.
