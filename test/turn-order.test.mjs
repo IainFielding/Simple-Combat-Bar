@@ -78,11 +78,12 @@ describe("buildOrder with team grouping", () => {
     expect(run.wolf).toBeNull();
   });
 
-  it("makes the whole run current and starts the bar at the run's first member", () => {
+  it("starts the bar at the run's first member; only the one acting is current", () => {
     // Core's pointer is on the second ally (it acted first, out of order).
     const items = buildOrder({ turns, turn: 1, round: 1, started: true, grouping: "bg3" });
     expect(ids(items)).toBe("pc1 pc2 gob1 gob2 wolf |2|");
-    expect(items.filter(i => i.current).map(i => i.id)).toEqual(["pc1", "pc2"]);
+    expect(items.filter(i => i.current).map(i => i.id)).toEqual(["pc2"]);
+    expect(items.filter(i => i.activeRun).map(i => i.id)).toEqual(["pc1", "pc2"]);
   });
 
   it("displayStart stays on the pointer without grouping", () => {

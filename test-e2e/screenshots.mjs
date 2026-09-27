@@ -19,6 +19,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const out = path.join(here, "results", "shots");
 fs.mkdirSync(out, { recursive: true });
 const style = process.argv.find(a => a.startsWith("--style="))?.split("=")[1] ?? null;
+const group = process.argv.includes("--group");
 const viewport = { width: 1680, height: 960 };
 
 const server = await startFoundry("playwright-combat");
@@ -26,9 +27,10 @@ let gm;
 let player;
 try {
   gm = await Session.open({ viewport, deviceScaleFactor: 2 });
-  await gm.eval(async ({ id, style }) => {
+  await gm.eval(async ({ id, style, group }) => {
     const f = await import(`/modules/${id}/test-e2e/in-world/fixtures.mjs`);
     if ( style ) await game.settings.set(id, "portraitStyle", style);
+    await game.settings.set(id, "groupTeams", group ? "bg3" : "off");
     await game.settings.set(id, "secondaryResource", "resources.legact");
     const combat = await f.freshCombat({ allies: 4, enemies: 5, enemyNames: ["Goblin", "Orc", "Adult Red Dragon"] });
     const npcs = combat.combatants.filter(c => c.actor?.type === "npc");
@@ -49,7 +51,14 @@ try {
     await pcs[0].update({ [`flags.${id}.economy`]: { action: true, bonus: false, reaction: false } });
     await npcs[0].update({ [`flags.${id}.economy`]: { action: false, bonus: false, reaction: true } });
     await f.settle(400);
-  }, { id: MODULE_ID, style });
+    if ( group ) {
+      // Mid group turn: the second hero in the run acting, the third already done.
+      const run = combat.turns.filter(c => c.actor?.hasPlayerOwner);
+      await combat.update({ turn: combat.turns.indexOf(run[1]),
+        [`flags.${id}.groupTurn`]: { round: combat.round, start: combat.turns.indexOf(run[0]), started: [], ended: [run[2].id] } });
+      await f.settle(400);
+    }
+  }, { id: MODULE_ID, style, group });
   await gm.page.waitForTimeout(800);
   await gm.page.screenshot({ path: path.join(out, "gm.png"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
 
@@ -88,6 +97,7 @@ try {
       const f = await import(`/modules/${id}/test-e2e/in-world/fixtures.mjs`);
       await f.cleanup();
       await game.settings.set(id, "portraitStyle", "card");
+      await game.settings.set(id, "groupTeams", "off");
       await game.settings.set(id, "secondaryResource", "");
       await game.settings.set(id, "tooltipAttributes", game.settings.settings.get(`${id}.tooltipAttributes`).default);
     }, MODULE_ID).catch(() => {});

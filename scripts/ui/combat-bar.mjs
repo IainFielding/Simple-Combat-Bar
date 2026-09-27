@@ -14,10 +14,11 @@ import { RenderScheduler } from "../core/scheduler.mjs";
 import { applyOrder } from "../core/reconcile.mjs";
 import { buildOrder } from "../model/turn-order.mjs";
 import { buildPortraitModel } from "../model/portrait-model.mjs";
-import { isShown, sideOf } from "../model/visibility.mjs";
+import { isShown } from "../model/visibility.mjs";
 import { wantsInitiativeDialog } from "../model/initiative.mjs";
 import { adapterFor } from "../systems/adapter.mjs";
-import { combatantFacts } from "./facts.mjs";
+import { combatantFacts, sideOfCombatant } from "./facts.mjs";
+import { groupContext, requestGroupTurn } from "./group-service.mjs";
 import { PortraitView } from "./portrait-view.mjs";
 import { portraitStyle } from "./portrait-styles.mjs";
 import { buildTooltip } from "./tooltip.mjs";
@@ -304,8 +305,10 @@ export class CombatBar {
       }
       if ( fresh || everything || ids.has(item.id) ) {
         const facts = combatantFacts(combatant, { adapter, settings: cfg });
+        const canTakeTurn = (cfg.groupTeams === "bg3") && item.activeRun && !item.ended && !item.current
+          && !combatant.isDefeated && (combatant.isOwner || game.user.isGM);
         const model = buildPortraitModel(facts, { settings: cfg, current: item.current, acted: item.acted,
-          run: item.run, decimals, unknownName });
+          run: item.run, activeRun: item.activeRun, ended: item.ended, canTakeTurn, decimals, unknownName });
         const changed = view.patch(model, { runPosition: runPosition(this.#items, index) });
         if ( changed.length ) {
           this.stats.patches++;
@@ -371,7 +374,7 @@ export class CombatBar {
       const disposition = c.token?.disposition ?? 0;
       return {
         id: c.id,
-        side: c.flags?.[MODULE_ID]?.event ? "neutral" : sideOf(disposition, !!c.actor?.hasPlayerOwner),
+        side: sideOfCombatant(c),
         defeated: c.isDefeated,
         groupId: c.group?.id ?? null,
         shown: isShown({ isGM: user.isGM, hidden: c.hidden, canObserve, hasActed,
@@ -379,8 +382,9 @@ export class CombatBar {
           hideUnseenFirstRound: cfg.hideUnseenFirstRound })
       };
     });
+    const ended = new Set(groupContext(combat)?.state.ended ?? []);
     return buildOrder({ turns, turn, round: combat.round, started: combat.started,
-      grouping: cfg.groupTeams, hideDefeated: cfg.hideDefeated });
+      grouping: cfg.groupTeams, hideDefeated: cfg.hideDefeated, ended });
   }
 
   #updateControls(combat) {
@@ -510,7 +514,10 @@ export class CombatBar {
       return this.#runAction(actionEl.dataset.action, this.#portraitOf(event), event);
     }
     const combatant = this.#portraitOf(event);
-    if ( combatant ) return this.#selectAndPan(combatant);
+    if ( !combatant ) return;
+    // In a BG3 group turn, clicking a waiting member of the run (yours, or any as GM) has them act.
+    if ( this.#portraits.get(combatant.id)?.model?.canTakeTurn ) requestGroupTurn("activate", combatant);
+    return this.#selectAndPan(combatant);
   }
 
   #onDoubleClick(event) {
@@ -607,7 +614,7 @@ export class CombatBar {
       case "resetAll": return combat.resetAll();
       case "previousRound": return combat.previousRound();
       case "previousTurn": return combat.previousTurn();
-      case "nextTurn": return combat.nextTurn();
+      case "nextTurn": return this.endTurn();
       case "nextRound": return combat.nextRound();
       case "startCombat": return combat.startCombat();
       case "endCombat": return combat.endCombat();
@@ -658,6 +665,8 @@ export class CombatBar {
     const combat = this.combat;
     if ( !combat?.started ) return;
     if ( !game.user.isGM && !combat.combatant?.isOwner ) return;
+    // In a group turn, ending hands the turn to the next waiting member, or leaves the run.
+    if ( groupContext(combat) ) return requestGroupTurn("end", combat.combatant);
     return combat.nextTurn();
   }
 

@@ -122,7 +122,7 @@
       },
       "groupTeams": {
         "name": "Group Turns",
-        "hint": "Like Baldur's Gate 3: allies or enemies next to each other in the order share one frame on the bar.",
+        "hint": "Like Baldur's Gate 3: allies or enemies next to each other in the order share one frame. With group turns, they also share one turn: any of them can act, in any order, by clicking their portrait, and the turn moves on once all of them have ended theirs.",
         "choices": {
           "off": "Off",
           "visual": "Shared frame, still one at a time",
@@ -199,6 +199,11 @@
       "resistances": "Legendary Resistances",
       "actionsTooltip": "Legendary Actions: {value} of {max} left. Click to spend one, Shift-click to give one back.",
       "resistancesTooltip": "Legendary Resistances: {value} of {max} left. Click to spend one, Shift-click to give one back."
+    },
+    "groupTurns": {
+      "takeTurn": "Click to take this turn",
+      "ended": "Turn ended",
+      "noGM": "A GM needs to be connected to change turns within a group."
     }
   }
 }

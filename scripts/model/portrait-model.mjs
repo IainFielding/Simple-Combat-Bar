@@ -43,14 +43,18 @@ import { legendaryCounter } from "./legendary.mjs";
  * @param {CombatantFacts} facts
  * @param {object} ctx
  * @param {object} ctx.settings            Settings snapshot.
- * @param {boolean} ctx.current
+ * @param {boolean} ctx.current       Acting now (core's pointer).
  * @param {boolean} ctx.acted
+ * @param {boolean} [ctx.activeRun]   In the run sharing a BG3 group turn.
+ * @param {boolean} [ctx.ended]       Has ended their part of that group turn.
+ * @param {boolean} [ctx.canTakeTurn] This viewer may click to have them act now.
  * @param {string|null} ctx.run
  * @param {number} [ctx.decimals=0]        Initiative decimals to show.
  * @param {string} [ctx.unknownName]
  * @returns {object}
  */
-export function buildPortraitModel(facts, { settings, current, acted, run, decimals = 0, unknownName = "???" }) {
+export function buildPortraitModel(facts, { settings, current, acted, run, activeRun = false, ended = false,
+  canTakeTurn = false, decimals = 0, unknownName = "???" }) {
   const viewer = { isGM: facts.isGM, isOwner: facts.isOwner, canObserve: facts.canObserve || facts.isOwner };
   const hpMode = hpDetail(settings.hpVisibility, viewer);
 
@@ -91,6 +95,9 @@ export function buildPortraitModel(facts, { settings, current, acted, run, decim
     current,
     acted,
     run,
+    activeRun,
+    ended,
+    canTakeTurn,
     hidden: facts.hidden,
     defeated: facts.defeated,
     owner: facts.isOwner,

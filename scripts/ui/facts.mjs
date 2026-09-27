@@ -35,7 +35,7 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
     id: combatant.id,
     name: combatant.name,
     img,
-    side: isEvent ? "neutral" : sideOf(tokenDoc?.disposition ?? 0, !!actor?.hasPlayerOwner),
+    side: sideOfCombatant(combatant),
     isGM: user.isGM,
     isOwner: combatant.isOwner,
     canObserve,
@@ -56,6 +56,16 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
     isEvent,
     eventRoundsLeft
   };
+}
+
+/**
+ * The bar's side for a combatant: events are neutral, anything with a player owner is an ally,
+ * otherwise the token's disposition decides.
+ * @param {Combatant} combatant
+ */
+export function sideOfCombatant(combatant) {
+  if ( combatant.flags?.[MODULE_ID]?.event ) return "neutral";
+  return sideOf(combatant.token?.disposition ?? 0, !!combatant.actor?.hasPlayerOwner);
 }
 
 /** Adapter code is the most likely to meet data it doesn't expect; never let it break a render. */

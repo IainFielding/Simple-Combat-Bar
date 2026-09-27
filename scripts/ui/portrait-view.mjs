@@ -16,7 +16,10 @@ const CLASS_FIELDS = Object.freeze({
   pc: "is-pc",
   owner: "is-owner",
   isEvent: "is-event",
-  canRoll: "can-roll"
+  canRoll: "can-roll",
+  activeRun: "in-active-run",
+  ended: "is-ended",
+  canTakeTurn: "can-take-turn"
 });
 
 export class PortraitView {

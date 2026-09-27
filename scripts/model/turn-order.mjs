@@ -85,9 +85,13 @@ export function displayStart(turns, turn, grouped) {
  * @param {boolean} input.started
  * @param {"off"|"visual"|"bg3"} [input.grouping="off"]
  * @param {boolean} [input.hideDefeated=false]
+ * @param {Set<string>} [input.ended]   Members of the active run who have ended their part of a
+ *                                      group turn (model/group-turns.mjs).
  * @returns {Array<BarCombatant|BarDivider>}
+ *   `current` marks the combatant acting (core's pointer); with grouping on, `activeRun` marks every
+ *   member of the run holding it, and `ended` those of them who are done this round.
  */
-export function buildOrder({ turns, turn, round, started, grouping = "off", hideDefeated = false }) {
+export function buildOrder({ turns, turn, round, started, grouping = "off", hideDefeated = false, ended = new Set() }) {
   const grouped = grouping !== "off";
   const runOf = new Map();
   if ( grouped ) {
@@ -97,21 +101,22 @@ export function buildOrder({ turns, turn, round, started, grouping = "off", hide
   }
 
   const include = entry => (entry.shown !== false) && !(hideDefeated && entry.defeated);
-  const toItem = (entry, acted, current) => ({
-    type: "combatant", key: entry.id, id: entry.id, current, acted, run: runOf.get(entry.id) ?? null
-  });
+  const live = started && (turn !== null) && (turn !== undefined) && turns.length;
+  const currentRun = live && grouped ? runOf.get(turns[turn]?.id) ?? null : null;
+  const toItem = (entry, acted, current) => {
+    const inRun = (currentRun !== null) && (runOf.get(entry.id) === currentRun);
+    return {
+      type: "combatant", key: entry.id, id: entry.id, current, acted, run: runOf.get(entry.id) ?? null,
+      activeRun: inRun, ended: inRun && ended.has(entry.id)
+    };
+  };
 
-  if ( !started || (turn === null) || (turn === undefined) || !turns.length ) {
-    return turns.filter(include).map(e => toItem(e, false, false));
-  }
+  if ( !live ) return turns.filter(include).map(e => toItem(e, false, false));
 
   const start = displayStart(turns, turn, grouped);
-  const currentRun = grouped ? runOf.get(turns[turn]?.id) : null;
-  const isCurrent = (entry, index) => (index === turn) || ((currentRun != null) && (runOf.get(entry.id) === currentRun));
-
   const upcoming = [];
   for ( let i = start; i < turns.length; i++ ) {
-    if ( include(turns[i]) ) upcoming.push(toItem(turns[i], false, isCurrent(turns[i], i)));
+    if ( include(turns[i]) ) upcoming.push(toItem(turns[i], false, i === turn));
   }
   const acted = [];
   for ( let i = 0; i < start; i++ ) {

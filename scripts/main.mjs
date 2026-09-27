@@ -13,6 +13,8 @@ import { registerAdapter } from "./systems/adapter.mjs";
 import { expiredEvents } from "./model/events.mjs";
 import { activationSlot, anySpent, emptyEconomy } from "./model/economy.mjs";
 import { economyProvider, spendSlot } from "./systems/economy.mjs";
+import { groupContext, registerGroupQuery } from "./ui/group-service.mjs";
+import { restoresEconomy } from "./model/group-turns.mjs";
 
 /** The session's bar. Null until `ready`, and stays null if the bar mustn't mount. */
 let bar = null;
@@ -29,6 +31,7 @@ const api = {
 Hooks.once("init", () => {
   registerSettings(() => bar);
   registerKeybindings(() => bar);
+  registerGroupQuery();
   game.modules.get(MODULE_ID).api = api;
   Hooks.callAll(HOOKS.init, api);
 });
@@ -93,7 +96,15 @@ async function resetEconomy(combat, combatantId) {
   const provider = economyProvider();
   if ( provider.resetsItself ) return;
   const combatant = combat.combatants.get(combatantId);
-  const state = combatant && provider.read(combatant);
+  if ( !combatant ) return;
+  // In a group turn, only the first time this member starts: stepping away and back to them
+  // mustn't hand them a fresh set of actions.
+  const group = groupContext(combat);
+  if ( group ) {
+    if ( !restoresEconomy(group.state, combatantId) ) return;
+    await combat.setFlag(MODULE_ID, "groupTurn", { ...group.state, started: [...group.state.started, combatantId] });
+  }
+  const state = provider.read(combatant);
   if ( state && anySpent(state) ) await provider.write(combatant, emptyEconomy());
 }
 

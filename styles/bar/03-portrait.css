@@ -364,9 +364,10 @@
   border-radius: 0 10px 10px 0;
 }
 
-.scb-root .scb-portrait.is-current[data-run-position]::before {
-  background: color-mix(in srgb, var(--scb-settled) 14%, transparent);
-  border-color: var(--scb-settled);
+/* Run members stretch to the track's full height, so the shared backplate is one even band even
+   though the acting member's card is taller than the rest. */
+.scb-root .scb-portrait[data-run-position] {
+  align-self: stretch;
 }
 
 /* ---------------------------------------------------------------- events
@@ -417,4 +418,40 @@
   left: 50%;
   bottom: 28%;
   transform: translateX(-50%);
+}
+
+/* ---------------------------------------------------------------- BG3 group turns
+   The member acting gets the large card (is-current). The rest of the run sharing the turn gets a
+   gold frame; those who have ended dim behind a tick; and a member this viewer may send in next
+   shows it with the teal "your input" colour. */
+.scb-root .scb-portrait.in-active-run:not(.is-current) .scb-frame {
+  border-color: var(--scb-settled);
+  box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.35), 0 0 8px rgba(201, 162, 39, 0.25);
+}
+
+.scb-root .scb-portrait.is-ended {
+  opacity: 0.55;
+  filter: saturate(0.5);
+}
+
+.scb-root .scb-portrait.is-ended .scb-frame::after {
+  content: "\f00c";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-awesome, "Font Awesome 7 Pro");
+  font-weight: 900;
+  font-size: calc(var(--scb-size) * 0.4);
+  color: rgba(242, 238, 229, 0.85);
+  text-shadow: 0 1px 4px #000;
+  pointer-events: none;
+}
+
+/* Same specificity as the in-active-run rule above, and after it, so teal wins for a member this
+   viewer can send in. */
+.scb-root .scb-portrait.can-take-turn:not(.is-current) .scb-frame {
+  border-color: var(--scb-open);
+  box-shadow: 0 0 0 1px var(--scb-open), 0 0 10px var(--scb-open-glow);
 }

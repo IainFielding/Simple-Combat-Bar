@@ -26,11 +26,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers,settingsUi,responsive,economy,legendary").split(",");
+const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers,settingsUi,responsive,economy,legendary,groupTurns").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers", "settingsUi", "responsive", "economy", "legendary"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -152,6 +152,51 @@ const SUITES = {
     const { failures } = await session.eval(() => __scb.ordering());
     return { pass: !failures.length, failures,
       lines: failures.slice(0, 5).map(f => JSON.stringify(f)) };
+  },
+
+  /** A BG3 group turn played by a real player: out of order, handed on, then left behind. */
+  async groupTurns(gm) {
+    const failures = [];
+    const check = (ok, message) => ok || failures.push(message);
+    const { heroes: [h0, h1, h2], goblins: [g0] } = await gm.eval(() => __scb.groupSetup());
+    const player = await Session.open({ user: PLAYER_USER });
+    try {
+      await loadSuites(player);
+      let v = await player.eval(() => __scb.groupView());
+      check(v.current === h0, "the group turn should start with the first hero");
+      check(v.classes[h2]?.includes("can-take-turn"), `the player should be able to send in the third hero: ${v.classes[h2]}`);
+      check(!v.classes[g0]?.includes("in-active-run"), "a goblin is marked as part of the heroes' turn");
+
+      // Out of order: the player sends in the third hero.
+      await player.eval(id => __scb.clickPortrait(id), h2);
+      v = await player.eval(() => __scb.groupView());
+      check(v.current === h2, `clicking the third hero didn't make them act (current ${v.current})`);
+      check(v.classes[h0]?.includes("in-active-run") && !v.classes[h0]?.includes("is-current"),
+        "the first hero should wait in the run, not be current");
+
+      // The player ends the third hero's turn: it wraps back to the first hero, who waited.
+      await player.eval(() => __scb.pressEndTurn());
+      v = await player.eval(() => __scb.groupView());
+      check(v.current === h0, `ending the third hero should hand the turn to the first (current ${v.current})`);
+      check(v.classes[h2]?.includes("is-ended"), "the third hero isn't marked as ended");
+      check(v.economy[h0]?.action === true, "the first hero got their Action back by stepping away and back");
+
+      // The player can't send in a goblin by asking the GM directly.
+      const sneaky = await player.eval(id => __scb.sneakyActivate(id), g0);
+      check(sneaky === false, "the GM let a player send in a goblin");
+
+      // The GM ends the first hero, then the second: the turn leaves the run for the goblins.
+      await gm.eval(() => __scb.gmEndTurn());
+      v = await gm.eval(() => __scb.groupView());
+      check(v.current === h1, `after the first hero, the second should act (current ${v.current})`);
+      await gm.eval(() => __scb.gmEndTurn());
+      v = await gm.eval(() => __scb.groupView());
+      check(v.current === g0, `once all three are done the turn should move to the goblins (current ${v.current})`);
+    } finally {
+      await player.close({ shutDownWorld: false });
+      await gm.eval(() => __scb.groupTeardown());
+    }
+    return { pass: !failures.length, failures, lines: failures };
   },
 
   /** Legendary badges: shown to the GM, clickable, follow dnd5e's own spending, hidden from players. */

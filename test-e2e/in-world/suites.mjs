@@ -449,3 +449,71 @@ export async function legendaryView(id) {
   };
   return { actions: read("actions"), resistances: read("resistances") };
 }
+
+/* -------------------------------------------- */
+/*  BG3 group turns                             */
+/* -------------------------------------------- */
+
+/** GM: group turns on; three heroes acting as one team, then two goblins. */
+export async function groupSetup() {
+  await game.settings.set(MODULE_ID, "groupTeams", "bg3");
+  const combat = await freshCombat({ allies: 3, enemies: 2, enemyNames: ["Goblin"], initiative: false, start: false });
+  // Initiative by who is who, not by list position (the server's order isn't the creation order):
+  // the heroes first, then the goblins.
+  const heroes = combat.combatants.filter(c => c.actor?.type === "character");
+  const goblins = combat.combatants.filter(c => c.actor?.type === "npc");
+  await combat.updateEmbeddedDocuments("Combatant", [
+    ...heroes.map((c, i) => ({ _id: c.id, initiative: 30 - i })),
+    ...goblins.map((c, i) => ({ _id: c.id, initiative: 10 - i }))
+  ]);
+  await combat.startCombat();
+  await settle(200);
+  const ids = combat.turns.map(c => c.id);
+  // The first hero spends their Action before anyone switches.
+  await combat.turns[0].update({ [`flags.${MODULE_ID}.economy`]: { action: true, bonus: false, reaction: false } });
+  await settle(200);
+  return { heroes: ids.slice(0, 3), goblins: ids.slice(3) };
+}
+
+export async function groupTeardown() {
+  await game.settings.set(MODULE_ID, "groupTeams", "off");
+  await cleanup();
+}
+
+/** Anyone: the state of the group turn as the bar draws it. */
+export async function groupView() {
+  await settle(300);
+  const combat = game.combat;
+  const cls = id => {
+    const li = document.querySelector(`#scb-root .scb-portrait[data-combatant-id="${id}"]`);
+    return li ? ["is-current", "in-active-run", "is-ended", "can-take-turn"].filter(c => li.classList.contains(c)) : null;
+  };
+  return {
+    current: combat.combatant?.id ?? null,
+    classes: Object.fromEntries(combat.turns.map(c => [c.id, cls(c.id)])),
+    economy: Object.fromEntries(combat.turns.map(c => [c.id, c.flags?.[MODULE_ID]?.economy ?? null]))
+  };
+}
+
+/** Player: click a portrait (to take its turn). */
+export async function clickPortrait(id) {
+  document.querySelector(`#scb-root .scb-portrait[data-combatant-id="${id}"]`).click();
+  await settle(600);
+}
+
+/** Player: press End Turn. */
+export async function pressEndTurn() {
+  document.querySelector("#scb-root .scb-endturn").click();
+  await settle(600);
+}
+
+/** Player: ask the GM straight out to send in someone they don't own. */
+export async function sneakyActivate(combatantId) {
+  return game.users.activeGM.query(`${MODULE_ID}.groupTurn`, { action: "activate", combatId: game.combat.id, combatantId });
+}
+
+/** GM: end the current member's turn through the bar. */
+export async function gmEndTurn() {
+  await game.modules.get(MODULE_ID).api.bar.endTurn();
+  await settle(600);
+}
