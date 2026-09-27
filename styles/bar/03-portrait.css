@@ -7,7 +7,7 @@
   flex: none;
   width: var(--scb-size);
   cursor: pointer;
-  transition: width var(--scb-motion), opacity var(--scb-motion), filter var(--scb-motion);
+  transition: opacity var(--scb-motion), filter var(--scb-motion);
   outline: none;
 }
 

@@ -46,6 +46,11 @@
   --scb-damage: rgba(150, 8, 16, 0.72);
   --scb-damage-top: rgba(200, 24, 32, 0.5);
 
+  /* The frame: dnd5e's own gold when the system is loaded, so the bar, its tabs and the dnd5e
+     sheet read as one set. */
+  --scb-frame: var(--dnd5e-color-gold, #9f9275);
+  --scb-frame-black: var(--dnd5e-color-black, #000);
+
   --scb-font-display: "Cinzel", "Signika", serif;
   --scb-font-body: "Spectral", "Signika", serif;
 

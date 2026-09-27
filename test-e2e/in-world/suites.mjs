@@ -122,7 +122,17 @@ export async function ordering() {
   const read = () => Array.from(document.querySelectorAll("#scb-root .scb-track > li"),
     li => (li.classList.contains("scb-divider") ? "|" : li.dataset.combatantId));
 
+  const barBox = () => {
+    const r = document.querySelector("#scb-root .scb-bar").getBoundingClientRect();
+    return { left: Math.round(r.left * 10) / 10, width: Math.round(r.width * 10) / 10 };
+  };
+  const firstBox = barBox();
+
   for ( let step = 0; step < combat.turns.length + 2; step++ ) {
+    const box = barBox();
+    if ( (box.left !== firstBox.left) || (box.width !== firstBox.width) ) {
+      failures.push({ step, error: `the bar moved: ${JSON.stringify(firstBox)} -> ${JSON.stringify(box)}` });
+    }
     const turns = combat.turns.map(c => c.id);
     const start = combat.turn;
     const expected = [...turns.slice(start), "|", ...turns.slice(0, start)];

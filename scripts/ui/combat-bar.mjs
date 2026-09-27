@@ -30,6 +30,15 @@ const ORDER_FIELDS = ["initiative", "hidden", "defeated", "tokenId", "actorId", 
 /** Token fields that affect a portrait. */
 const TOKEN_FIELDS = ["name", "texture", "disposition", "displayName", "hidden", "actorLink", "delta"];
 
+/** Width of the next-round divider, in px. Sets `--scb-divider-width` for 02-layout.css. */
+const DIVIDER_WIDTH = 36;
+
+/** Side padding of the track, in px. Must match `--scb-track-pad` in 02-layout.css. */
+const TRACK_PAD = 12;
+
+/** Duration of the slide when portraits change places. */
+const MOVE_MS = 260;
+
 /** Hover delay before a portrait tooltip opens, matching core's TooltipManager. */
 const TOOLTIP_DELAY = 500;
 
@@ -251,6 +260,8 @@ export class CombatBar {
 
     if ( order || all ) this.#items = this.#computeOrder(combat, cfg);
     const everything = order || all;
+    // Where everything is now, before any class change or move, for the slide afterwards.
+    const before = everything ? this.#positions() : null;
 
     const decimals = combat.turns.some(c => (c.initiative !== null) && !Number.isInteger(c.initiative))
       ? (CONFIG.Combat.initiative.decimals ?? 0) : 0;
@@ -298,6 +309,39 @@ export class CombatBar {
 
     this.#updateControls(combat);
     this.#autosize(cfg, style);
+    if ( before ) this.#slide(before);
+  }
+
+  /** Each track child's left edge, keyed by element. */
+  #positions() {
+    const positions = new Map();
+    if ( !this.root.isConnected ) return positions;
+    for ( const el of this.track.children ) positions.set(el, el.getBoundingClientRect().left);
+    return positions;
+  }
+
+  /**
+   * FLIP: every portrait that changed place is drawn back where it was and slid to where it is
+   * now. One that wrapped from one end of the bar to the other (more than half the track away)
+   * fades in instead of flying across; so does a new arrival.
+   * @param {Map<Element, number>} before
+   */
+  #slide(before) {
+    if ( !this.root.isConnected || globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ) return;
+    const half = this.track.clientWidth / 2;
+    const easing = "cubic-bezier(0.22, 1, 0.36, 1)";
+    const fade = [{ opacity: 0 }, { opacity: 1 }];
+    for ( const el of this.track.children ) {
+      const was = before.get(el);
+      if ( was === undefined ) {
+        el.animate(fade, { duration: MOVE_MS, easing });
+        continue;
+      }
+      const dx = was - el.getBoundingClientRect().left;
+      if ( Math.abs(dx) < 1 ) continue;
+      if ( Math.abs(dx) > half ) el.animate(fade, { duration: MOVE_MS, easing });
+      else el.animate([{ transform: `translateX(${dx}px)` }, { transform: "none" }], { duration: MOVE_MS, easing });
+    }
   }
 
   /** Turn the combat's turn list into the bar's items. */
@@ -345,6 +389,8 @@ export class CombatBar {
     this.root.dataset.overflow = cfg.overflow;
     this.root.style.setProperty("--scb-size", `${size}px`);
     this.root.style.setProperty("--scb-aspect", String(style.aspect));
+    this.root.style.setProperty("--scb-divider-width", `${DIVIDER_WIDTH}px`);
+    this.track.style.width = `${trackWidth(this.#items, size)}px`;
   }
 
   /* -------------------------------------------- */
@@ -646,6 +692,23 @@ export class CombatBar {
       }
     ];
   }
+}
+
+/**
+ * The track's width for these items at this portrait size: every portrait, the current one's
+ * extra width, the divider, the gaps and the side padding. It depends only on who is on the bar,
+ * never on whose turn it is, so the bar stays still while the portraits move.
+ * @param {Array<{type: string, current?: boolean}>} items
+ * @param {number} size  Portrait width, px.
+ * @returns {number}
+ */
+export function trackWidth(items, size) {
+  const portraits = items.filter(i => i.type === "combatant");
+  const current = portraits.filter(i => i.current).length;
+  const dividers = items.length - portraits.length;
+  const gap = size * 0.1;
+  return Math.ceil((portraits.length * size) + (current * size * 0.18) + (dividers * DIVIDER_WIDTH)
+    + (Math.max(0, items.length - 1) * gap) + (TRACK_PAD * 2));
 }
 
 /**

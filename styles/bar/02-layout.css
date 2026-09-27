@@ -20,18 +20,25 @@
   padding: 4px 10px 8px;
   pointer-events: auto;
   background: linear-gradient(180deg, rgba(8, 9, 12, 0.96), var(--scb-bg));
-  border: 1px solid var(--scb-line);
+  border: 1px solid var(--scb-frame);
   border-top: none;
   border-radius: 0 0 12px 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), inset 0 -1px 0 rgba(201, 162, 39, 0.25);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
 }
 
+/* The track's width is set by the bar from the number of combatants (see trackWidth in
+   combat-bar.mjs), so it changes when someone joins or leaves and never on a turn change: only
+   the portraits move. The side padding leaves room for the current portrait's glow. */
 .scb-root .scb-track {
+  --scb-track-pad: 12px;
   display: flex;
+  flex-shrink: 1;
   align-items: flex-end;
   gap: var(--scb-gap);
+  box-sizing: border-box;
+  max-width: 100%;
   margin: 0;
-  padding: 4px 2px 0;
+  padding: 6px var(--scb-track-pad) 0;
   list-style: none;
   min-width: 0;
   overflow: hidden;
@@ -42,12 +49,15 @@
 .scb-root[data-overflow="scroll"] .scb-track {
   overflow-x: auto;
   scrollbar-width: thin;
-  mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 var(--scb-track-pad),
+    #000 calc(100% - var(--scb-track-pad)), transparent);
 }
 
 /* ---------------------------------------------------------------- next-round divider */
 .scb-root .scb-divider {
   flex: none;
+  box-sizing: border-box;
+  width: var(--scb-divider-width, 36px);
   display: flex;
   flex-direction: column;
   align-items: center;
