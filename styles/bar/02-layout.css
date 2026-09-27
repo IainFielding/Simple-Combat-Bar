@@ -33,7 +33,9 @@
   --scb-track-pad: 12px;
   display: flex;
   flex-shrink: 1;
-  align-items: flex-end;
+  /* Top-aligned: every card hangs from the same line under the top edge; the current one, being
+     larger, reaches further down. */
+  align-items: flex-start;
   gap: var(--scb-gap);
   box-sizing: border-box;
   max-width: 100%;
