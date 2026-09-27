@@ -43,7 +43,8 @@
   --scb-hp-bloodied: #d8a13a;
   --scb-hp-critical: #d9534f;
   --scb-hp-temp: #5aa9e6;
-  --scb-damage: rgba(170, 18, 24, 0.62);
+  --scb-damage: rgba(150, 8, 16, 0.72);
+  --scb-damage-top: rgba(200, 24, 32, 0.5);
 
   --scb-font-display: "Cinzel", "Signika", serif;
   --scb-font-body: "Spectral", "Signika", serif;

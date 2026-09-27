@@ -112,9 +112,8 @@
   position: absolute;
   inset: auto 0 0 0;
   height: var(--scb-damage-pct, 0%);
-  background: var(--scb-damage);
-  mix-blend-mode: multiply;
-  box-shadow: inset 0 2px 0 rgba(255, 60, 60, 0.55);
+  background: linear-gradient(180deg, var(--scb-damage-top), var(--scb-damage));
+  box-shadow: inset 0 2px 0 rgba(255, 80, 80, 0.8), 0 -1px 6px rgba(255, 40, 40, 0.35);
   pointer-events: none;
   transition: height 400ms ease-out;
 }
@@ -133,7 +132,7 @@
   overflow: hidden;
 }
 
-.scb-root .scb-hp[hidden] {
+.scb-root .scb-hp.is-empty {
   visibility: hidden;
 }
 

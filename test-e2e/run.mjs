@@ -174,6 +174,7 @@ const SUITES = {
       // so a 2/7 goblin reads "bloodied" with a half fill rather than an exact 71%.
       check(goblin?.damage === "50%", `goblin damage fill should be the bloodied band: ${goblin?.damage}`);
       check(goblin?.hpState === "bloodied", `goblin health state: ${goblin?.hpState}`);
+      check(goblin?.hpBarHidden === true, "player sees an HP bar for a goblin they only know the state of");
       const hero = view.portraits.find(p => p.id === setup.heroes[0]);
       check(hero && (hero.name !== view.unknownName), "player can't see their own hero's name");
 

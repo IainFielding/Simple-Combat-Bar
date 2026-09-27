@@ -251,7 +251,7 @@ export class CombatBar {
 
     const decimals = combat.turns.some(c => (c.initiative !== null) && !Number.isInteger(c.initiative))
       ? (CONFIG.Combat.initiative.decimals ?? 0) : 0;
-    const unknownName = game.i18n.localize("COMBATANT.Unknown");
+    const unknownName = t("unknown");
 
     const nodes = [];
     const seen = new Set();

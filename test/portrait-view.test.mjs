@@ -30,6 +30,7 @@ describe("PortraitView", () => {
     expect(el.querySelector(".scb-name").textContent).toBe("Lae'zel");
     expect(el.querySelector(".scb-init").textContent).toBe("18");
     expect(el.querySelector(".scb-damage").style.getPropertyValue("--scb-damage-pct")).toBe("75%");
+    expect(el.querySelector(".scb-hp").classList.contains("is-empty")).toBe(false);
   });
 
   it("does nothing when the model hasn't changed", () => {

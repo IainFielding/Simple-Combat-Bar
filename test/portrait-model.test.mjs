@@ -88,6 +88,7 @@ describe("viewers who don't receive HP (spec: unlinked token deltas reach player
     expect(m.hpPct).toBeNull();
     expect(m.hpValue).toBeNull();
     expect(m.damagePct).toBe(50);
+    expect(m.hpBar).toBe(false);
   });
 
   it("shows nothing when HP is hidden from others", () => {

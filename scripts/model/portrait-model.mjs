@@ -90,6 +90,8 @@ export function buildPortraitModel(facts, { settings, current, acted, run, decim
     initiative,
     canRoll: !rolled && (facts.isOwner || facts.isGM) && !facts.isEvent,
     hpShown: (hpMode !== "none") && ((hpPct !== null) || (hpState !== "unknown")),
+    // The bar needs a number; a viewer who only knows the state gets the damage fill instead.
+    hpBar: (hpMode !== "none") && (hpPct !== null),
     hpState,
     hpPct: hpMode === "none" ? null : hpPct,
     hpValue,

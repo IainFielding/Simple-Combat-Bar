@@ -188,7 +188,7 @@ export async function playerView() {
     id: li.dataset.combatantId,
     name: li.querySelector(".scb-name")?.textContent ?? null,
     hpState: li.dataset.hp ?? null,
-    hpHidden: li.querySelector(".scb-hp")?.hidden ?? null,
+    hpBarHidden: li.querySelector(".scb-hp")?.classList.contains("is-empty") ?? null,
     damage: li.querySelector(".scb-damage")?.style.getPropertyValue("--scb-damage-pct") ?? null,
     initiative: li.querySelector(".scb-init")?.textContent ?? null
   }));
@@ -196,7 +196,7 @@ export async function playerView() {
     visible: !!root && !root.hidden,
     gmControls: root ? getComputedStyle(root.querySelector(".scb-tabs")).display !== "none" : null,
     endTurnShown: root ? !root.querySelector(".scb-endturn").hidden : null,
-    unknownName: game.i18n.localize("COMBATANT.Unknown"),
+    unknownName: game.i18n.localize(`${MODULE_ID}.unknown`),
     portraits
   };
 }

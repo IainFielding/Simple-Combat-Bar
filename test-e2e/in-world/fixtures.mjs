@@ -65,7 +65,14 @@ export async function freshCombat({ allies = 3, enemies = 5, enemyNames = null, 
   const scene = game.scenes.getName(SCENE);
   if ( !scene.active ) await scene.activate();
 
-  const actors = [...party(allies), ...monsters(enemies, enemyNames)];
+  const heroes = party(allies);
+  // The SRD heroes arrive from the compendium with 0 HP stored, and earlier runs damage them: every
+  // combat starts with the (linked) party at full health.
+  for ( const hero of heroes ) {
+    const hp = hero.system.attributes.hp;
+    if ( hp.value !== hp.max ) await hero.update({ "system.attributes.hp.value": hp.max });
+  }
+  const actors = [...heroes, ...monsters(enemies, enemyNames)];
   const tokenData = [];
   for ( const [i, actor] of actors.entries() ) {
     const doc = await actor.getTokenDocument({ x: 100 + ((i % 10) * 100), y: 100 + (Math.floor(i / 10) * 100) });

@@ -2,6 +2,7 @@
   "sogrom-simple-combat-bar": {
     "title": "Simple Combat Bar",
     "round": "Round",
+    "unknown": "Unknown",
     "conflict": {
       "ctd": "Simple Combat Bar is standing down because Carousel Combat Tracker (combat-tracker-dock) is also active. Both draw a turn-order bar across the top of the screen; disable one of them in Manage Modules."
     },

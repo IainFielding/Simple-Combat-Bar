@@ -99,7 +99,9 @@ export class PortraitView {
     }
     const bar = this.#slots.hp;
     if ( !bar ) return;
-    bar.hidden = !model.hpShown;
+    // A class, not `hidden`: core's `[hidden] { display: none !important }` would collapse the
+    // bar's space and drop the card out of line with its neighbours.
+    bar.classList.toggle("is-empty", !model.hpBar);
     bar.style.setProperty("--scb-hp-pct", `${model.hpPct ?? 0}%`);
     const tempPct = model.hpTemp && model.hpMax ? Math.min(100, Math.round((model.hpTemp / model.hpMax) * 100)) : 0;
     bar.style.setProperty("--scb-hp-temp-pct", `${tempPct}%`);
