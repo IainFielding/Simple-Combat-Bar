@@ -1,0 +1,25 @@
+# Dev tooling — not part of the shipped module archive.
+node_modules/
+
+# Test / tooling output
+coverage/
+.vitest/
+
+# Editor / OS cruft
+.DS_Store
+Thumbs.db
+
+# Design notes, specs and working docs (governance/SPEC.md and friends). Kept local so our
+# thinking is not published with the public repository. Public documentation lives in docs/.
+governance/
+
+# End-to-end harness. The source is tracked; machine-specific config and run output are not.
+#   config.mjs  absolute paths to one machine's Foundry install and user data
+#   run output  logs, results and screenshots from a local run
+# `config.example.mjs` is tracked in its place; copy it to `config.mjs` and edit the paths.
+test-e2e/config.mjs
+test-e2e/*.log
+test-e2e/*.jsonl
+test-e2e/*.html
+test-e2e/results/
+test-e2e/failure.png

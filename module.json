@@ -1,0 +1,51 @@
+{
+  "id": "sogrom-simple-combat-bar",
+  "title": "Simple Combat Bar",
+  "description": "A Baldur's Gate 3 style turn-order bar for Foundry VTT, built for D&D 5e. Light on memory, quick to update, and readable at a glance.",
+  "version": "#{VERSION}#",
+  "compatibility": {
+    "minimum": "14.359",
+    "maximum": "14.999",
+    "verified": "14.368"
+  },
+  "authors": [
+    {
+      "name": "Iain Fielding",
+      "url": "https://iainfielding.com",
+      "discord": "Sogrom"
+    }
+  ],
+  "relationships": {
+    "conflicts": [
+      {
+        "id": "combat-tracker-dock",
+        "type": "module",
+        "reason": "Both modules draw a turn-order bar across the top of the screen. Enable one or the other."
+      }
+    ]
+  },
+  "esmodules": [
+    "scripts/main.mjs"
+  ],
+  "styles": [
+    "styles/fonts.css",
+    "styles/bar/01-foundation.css",
+    "styles/bar/02-layout.css",
+    "styles/bar/03-portrait.css",
+    "styles/bar/04-controls.css",
+    "styles/portrait/medallion.css",
+    "styles/portrait/card.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "url": "#{URL}#",
+  "manifest": "#{MANIFEST}#",
+  "download": "#{DOWNLOAD}#",
+  "license": "LICENSE",
+  "readme": "https://github.com/IainFielding/Simple-Combat-Bar#readme"
+}

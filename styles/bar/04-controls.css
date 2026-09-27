@@ -1,0 +1,128 @@
+/* GM controls, the End Turn button, and the portrait tooltip. */
+
+.scb-root .scb-controls {
+  display: none;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-width: 88px;
+}
+
+.scb-root.is-gm .scb-controls {
+  display: flex;
+}
+
+.scb-root .scb-control {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  border: 1px solid var(--scb-line);
+  border-radius: 6px;
+  background: var(--scb-panel);
+  color: var(--scb-muted);
+  font-size: 12px;
+}
+
+.scb-root .scb-control:hover,
+.scb-root .scb-control:focus-visible {
+  color: var(--scb-bright);
+  border-color: var(--scb-line-2);
+  background: var(--scb-panel-2);
+}
+
+/* Start shows before combat, the turn and round controls during it. */
+.scb-root .scb-control.startCombat { color: var(--scb-open-bright); border-color: var(--scb-open); }
+.scb-root.is-started .scb-control.startCombat,
+.scb-root:not(.is-started) .scb-control:is(.previousTurn, .nextTurn, .previousRound, .nextRound, .endCombat) {
+  display: none;
+}
+
+/* ---------------------------------------------------------------- End Turn */
+.scb-root .scb-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 6px;
+  pointer-events: none;
+}
+
+.scb-root .scb-endturn {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  min-height: 0;
+  padding: 4px 18px;
+  border: 1px solid var(--scb-open);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #17332f, #0f1f1d);
+  color: var(--scb-open-bright);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 0 10px var(--scb-open-glow), 0 3px 8px rgba(0, 0, 0, 0.6);
+}
+
+.scb-root .scb-endturn:hover,
+.scb-root .scb-endturn:focus-visible {
+  background: var(--scb-open);
+  color: #0b1413;
+}
+
+.scb-root .scb-endturn[hidden] {
+  display: none;
+}
+
+/* ---------------------------------------------------------------- tooltip
+   Rendered by core's TooltipManager into #tooltip, outside .scb-root, so it is scoped by the
+   cssClass the bar passes instead. */
+#tooltip.scb-tooltip {
+  max-width: 280px;
+  padding: 8px 10px;
+  border: 1px solid #656e7b;
+  background: rgba(21, 22, 26, 0.96);
+  color: #d9d5cc;
+  font-family: "Spectral", "Signika", serif;
+  text-align: left;
+}
+
+#tooltip.scb-tooltip .scb-tt-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#tooltip.scb-tooltip .scb-tt-name {
+  margin: 0;
+  border: none;
+  font-family: "Cinzel", "Signika", serif;
+  font-size: 15px;
+  color: #f2eee5;
+}
+
+#tooltip.scb-tooltip .scb-tt-init {
+  font-family: "Cinzel", "Signika", serif;
+  color: #e3bf4b;
+}
+
+#tooltip.scb-tooltip .scb-tt-desc {
+  margin: 2px 0 6px;
+  font-style: italic;
+  color: #9a978f;
+}
+
+#tooltip.scb-tooltip .scb-tt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#tooltip.scb-tooltip .scb-tt-label {
+  color: #9a978f;
+}

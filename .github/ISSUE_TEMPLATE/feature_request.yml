@@ -1,0 +1,60 @@
+name: Feature request
+description: Suggest a new option or improvement to the combat bar.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are welcome. The guiding principles for this module are **readable at a
+        glance** and **never slow the game down** — suggestions that keep the bar light are
+        the easiest to say yes to.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem?
+      description: What are you trying to do that the module makes hard or impossible today?
+      placeholder: >-
+        My table runs lair actions on initiative 20, and there's no way to see
+        them coming on the bar.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: Describe the feature or change. If it changes the bar, say roughly where on the bar it would appear.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of the module?
+      options:
+        - Turn order / portraits on the bar
+        - Group turns
+        - Action economy pips
+        - Tooltips, effects and attributes
+        - Portrait styles
+        - Module settings (GM options)
+        - Compatibility with another module or content pack
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Any workarounds you're using now, or other ways this could be solved.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmations
+      options:
+        - label: I searched the existing issues and this hasn't already been suggested.
+          required: true

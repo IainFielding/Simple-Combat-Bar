@@ -1,0 +1,107 @@
+/* Layout: the band across the top of #ui-top, the track of portraits, the round divider. */
+
+.scb-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  pointer-events: none;
+  margin-top: 6px;
+}
+
+.scb-root .scb-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 10px;
+  pointer-events: auto;
+  background: linear-gradient(180deg, rgba(8, 9, 12, 0.92), var(--scb-bg));
+  border: 1px solid var(--scb-line);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), inset 0 -1px 0 rgba(201, 162, 39, 0.25);
+}
+
+.scb-root .scb-track {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--scb-gap);
+  margin: 0;
+  padding: 4px 4px 2px;
+  list-style: none;
+  min-width: 0;
+  overflow: hidden;
+  scroll-behavior: smooth;
+}
+
+/* Overflow "scroll": let the track scroll and fade its edges. */
+.scb-root[data-overflow="scroll"] .scb-track {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+
+/* ---------------------------------------------------------------- round medallion */
+.scb-root .scb-round {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--scb-settled);
+  background: radial-gradient(circle at 50% 35%, #2d2a20, #121214 70%);
+  box-shadow: 0 0 10px var(--scb-settled-glow);
+  font-family: var(--scb-font-display);
+  line-height: 1;
+}
+
+.scb-root .scb-round-label {
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--scb-muted);
+}
+
+.scb-root .scb-round-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--scb-settled-bright);
+}
+
+/* ---------------------------------------------------------------- next-round divider */
+.scb-root .scb-divider {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  gap: 2px;
+  padding: 0 4px;
+  font-family: var(--scb-font-display);
+  color: var(--scb-muted);
+  line-height: 1;
+}
+
+.scb-root .scb-divider::before,
+.scb-root .scb-divider::after {
+  content: "";
+  flex: 1;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--scb-line-2), transparent);
+}
+
+.scb-root .scb-divider-label {
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.scb-root .scb-divider-round {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--scb-text);
+}

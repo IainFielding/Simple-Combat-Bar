@@ -1,0 +1,29 @@
+/* Portrait style: card — tall portraits with a name plate, closer to combat-tracker-dock. */
+
+.scb-root[data-style="card"] .scb-frame {
+  width: var(--scb-size);
+  height: calc(var(--scb-size) * var(--scb-aspect));
+  border-radius: 6px;
+}
+
+.scb-root[data-style="card"] .scb-portrait[data-side="enemy"] .scb-frame {
+  border-radius: 6px 6px 14px 14px;
+}
+
+.scb-root[data-style="card"] .scb-init {
+  top: 3px;
+  right: 3px;
+}
+
+.scb-root[data-style="card"] .scb-roll {
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+}
+
+.scb-root[data-style="card"] .scb-name {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 10px 3px 2px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.85) 60%);
+}

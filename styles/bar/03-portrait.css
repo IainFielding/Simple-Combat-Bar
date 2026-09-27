@@ -1,0 +1,245 @@
+/* Portrait parts shared by every style: states, side colours, damage overlay, HP bar, flags,
+   initiative and team-run frames. Shape and proportions belong to styles/portrait/<style>.css. */
+
+.scb-root .scb-portrait {
+  --scb-side: var(--scb-neutral);
+  position: relative;
+  flex: none;
+  width: var(--scb-size);
+  cursor: pointer;
+  transition: transform var(--scb-motion), opacity var(--scb-motion), filter var(--scb-motion);
+  outline: none;
+}
+
+.scb-root .scb-portrait[data-side="ally"] { --scb-side: var(--scb-ally); }
+.scb-root .scb-portrait[data-side="enemy"] { --scb-side: var(--scb-enemy); }
+.scb-root .scb-portrait[data-side="secret"] { --scb-side: var(--scb-secret); }
+
+.scb-root .scb-frame {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid var(--scb-side);
+  background: var(--scb-panel);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  transition: border-color var(--scb-motion), box-shadow var(--scb-motion);
+}
+
+.scb-root .scb-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  border: none;
+}
+
+/* Player characters: a brass inner ring, so the party reads at a glance. */
+.scb-root .scb-portrait.is-pc .scb-frame {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), inset 0 0 0 2px rgba(201, 162, 39, 0.55);
+}
+
+/* ---------------------------------------------------------------- current / acted */
+.scb-root .scb-portrait.is-current {
+  transform: translateY(2px) scale(1.14);
+  z-index: 2;
+}
+
+.scb-root .scb-portrait.is-current .scb-frame {
+  border-color: var(--scb-settled-bright);
+  box-shadow: 0 0 0 1px var(--scb-settled), 0 0 14px var(--scb-settled-glow);
+}
+
+.scb-root .scb-portrait.is-current + .scb-portrait.is-current {
+  margin-left: calc(var(--scb-size) * 0.06);
+}
+
+.scb-root .scb-portrait.is-acted {
+  opacity: 0.72;
+  filter: saturate(0.7);
+}
+
+.scb-root .scb-portrait:hover,
+.scb-root .scb-portrait.is-hovered,
+.scb-root .scb-portrait:focus-visible {
+  opacity: 1;
+  filter: none;
+}
+
+.scb-root .scb-portrait:hover .scb-frame,
+.scb-root .scb-portrait.is-hovered .scb-frame,
+.scb-root .scb-portrait:focus-visible .scb-frame {
+  border-color: var(--scb-bright);
+}
+
+.scb-root .scb-portrait.is-controlled .scb-frame {
+  outline: 2px solid var(--scb-open);
+  outline-offset: 1px;
+}
+
+/* ---------------------------------------------------------------- defeated / hidden */
+.scb-root .scb-portrait.is-defeated .scb-img {
+  filter: grayscale(1) brightness(0.6);
+}
+
+.scb-root .scb-portrait.is-hidden .scb-frame {
+  border-style: dashed;
+  opacity: 0.65;
+}
+
+.scb-root .scb-flag {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--scb-size) * 0.34);
+  color: rgba(242, 238, 229, 0.85);
+  text-shadow: 0 1px 4px #000;
+  pointer-events: none;
+}
+
+.scb-root .scb-portrait.is-defeated .scb-flag-defeated { display: flex; }
+
+.scb-root .scb-portrait.is-hidden .scb-flag-hidden {
+  display: flex;
+  inset: auto 4px 4px auto;
+  font-size: calc(var(--scb-size) * 0.18);
+}
+
+/* ---------------------------------------------------------------- damage overlay */
+.scb-root .scb-damage {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: var(--scb-damage-pct, 0%);
+  background: var(--scb-damage);
+  mix-blend-mode: multiply;
+  box-shadow: inset 0 -2px 0 rgba(255, 60, 60, 0.55);
+  pointer-events: none;
+  transition: height 400ms ease-out;
+}
+
+.scb-root .scb-damage[hidden] {
+  display: none;
+}
+
+/* ---------------------------------------------------------------- HP bar */
+.scb-root .scb-hp {
+  position: relative;
+  height: max(3px, calc(var(--scb-size) * 0.06));
+  margin-top: 3px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+}
+
+.scb-root .scb-hp[hidden] {
+  visibility: hidden;
+}
+
+.scb-root .scb-hp-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--scb-hp-pct, 100%);
+  background: var(--scb-hp);
+  transition: width 400ms ease-out, background-color 400ms;
+}
+
+.scb-root .scb-hp-temp {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: var(--scb-hp-temp-pct, 0%);
+  background: var(--scb-hp-temp);
+}
+
+.scb-root .scb-portrait[data-hp="bloodied"] .scb-hp-fill { background: var(--scb-hp-bloodied); }
+.scb-root .scb-portrait[data-hp="critical"] .scb-hp-fill,
+.scb-root .scb-portrait[data-hp="down"] .scb-hp-fill { background: var(--scb-hp-critical); }
+
+/* ---------------------------------------------------------------- initiative / roll */
+.scb-root .scb-init {
+  position: absolute;
+  z-index: 1;
+  display: none;
+  min-width: 1.6em;
+  padding: 0 4px;
+  border-radius: 8px;
+  border: 1px solid var(--scb-line-2);
+  background: rgba(10, 10, 12, 0.9);
+  font-family: var(--scb-font-display);
+  font-size: max(10px, calc(var(--scb-size) * 0.16));
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--scb-bright);
+  pointer-events: none;
+}
+
+.scb-root .scb-portrait.has-initiative .scb-init { display: block; }
+
+.scb-root .scb-roll {
+  position: absolute;
+  z-index: 1;
+  display: none;
+  width: calc(var(--scb-size) * 0.42);
+  height: calc(var(--scb-size) * 0.42);
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  border-radius: 50%;
+  border: 1px solid var(--scb-open);
+  background: rgba(10, 10, 12, 0.88);
+  color: var(--scb-open-bright);
+  font-size: calc(var(--scb-size) * 0.22);
+  box-shadow: 0 0 8px var(--scb-open-glow);
+}
+
+.scb-root .scb-portrait.can-roll .scb-roll { display: grid; place-items: center; }
+
+.scb-root .scb-roll:hover {
+  background: var(--scb-open);
+  color: #0b1413;
+}
+
+/* ---------------------------------------------------------------- name */
+.scb-root .scb-name {
+  display: block;
+  overflow: hidden;
+  font-family: var(--scb-font-display);
+  font-size: max(9px, calc(var(--scb-size) * 0.13));
+  line-height: 1.3;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--scb-text);
+}
+
+/* ---------------------------------------------------------------- team runs (BG3 group turns)
+   Consecutive combatants on one side share a backplate: the first and last draw its rounded
+   ends, the middle ones the straight run, and the gap between them is bridged. */
+.scb-root .scb-portrait[data-run-position]::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -4px calc(var(--scb-gap) / -2 - 1px) -4px calc(var(--scb-gap) / -2 - 1px);
+  background: color-mix(in srgb, var(--scb-side) 16%, transparent);
+  border-block: 1px solid color-mix(in srgb, var(--scb-side) 55%, transparent);
+  pointer-events: none;
+}
+
+.scb-root .scb-portrait[data-run-position="first"]::before {
+  left: -4px;
+  border-left: 1px solid color-mix(in srgb, var(--scb-side) 55%, transparent);
+  border-radius: 10px 0 0 10px;
+}
+
+.scb-root .scb-portrait[data-run-position="last"]::before {
+  right: -4px;
+  border-right: 1px solid color-mix(in srgb, var(--scb-side) 55%, transparent);
+  border-radius: 0 10px 10px 0;
+}
+
+.scb-root .scb-portrait.is-current[data-run-position]::before {
+  background: color-mix(in srgb, var(--scb-settled) 14%, transparent);
+  border-color: var(--scb-settled);
+}

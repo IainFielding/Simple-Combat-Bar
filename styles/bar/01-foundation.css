@@ -1,0 +1,73 @@
+/* Simple Combat Bar — foundation.
+
+   The bar's styles are one stylesheet cut into numbered files under styles/bar/, loaded in number
+   order by module.json (test/house.test.mjs keeps the list and the files in step), followed
+   by one file per portrait style under styles/portrait/.
+
+   Everything is scoped under .scb-root, and the bar's variables are set *on that root*, never on
+   :root — changing a size or colour restyles the bar and nothing else (spec R10).
+
+   Theme: the Character Creator's "Arcane Midnight", so the two modules read as one family.
+   Colour carries one meaning each:
+     brass (--scb-settled)  the combatant acting now, and anything already decided;
+     teal  (--scb-open)     something asking for this user's input: End Turn, roll initiative;
+     side colours           who a combatant fights for — ally, enemy, neutral.
+   Side is never shown by colour alone: enemies also get a notched frame (see 03-portrait). */
+
+.scb-root {
+  --scb-settled: #c9a227;
+  --scb-settled-bright: #e3bf4b;
+  --scb-settled-glow: rgba(201, 162, 39, 0.45);
+  --scb-open: #4fb3a8;
+  --scb-open-bright: #6fd0c5;
+  --scb-open-glow: rgba(79, 179, 168, 0.40);
+
+  --scb-bg: rgba(21, 22, 26, 0.88);
+  --scb-panel: #212429;
+  --scb-panel-2: #2a2e35;
+  --scb-line: #474d57;
+  --scb-line-2: #656e7b;
+  --scb-text: #d9d5cc;
+  --scb-muted: #9a978f;
+  --scb-bright: #f2eee5;
+  --scb-danger: #ec7082;
+
+  --scb-ally: #5aa9e6;
+  --scb-enemy: #d9534f;
+  --scb-neutral: #c7b37a;
+  --scb-secret: #8e7cc3;
+
+  /* HP bar and the damage overlay. The overlay is a translucent blood red over the art, so the
+     portrait stays recognisable at 100% damage. */
+  --scb-hp: #4caf6a;
+  --scb-hp-bloodied: #d8a13a;
+  --scb-hp-critical: #d9534f;
+  --scb-hp-temp: #5aa9e6;
+  --scb-damage: rgba(170, 18, 24, 0.62);
+
+  --scb-font-display: "Cinzel", "Signika", serif;
+  --scb-font-body: "Spectral", "Signika", serif;
+
+  /* Set by the controller: portrait width and the active style's height ÷ width. */
+  --scb-size: 72px;
+  --scb-aspect: 1;
+  --scb-gap: calc(var(--scb-size) * 0.12);
+  --scb-motion: 220ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  color: var(--scb-text);
+  font-family: var(--scb-font-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scb-root {
+    --scb-motion: 0ms linear;
+  }
+}
+
+.scb-root[hidden] {
+  display: none !important;
+}
+
+.scb-root button {
+  font-family: var(--scb-font-display);
+}

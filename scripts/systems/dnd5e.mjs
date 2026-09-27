@@ -1,0 +1,67 @@
+/**
+ * dnd5e 6.x adapter.
+ */
+
+/** Actor `system` keys that affect a portrait. An update touching none of these is ignored. */
+const WATCHED = new Set(["attributes", "details", "resources"]);
+
+/**
+ * Format a challenge rating the way the stat block does: 0.125 → "1/8".
+ * @param {number|null} cr
+ * @returns {string|null}
+ */
+export function formatCR(cr) {
+  if ( (cr === null) || (cr === undefined) || Number.isNaN(Number(cr)) ) return null;
+  const n = Number(cr);
+  if ( (n >= 1) || (n <= 0) ) return String(n);
+  return `1/${Math.round(1 / n)}`;
+}
+
+/** @type {import("./adapter.mjs").SystemAdapter} */
+export const dnd5eAdapter = {
+  id: "dnd5e",
+
+  describe(actor) {
+    const system = actor?.system;
+    if ( !system ) return null;
+    if ( actor.type === "npc" ) {
+      const typeKey = system.details?.type?.value;
+      const typeLabel = CONFIG.DND5E?.creatureTypes?.[typeKey]?.label;
+      const type = typeLabel ? game.i18n.localize(typeLabel) : (system.details?.type?.custom || "");
+      const cr = formatCR(system.details?.cr);
+      return [cr !== null ? `CR ${cr}` : null, type].filter(Boolean).join(" ") || null;
+    }
+    if ( actor.type === "character" ) {
+      const classes = Object.values(actor.classes ?? {}).map(c => c.name).join(" / ");
+      const species = system.details?.race?.name ?? null;
+      const level = system.details?.level;
+      const parts = [level ? game.i18n.format("DND5E.LevelNumber", { level }) : null, classes].filter(Boolean);
+      return `${parts.join(" ")}${species ? ` (${species})` : ""}` || null;
+    }
+    return null;
+  },
+
+  hp(actor) {
+    const hp = actor?.system?.attributes?.hp;
+    if ( !hp || (typeof hp.value !== "number") ) return null;
+    const max = hp.effectiveMax ?? hp.max;
+    return { value: hp.value, max: typeof max === "number" ? max : null, temp: hp.temp || null };
+  },
+
+  /**
+   * Health for a viewer who can't observe the actor. Foundry doesn't send an unlinked token's
+   * system data to such users (its delta arrives with `system` emptied), so any HP they could read
+   * is the *base* actor's, usually full. dnd5e's statuses do arrive, and it applies Bloodied itself.
+   */
+  healthState(actor) {
+    const statuses = actor?.statuses;
+    if ( !statuses ) return null;
+    if ( statuses.has(CONFIG.specialStatusEffects?.DEFEATED ?? "dead") || statuses.has("dead") ) return "down";
+    if ( statuses.has("bloodied") ) return "bloodied";
+    return "healthy";
+  },
+
+  watchedPaths() {
+    return WATCHED;
+  }
+};

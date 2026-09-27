@@ -1,0 +1,16 @@
+{
+  "name": "sogrom-combat-bar-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Local end-to-end harness: drives a real Foundry install against the Simple Combat Bar, and against combat-tracker-dock as a baseline. Not shipped.",
+  "scripts": {
+    "link-module": "node scripts/link-module.mjs",
+    "provision": "node provision.mjs",
+    "test": "node run.mjs playwright-combat",
+    "test:ctd": "node run.mjs playwright-ctd",
+    "compare": "node run.mjs playwright-combat playwright-ctd --suites=lifecycle,budget"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  }
+}

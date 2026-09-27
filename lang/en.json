@@ -1,0 +1,118 @@
+{
+  "sogrom-simple-combat-bar": {
+    "title": "Simple Combat Bar",
+    "round": "Round",
+    "conflict": {
+      "ctd": "Simple Combat Bar is standing down because Carousel Combat Tracker (combat-tracker-dock) is also active. Both draw a turn-order bar across the top of the screen; disable one of them in Manage Modules."
+    },
+    "controls": {
+      "configure": "Combat Bar Settings"
+    },
+    "context": {
+      "setCurrent": "Make Current Turn"
+    },
+    "tooltip": {
+      "hp": "HP",
+      "roundsLeft": "{rounds} rounds left"
+    },
+    "health": {
+      "healthy": "Healthy",
+      "bloodied": "Bloodied",
+      "critical": "Badly Wounded",
+      "down": "Down"
+    },
+    "styles": {
+      "medallion": "Medallion (round)",
+      "card": "Card (tall)"
+    },
+    "keybindings": {
+      "previousTurn": "Previous Turn",
+      "endTurn": "End Turn"
+    },
+    "settings": {
+      "enabled": {
+        "name": "Show the Combat Bar",
+        "hint": "Show the turn-order bar across the top of the screen during combat. Only affects you."
+      },
+      "portraitStyle": {
+        "name": "Portrait Style",
+        "hint": "How each combatant is drawn on the bar."
+      },
+      "portraitSize": {
+        "name": "Portrait Size",
+        "hint": "The largest a portrait is drawn, in pixels. With Fit to Width on, portraits shrink below this when the bar is crowded. Only affects you."
+      },
+      "overflow": {
+        "name": "When the Bar Is Full",
+        "hint": "What happens when there are more combatants than fit across the screen. Only affects you.",
+        "choices": {
+          "autofit": "Fit to width (shrink portraits)",
+          "scroll": "Scroll sideways"
+        }
+      },
+      "portraitImage": {
+        "name": "Portrait Image",
+        "hint": "Use the actor's portrait art or the token's image.",
+        "choices": {
+          "actor": "Actor portrait",
+          "token": "Token image"
+        }
+      },
+      "nameVisibility": {
+        "name": "Combatant Names",
+        "hint": "When players see the names of combatants they don't own. The GM always sees names.",
+        "choices": {
+          "always": "Always",
+          "token": "When the token's name is shown on hover or always",
+          "owner": "Only for combatants they own"
+        }
+      },
+      "hpVisibility": {
+        "name": "Hit Points",
+        "hint": "How much players see of the hit points of combatants they can't observe. Foundry doesn't send the hit points of unlinked tokens to players who can't observe them, so for those the bar shows how wounded they are from their Bloodied and Dead conditions instead.",
+        "choices": {
+          "all": "Everyone sees exact hit points (when Foundry shares them)",
+          "owner": "Others see only healthy / bloodied / badly wounded",
+          "ownerOnly": "Others see nothing"
+        }
+      },
+      "damageFill": {
+        "name": "Fill Portraits With Damage",
+        "hint": "Portraits fill red from the top as hit points are lost. Follows the Hit Points setting: exact for those who may see hit points, in coarse steps for those who only see how wounded a combatant is."
+      },
+      "hideEnemyInitiative": {
+        "name": "Hide Enemy Initiative",
+        "hint": "Players don't see initiative values for combatants they don't own."
+      },
+      "hideUnseenFirstRound": {
+        "name": "Reveal Enemies as They Act",
+        "hint": "In the first round, players only see a hostile or neutral combatant on the bar once it has taken its turn."
+      },
+      "hideDefeated": {
+        "name": "Remove Defeated Combatants",
+        "hint": "Take defeated combatants off the bar instead of showing them greyed out."
+      },
+      "groupTeams": {
+        "name": "Group Turns",
+        "hint": "Like Baldur's Gate 3: allies or enemies next to each other in the order share one frame on the bar.",
+        "choices": {
+          "off": "Off",
+          "visual": "Shared frame, still one at a time",
+          "bg3": "Shared frame (group turns)"
+        }
+      },
+      "sidebarOnCombat": {
+        "name": "Sidebar When Combat Starts",
+        "hint": "Collapse the sidebar when combat starts, to give the scene more room.",
+        "choices": {
+          "collapse": "Collapse it",
+          "leave": "Leave it as it is"
+        }
+      },
+      "debug": {
+        "name": "Debug Logging",
+        "hint": "Write the bar's internal events to the browser console. Only affects you."
+      }
+    }
+  }
+}
