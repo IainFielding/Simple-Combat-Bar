@@ -54,13 +54,17 @@ const GM_CONTROLS_START = [
   ["previousTurn", "fa-solid fa-angle-left", "COMBAT.TurnPrev"]
 ];
 
+/**
+ * Top to bottom. The tabs stack from the bottom, so Next Turn mirrors Previous Turn in the opposite
+ * corner; Start Combat takes End Combat's place until the combat has started.
+ */
 const GM_CONTROLS_END = [
-  ["nextTurn", "fa-solid fa-angle-right", "COMBAT.TurnNext"],
-  ["nextRound", "fa-solid fa-angles-right", "COMBAT.RoundNext"],
+  ["configure", "fa-solid fa-gear", "sogrom-simple-combat-bar.controls.configure"],
+  ["addEvent", "fa-solid fa-hourglass-half", "sogrom-simple-combat-bar.events.title"],
   ["startCombat", "fa-solid fa-play", "COMBAT.Begin"],
   ["endCombat", "fa-solid fa-flag-checkered", "COMBAT.End"],
-  ["addEvent", "fa-solid fa-hourglass-half", "sogrom-simple-combat-bar.events.title"],
-  ["configure", "fa-solid fa-gear", "sogrom-simple-combat-bar.controls.configure"]
+  ["nextRound", "fa-solid fa-angles-right", "COMBAT.RoundNext"],
+  ["nextTurn", "fa-solid fa-angle-right", "COMBAT.TurnNext"]
 ];
 
 export class CombatBar {

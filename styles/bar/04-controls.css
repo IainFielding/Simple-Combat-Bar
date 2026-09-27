@@ -14,7 +14,8 @@
   bottom: -1px;
   display: none;
   flex-direction: column;
-  justify-content: center;
+  /* Stacked from the bottom: Previous Turn and Next Turn sit level in the bottom corners. */
+  justify-content: flex-end;
   align-items: stretch;
   width: 38px;
   padding-block: 3px;
