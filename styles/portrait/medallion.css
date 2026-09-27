@@ -52,3 +52,11 @@
   left: 4%;
   align-items: flex-start;
 }
+
+/* Effects centred in the lower third of the ring. */
+.scb-root[data-style="medallion"] .scb-effects {
+  left: 50%;
+  bottom: 24%;
+  justify-content: center;
+  transform: translateX(-50%);
+}

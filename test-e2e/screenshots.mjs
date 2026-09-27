@@ -47,6 +47,12 @@ try {
       initiative: 21.5, duration: 3, hidden: false });
     await combat.nextRound();
     await combat.update({ turn: combat.turns.findIndex(c => c.id === pcs[0].id) });
+    // Effects: a timed one on the current hero (its ring drains), conditions on a goblin.
+    for ( const e of pcs[0].actor.effects.filter(e => e.name === "Shot Blessing") ) await e.delete();
+    await pcs[0].actor.createEmbeddedDocuments("ActiveEffect", [{ name: "Shot Blessing", img: "icons/svg/aura.svg",
+      duration: { value: 3, units: "rounds" } }]);
+    await npcs[0].actor.toggleStatusEffect("poisoned", { active: true });
+    await npcs[0].actor.toggleStatusEffect("prone", { active: true });
     // A spent Action on the current hero, and a spent Reaction on a goblin, to show both looks.
     await pcs[0].update({ [`flags.${id}.economy`]: { action: true, bonus: false, reaction: false } });
     await npcs[0].update({ [`flags.${id}.economy`]: { action: false, bonus: false, reaction: true } });
@@ -95,6 +101,7 @@ try {
   if ( gm ) {
     await gm.eval(async id => {
       const f = await import(`/modules/${id}/test-e2e/in-world/fixtures.mjs`);
+      for ( const a of game.actors ) for ( const e of a.effects.filter(e => e.name === "Shot Blessing") ) await e.delete();
       await f.cleanup();
       await game.settings.set(id, "portraitStyle", "card");
       await game.settings.set(id, "groupTeams", "off");

@@ -13,6 +13,7 @@
 import { displayName, healthState, hpDetail, showsInitiative } from "./visibility.mjs";
 import { pipStates } from "./economy.mjs";
 import { legendaryCounter } from "./legendary.mjs";
+import { effectIcons } from "./effects.mjs";
 
 /**
  * @typedef {object} CombatantFacts
@@ -114,6 +115,7 @@ export function buildPortraitModel(facts, { settings, current, acted, run, activ
     ...pipStates(facts.economy ?? null, { current, shown: !!facts.trusted }),
     canTogglePips: !!facts.economy && (facts.isOwner || facts.isGM),
     ...legendaryFields(facts),
+    ...effectFields(facts),
     hpState,
     hpPct: hpMode === "none" ? null : hpPct,
     hpValue,
@@ -124,6 +126,15 @@ export function buildPortraitModel(facts, { settings, current, acted, run, activ
     isEvent: facts.isEvent,
     eventRoundsLeft: facts.eventRoundsLeft ?? null
   };
+}
+
+/**
+ * The effect icons as one string, so the model stays primitives only and an unchanged set of
+ * effects compares equal (and doesn't repaint).
+ */
+function effectFields(facts) {
+  const { icons, extra } = effectIcons(facts.effects ?? []);
+  return { effects: JSON.stringify(icons), effectsExtra: extra };
 }
 
 /** Flat legendary fields: the model stays primitives only. */

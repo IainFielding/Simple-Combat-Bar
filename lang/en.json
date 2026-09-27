@@ -120,6 +120,19 @@
         "name": "Legendary Badges",
         "hint": "Show a legendary creature's legendary actions and resistances left on its card, for the GM and those who can see its sheet. Click one to spend it, Shift-click to give it back. D&D 5e spends and refills them itself as they're used."
       },
+      "showEffects": {
+        "name": "Status Effect Icons",
+        "hint": "Show each combatant's status effects on their card, as their token shows them on the map, with a ring for the duration left. The owner or GM can right-click an icon to remove it."
+      },
+      "effectDescriptions": {
+        "name": "Effect Descriptions in Tooltips",
+        "hint": "Who sees each effect's description when hovering a portrait. Everyone sees the effect names.",
+        "choices": {
+          "none": "Nobody",
+          "owner": "The GM and those who can see the creature's sheet",
+          "all": "Everyone"
+        }
+      },
       "groupTeams": {
         "name": "Group Turns",
         "hint": "Like Baldur's Gate 3: allies or enemies next to each other in the order share one frame. With group turns, they also share one turn: any of them can act, in any order, by clicking their portrait, and the turn moves on once all of them have ended theirs.",
@@ -204,6 +217,10 @@
       "takeTurn": "Click to take this turn",
       "ended": "Turn ended",
       "noGM": "A GM needs to be connected to change turns within a group."
+    },
+    "effects": {
+      "removeTitle": "Remove Effect",
+      "removeContent": "Remove {name} from this combatant?"
     }
   }
 }

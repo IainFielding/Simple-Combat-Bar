@@ -49,6 +49,7 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
     // Like HP numbers: only for viewers who actually receive the actor's data.
     secondary: actor && !isEvent && trustsHP ? safe(() => secondaryBar(actor.system, settings.secondaryResource)) : null,
     trusted: trustsHP,
+    effects: settings.showEffects && actor && !isEvent ? safe(() => readEffects(actor, { card: true })) : null,
     legendary: settings.legendaryBadges && actor && !isEvent && trustsHP
       ? safe(() => adapter.legendary?.(actor)) : null,
     economy: settings.trackEconomy && !isEvent ? safe(() => economyProvider().read(combatant)) : null,
@@ -56,6 +57,33 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
     isEvent,
     eventRoundsLeft
   };
+}
+
+/** Statuses the card already shows another way, left off its icons (the tooltip still lists them). */
+const CARD_SKIPS = Object.freeze(["bloodied"]);
+
+/**
+ * The effects to draw for an actor, by core's own rule for token icons (Token#_drawEffects): the
+ * applied effects shown ALWAYS, or CONDITIONAL and temporary. Defeated is left out (the card has its
+ * own skull), as are the bar's own midi-qol bridge effects.
+ * @param {Actor} actor
+ * @param {object} [options]
+ * @param {boolean} [options.card]  For the card's icons: also leave out statuses the card already
+ *   shows (dnd5e's Bloodied is the damage fill and health state).
+ * @returns {import("../model/effects.mjs").EffectInfo[]}
+ */
+export function readEffects(actor, { card = false } = {}) {
+  const SHOW = CONST.ACTIVE_EFFECT_SHOW_ICON;
+  const defeated = CONFIG.specialStatusEffects?.DEFEATED;
+  return (actor.appliedEffects ?? [])
+    .filter(e => e.img && ((e.showIcon === SHOW.ALWAYS) || ((e.showIcon === SHOW.CONDITIONAL) && e.isTemporary)))
+    .filter(e => !(defeated && e.statuses?.has(defeated)) && !e.flags?.[MODULE_ID]?.economyBridge)
+    .filter(e => !card || !CARD_SKIPS.some(s => e.statuses?.has(s)))
+    .map(e => ({
+      id: e.id, uuid: e.uuid, img: e.img, name: e.name,
+      remaining: e.duration?.remaining ?? null, total: e.duration?.value ?? null,
+      label: e.duration?.label ?? "", description: e.description ?? ""
+    }));
 }
 
 /**

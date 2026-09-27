@@ -7,14 +7,18 @@
  */
 
 import { t } from "../config.mjs";
+import { plainText } from "../model/effects.mjs";
 
 /**
  * @param {object} model   A portrait model (model/portrait-model.mjs).
  * @param {Array<{label: string, icon: string, text: string}>} [attributes]  Tooltip values, read at
  *   hover time (model/trackers.mjs#readAttributes); empty for viewers who don't receive the data.
+ * @param {object} [options]
+ * @param {import("../model/effects.mjs").EffectInfo[]} [options.effects]  All effects, read at hover.
+ * @param {boolean} [options.descriptions]  Show each effect's description (as plain text).
  * @returns {HTMLElement}
  */
-export function buildTooltip(model, attributes = []) {
+export function buildTooltip(model, attributes = [], { effects = [], descriptions = false } = {}) {
   const root = el("div", "scb-tooltip-body");
 
   const header = el("header", "scb-tt-header");
@@ -49,6 +53,22 @@ export function buildTooltip(model, attributes = []) {
   if ( attributes.length ) {
     const list = el("div", "scb-tt-attributes");
     for ( const a of attributes ) list.append(row(a.icon, a.text, a.label));
+    root.append(list);
+  }
+
+  if ( effects.length ) {
+    const list = el("div", "scb-tt-effects");
+    for ( const e of effects ) {
+      const line = el("div", "scb-tt-effect");
+      const img = el("img");
+      img.src = e.img;
+      img.alt = "";
+      line.append(img, el("span", "scb-tt-effect-name", e.name));
+      if ( Number.isFinite(e.remaining) && e.label ) line.append(el("span", "scb-tt-effect-time", e.label));
+      list.append(line);
+      const text = descriptions ? plainText(e.description) : "";
+      if ( text ) list.append(el("p", "scb-tt-effect-desc", text));
+    }
     root.append(list);
   }
 

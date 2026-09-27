@@ -97,6 +97,7 @@ export class PortraitView {
     if ( changed.includes("secPct") ) this.#patchBar2(model);
     if ( changed.some(f => f.startsWith("pip") || (f === "canTogglePips")) ) this.#patchPips(model);
     if ( changed.some(f => f.startsWith("leg") || (f === "canAdjustLegendary")) ) this.#patchLegendary(model);
+    if ( changed.some(f => f.startsWith("effects")) ) this.#patchEffects(model);
     this.model = model;
     return changed;
   }
@@ -115,6 +116,35 @@ export class PortraitView {
     bar.style.setProperty("--scb-hp-pct", `${model.hpPct ?? 0}%`);
     const tempPct = model.hpTemp && model.hpMax ? Math.min(100, Math.round((model.hpTemp / model.hpMax) * 100)) : 0;
     bar.style.setProperty("--scb-hp-temp-pct", `${tempPct}%`);
+  }
+
+  #patchEffects(model) {
+    const list = this.#slots.effects;
+    if ( !list ) return;
+    const icons = JSON.parse(model.effects || "[]");
+    const items = icons.map(icon => {
+      const li = document.createElement("li");
+      li.className = "scb-effect";
+      li.dataset.effectUuid = icon.uuid;
+      li.setAttribute("aria-label", icon.name);
+      if ( icon.pct !== null ) {
+        li.classList.add("has-duration");
+        li.style.setProperty("--scb-effect-pct", `${icon.pct}%`);
+      }
+      const img = document.createElement("img");
+      img.src = icon.img;
+      img.alt = "";
+      li.append(img);
+      return li;
+    });
+    if ( model.effectsExtra ) {
+      const more = document.createElement("li");
+      more.className = "scb-effects-more";
+      more.textContent = `+${model.effectsExtra}`;
+      items.push(more);
+    }
+    list.replaceChildren(...items);
+    list.classList.toggle("is-empty", !items.length);
   }
 
   #patchLegendary(model) {

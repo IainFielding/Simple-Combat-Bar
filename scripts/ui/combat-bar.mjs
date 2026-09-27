@@ -17,7 +17,8 @@ import { buildPortraitModel } from "../model/portrait-model.mjs";
 import { isShown } from "../model/visibility.mjs";
 import { wantsInitiativeDialog } from "../model/initiative.mjs";
 import { adapterFor } from "../systems/adapter.mjs";
-import { combatantFacts, sideOfCombatant } from "./facts.mjs";
+import { combatantFacts, readEffects, sideOfCombatant } from "./facts.mjs";
+import { showsDescriptions } from "../model/effects.mjs";
 import { groupContext, requestGroupTurn } from "./group-service.mjs";
 import { PortraitView } from "./portrait-view.mjs";
 import { portraitStyle } from "./portrait-styles.mjs";
@@ -483,6 +484,8 @@ export class CombatBar {
     life.listen(root, "keydown", event => this.#onKeyDown(event));
     life.listen(root, "pointerover", event => this.#onPointer(event, true));
     life.listen(root, "pointerout", event => this.#onPointer(event, false));
+    // Capture phase, so right-clicking an effect icon never reaches the portrait's context menu.
+    life.listen(root, "contextmenu", event => this.#onEffectContext(event), { capture: true });
     life.add(() => this.#closeTooltip());
 
     // Attached to the bar's container in #mount: at this point the root isn't in the page yet.
@@ -551,6 +554,22 @@ export class CombatBar {
     }
   }
 
+  /** Right-click an effect icon: the owner or GM may remove it, after confirming. */
+  async #onEffectContext(event) {
+    const icon = event.target.closest?.(".scb-effect");
+    if ( !icon ) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const effect = await fromUuid(icon.dataset.effectUuid);
+    if ( !effect?.isOwner ) return;
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: { title: t("effects.removeTitle") },
+      content: `<p>${t("effects.removeContent", { name: Handlebars.escapeExpression(effect.name) })}</p>`,
+      rejectClose: false
+    });
+    if ( confirmed ) await effect.delete();
+  }
+
   #openTooltipSoon(li) {
     this.#closeTooltip();
     this.#tooltipTimer = this.#session.timeout(() => {
@@ -565,8 +584,11 @@ export class CombatBar {
           localize: key => game.i18n.localize(key),
           labelFor: path => adapter.attributeLabel?.(path) ?? null
         }) : [];
-      game.tooltip.activate(li, { html: buildTooltip(view.model, attributes), direction: "DOWN",
-        cssClass: `${CSS}-tooltip` });
+      const cfg = settings();
+      const effects = cfg.showEffects && actor ? readEffects(actor) : [];
+      const descriptions = showsDescriptions(cfg.effectDescriptions, view.model.trusted);
+      game.tooltip.activate(li, { html: buildTooltip(view.model, attributes, { effects, descriptions }),
+        direction: "DOWN", cssClass: `${CSS}-tooltip` });
     }, TOOLTIP_DELAY);
   }
 

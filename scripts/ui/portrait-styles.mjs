@@ -49,6 +49,9 @@ const LEGENDARY = `
       tabindex="-1"><i class="fa-solid fa-shield-halved"></i><span></span></button>
   </div>`;
 
+/** Status effect icons, bottom-left above the name, each with a ring for the duration left. */
+const EFFECTS = `<ul class="scb-effects is-empty" data-slot="effects"></ul>`;
+
 const ROLL_BUTTON = `
   <button type="button" class="scb-roll" data-action="rollInitiative" tabindex="-1">
     <i class="fa-solid fa-dice-d20"></i>
@@ -105,6 +108,7 @@ registerPortraitStyle({
       ${SHARED_FLAGS}
       ${PIPS}
       ${LEGENDARY}
+      ${EFFECTS}
     </div>
     <span class="scb-init" data-slot="initiative"></span>
     ${ROLL_BUTTON}
@@ -123,6 +127,7 @@ registerPortraitStyle({
       ${SHARED_FLAGS}
       ${PIPS}
       ${LEGENDARY}
+      ${EFFECTS}
       <span class="scb-init" data-slot="initiative"></span>
       ${ROLL_BUTTON}
       <span class="scb-name" data-slot="name"></span>

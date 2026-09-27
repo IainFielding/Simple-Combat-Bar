@@ -151,7 +151,10 @@ describe("module.json", () => {
     expect(manifest.relationships.conflicts.map(c => c.id)).toContain("combat-tracker-dock");
   });
 
-  it("doesn't require a game system (the generic adapter covers others)", () => {
-    expect(manifest.relationships.systems).toBeUndefined();
+  it("requires dnd5e 6.0 or later, and nothing older", () => {
+    const [dnd5e, ...others] = manifest.relationships.systems;
+    expect(others).toEqual([]);
+    expect(dnd5e).toMatchObject({ id: "dnd5e", type: "system" });
+    expect(dnd5e.compatibility.minimum).toBe("6.0.0");
   });
 });

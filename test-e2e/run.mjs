@@ -26,11 +26,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers,settingsUi,responsive,economy,legendary,groupTurns").split(",");
+const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers,settingsUi,responsive,economy,legendary,groupTurns,effects").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns", "effects"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -152,6 +152,56 @@ const SUITES = {
     const { failures } = await session.eval(() => __scb.ordering());
     return { pass: !failures.length, failures,
       lines: failures.slice(0, 5).map(f => JSON.stringify(f)) };
+  },
+
+  /** Status effect icons: drawn like the token's, rings drain, tooltip lists them, right-click removes. */
+  async effects(gm) {
+    const failures = [];
+    const check = (ok, message) => ok || failures.push(message);
+    const ids = await gm.eval(() => __scb.effectsSetup());
+    const page = gm.page;
+    try {
+      let hero = await gm.eval(id => __scb.effectView(id), ids.hero);
+      let goblin = await gm.eval(id => __scb.effectView(id), ids.goblin);
+      const blessing = hero.find(e => e.label === "Test Blessing");
+      check(blessing?.ring && blessing.pct === "100%", `the 3-round effect should have a full ring: ${JSON.stringify(hero)}`);
+      check(goblin.length === 1 && !goblin[0].ring, `the goblin should show Poisoned, without a ring: ${JSON.stringify(goblin)}`);
+
+      await gm.eval(() => __scb.nextRound());
+      hero = await gm.eval(id => __scb.effectView(id), ids.hero);
+      const after = hero.find(e => e.label === "Test Blessing");
+      check(after?.pct === "67%", `a round later the ring should be at two thirds: ${after?.pct}`);
+
+      // Tooltip lists it.
+      await page.hover(`#scb-root .scb-portrait[data-combatant-id="${ids.hero}"]`);
+      await page.waitForTimeout(900);
+      const tip = await page.locator("#tooltip.scb-tooltip").innerText().catch(() => "");
+      check(/Test Blessing/.test(tip), `the tooltip doesn't list the effect: ${JSON.stringify(tip)}`);
+      await page.mouse.move(5, 700);
+
+      // A player sees the goblin's condition too: it's on the token for everyone.
+      const player = await Session.open({ user: PLAYER_USER });
+      try {
+        await loadSuites(player);
+        const seen = await player.eval(id => __scb.effectView(id), ids.goblin);
+        check(seen.length === 1, `a player should see the goblin's condition: ${JSON.stringify(seen)}`);
+      } finally {
+        await player.close({ shutDownWorld: false });
+      }
+
+      // Right-click, confirm: gone.
+      await page.click(`#scb-root .scb-portrait[data-combatant-id="${ids.goblin}"] .scb-effect`, { button: "right" });
+      const yes = page.locator('.application.dialog button[data-action="yes"]');
+      await yes.waitFor({ timeout: 5000 });
+      await yes.click();
+      goblin = await gm.eval(id => __scb.effectView(id), ids.goblin);
+      check(goblin.length === 0, "right-click and confirm didn't remove the condition");
+      const menu = await page.locator("#context-menu").count();
+      check(menu === 0, "right-clicking an effect also opened the portrait's context menu");
+    } finally {
+      await gm.eval(id => __scb.effectsTeardown(id), ids.hero);
+    }
+    return { pass: !failures.length, failures, lines: failures };
   },
 
   /** A BG3 group turn played by a real player: out of order, handed on, then left behind. */

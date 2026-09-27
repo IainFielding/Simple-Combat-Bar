@@ -517,3 +517,35 @@ export async function gmEndTurn() {
   await game.modules.get(MODULE_ID).api.bar.endTurn();
   await settle(600);
 }
+
+/* -------------------------------------------- */
+/*  Status effects                              */
+/* -------------------------------------------- */
+
+/** GM: a hero with a 3-round effect, a goblin with the Poisoned condition. */
+export async function effectsSetup() {
+  const combat = await freshCombat({ allies: 1, enemies: 1, enemyNames: ["Goblin"] });
+  const hero = combat.combatants.find(c => c.actor?.type === "character");
+  const goblin = combat.combatants.find(c => c.actor?.type === "npc");
+  for ( const e of hero.actor.effects.filter(e => e.name === "Test Blessing") ) await e.delete();
+  await hero.actor.createEmbeddedDocuments("ActiveEffect", [{
+    name: "Test Blessing", img: "icons/svg/aura.svg", duration: { value: 3, units: "rounds" }
+  }]);
+  await goblin.actor.toggleStatusEffect("poisoned", { active: true });
+  await settle(300);
+  return { hero: hero.id, goblin: goblin.id };
+}
+
+/** The effect icons on one card, as drawn. */
+export async function effectView(id) {
+  await settle(250);
+  return Array.from(document.querySelectorAll(`#scb-root .scb-portrait[data-combatant-id="${id}"] .scb-effect`),
+    li => ({ label: li.getAttribute("aria-label"), ring: li.classList.contains("has-duration"),
+      pct: li.style.getPropertyValue("--scb-effect-pct") || null }));
+}
+
+export async function effectsTeardown(heroId) {
+  const hero = game.combat?.combatants.get(heroId)?.actor;
+  for ( const e of hero?.effects.filter(e => e.name === "Test Blessing") ?? [] ) await e.delete();
+  await cleanup();
+}
