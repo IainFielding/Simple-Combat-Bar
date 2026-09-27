@@ -64,11 +64,11 @@
       },
       "nameVisibility": {
         "name": "Combatant Names",
-        "hint": "When players see the names of combatants they don't own. The GM always sees names.",
+        "hint": "When players see the names of combatants they don't own or observe. The GM always sees names.",
         "choices": {
           "always": "Always",
           "token": "When the token's name is shown on hover or always",
-          "owner": "Only for combatants they own"
+          "owner": "Only for combatants they own or observe"
         }
       },
       "hpVisibility": {
