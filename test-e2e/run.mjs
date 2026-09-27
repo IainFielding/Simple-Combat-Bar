@@ -210,10 +210,21 @@ const SUITES = {
     const check = (ok, message) => ok || failures.push(message);
     const page = gm.page;
 
-    // Change the portrait style in core's own Settings window and save.
-    await gm.eval(id => new foundry.applications.settings.SettingsConfig({ initialCategory: id }).render({ force: true }),
-      MODULE_ID);
+    // One save first, and dismiss whatever it asks. Core prompts for a reload on the first save
+    // in a fresh browser because `core.performanceMode` has never been stored, so any value
+    // looks like a change to it. That's core's, and it's why the second save below is the test.
+    const open = () => gm.eval(id => new foundry.applications.settings.SettingsConfig({ initialCategory: id })
+      .render({ force: true }), MODULE_ID);
     const form = page.locator("#settings-config");
+    await open();
+    await form.waitFor({ timeout: 10_000 });
+    await form.locator('button[type="submit"]').click();
+    await page.waitForTimeout(1000);
+    await page.locator('#reload-world-confirm button[data-action="no"]').click().catch(() => {});
+    await page.waitForTimeout(400);
+
+    // Now change the portrait style and save: that must not ask for a reload.
+    await open();
     await form.waitFor({ timeout: 10_000 });
     const select = form.locator(`select[name="${MODULE_ID}.portraitStyle"]`);
     const current = await select.inputValue();
