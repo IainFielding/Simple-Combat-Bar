@@ -43,3 +43,12 @@
   bottom: 6%;
   transform: translateX(-50%);
 }
+
+/* Legendary counters at the ring's left edge, mid-height: the right-edge stack of the card
+   style would fall outside a circle. */
+.scb-root[data-style="medallion"] .scb-legendary {
+  top: 30%;
+  right: auto;
+  left: 4%;
+  align-items: flex-start;
+}

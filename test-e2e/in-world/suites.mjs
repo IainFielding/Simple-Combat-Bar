@@ -418,3 +418,28 @@ export async function advance(turns) {
   }
   await settle(300);
 }
+
+/* -------------------------------------------- */
+/*  Legendary badges                            */
+/* -------------------------------------------- */
+
+/** GM: the party and the dragon; the dragon's legendary-costing activity. */
+export async function legendarySetup() {
+  const combat = await freshCombat({ allies: 2, enemies: 1, enemyNames: ["Adult Red Dragon"] });
+  const dragon = combat.combatants.find(c => c.actor?.type === "npc");
+  await dragon.actor.update({ "system.resources.legact.spent": 0, "system.resources.legres.spent": 0 });
+  const activity = dragon.actor.items.contents.flatMap(i => i.system.activities?.contents ?? [])
+    .find(a => a.activation?.type === "legendary");
+  await settle(200);
+  return { dragon: dragon.id, activity: activity?.uuid ?? null };
+}
+
+/** The legendary badges on one card, as drawn. */
+export async function legendaryView(id) {
+  await settle(250);
+  const read = kind => {
+    const b = document.querySelector(`#scb-root .scb-portrait[data-combatant-id="${id}"] .scb-leg-${kind}`);
+    return b && !b.hidden ? b.querySelector("span").textContent : null;
+  };
+  return { actions: read("actions"), resistances: read("resistances") };
+}

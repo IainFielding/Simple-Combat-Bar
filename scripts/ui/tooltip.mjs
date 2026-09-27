@@ -39,6 +39,13 @@ export function buildTooltip(model, attributes = []) {
     root.append(row("fa-solid fa-bars-progress", `${model.secValue} / ${model.secMax}`, t("tooltip.secondary")));
   }
 
+  if ( model.legActValue !== null ) {
+    root.append(row("fa-solid fa-bolt", `${model.legActValue} / ${model.legActMax}`, t("legendary.actions")));
+  }
+  if ( model.legResValue !== null ) {
+    root.append(row("fa-solid fa-shield-halved", `${model.legResValue} / ${model.legResMax}`, t("legendary.resistances")));
+  }
+
   if ( attributes.length ) {
     const list = el("div", "scb-tt-attributes");
     for ( const a of attributes ) list.append(row(a.icon, a.text, a.label));

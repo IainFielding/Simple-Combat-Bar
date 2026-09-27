@@ -116,6 +116,10 @@
         "name": "Spend Pips Automatically",
         "hint": "Using an ability spends the pip its activation needs. Pips come back at the start of each combatant's turn. With midi-qol active, midi-qol does this itself and the pips follow it."
       },
+      "legendaryBadges": {
+        "name": "Legendary Badges",
+        "hint": "Show a legendary creature's legendary actions and resistances left on its card, for the GM and those who can see its sheet. Click one to spend it, Shift-click to give it back. D&D 5e spends and refills them itself as they're used."
+      },
       "groupTeams": {
         "name": "Group Turns",
         "hint": "Like Baldur's Gate 3: allies or enemies next to each other in the order share one frame on the bar.",
@@ -189,6 +193,12 @@
       "reaction": "Reaction",
       "bonusUsed": "Bonus Action Used",
       "reactionUsed": "Reaction Used"
+    },
+    "legendary": {
+      "actions": "Legendary Actions",
+      "resistances": "Legendary Resistances",
+      "actionsTooltip": "Legendary Actions: {value} of {max} left. Click to spend one, Shift-click to give one back.",
+      "resistancesTooltip": "Legendary Resistances: {value} of {max} left. Click to spend one, Shift-click to give one back."
     }
   }
 }

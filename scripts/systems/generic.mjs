@@ -35,6 +35,10 @@ export const genericAdapter = {
     return null;
   },
 
+  legendary() {
+    return { actions: null, resistances: null };
+  },
+
   watchedPaths() {
     return null;
   }

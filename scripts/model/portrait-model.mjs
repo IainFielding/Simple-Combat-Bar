@@ -12,6 +12,7 @@
 
 import { displayName, healthState, hpDetail, showsInitiative } from "./visibility.mjs";
 import { pipStates } from "./economy.mjs";
+import { legendaryCounter } from "./legendary.mjs";
 
 /**
  * @typedef {object} CombatantFacts
@@ -105,6 +106,7 @@ export function buildPortraitModel(facts, { settings, current, acted, run, decim
     // Action pips: like HP numbers, only for viewers who receive the actor's data.
     ...pipStates(facts.economy ?? null, { current, shown: !!facts.trusted }),
     canTogglePips: !!facts.economy && (facts.isOwner || facts.isGM),
+    ...legendaryFields(facts),
     hpState,
     hpPct: hpMode === "none" ? null : hpPct,
     hpValue,
@@ -114,6 +116,20 @@ export function buildPortraitModel(facts, { settings, current, acted, run, decim
     description: (viewer.canObserve || facts.isGM) ? (facts.description ?? null) : null,
     isEvent: facts.isEvent,
     eventRoundsLeft: facts.eventRoundsLeft ?? null
+  };
+}
+
+/** Flat legendary fields: the model stays primitives only. */
+function legendaryFields(facts) {
+  const shown = !!facts.trusted;
+  const actions = legendaryCounter(facts.legendary?.actions ?? null, shown);
+  const resistances = legendaryCounter(facts.legendary?.resistances ?? null, shown);
+  return {
+    legActValue: actions?.value ?? null,
+    legActMax: actions?.max ?? null,
+    legResValue: resistances?.value ?? null,
+    legResMax: resistances?.max ?? null,
+    canAdjustLegendary: !!(actions || resistances) && (facts.isOwner || facts.isGM)
   };
 }
 

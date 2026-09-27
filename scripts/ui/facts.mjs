@@ -49,6 +49,8 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
     // Like HP numbers: only for viewers who actually receive the actor's data.
     secondary: actor && !isEvent && trustsHP ? safe(() => secondaryBar(actor.system, settings.secondaryResource)) : null,
     trusted: trustsHP,
+    legendary: settings.legendaryBadges && actor && !isEvent && trustsHP
+      ? safe(() => adapter.legendary?.(actor)) : null,
     economy: settings.trackEconomy && !isEvent ? safe(() => economyProvider().read(combatant)) : null,
     description: actor && !isEvent ? safe(() => adapter.describe(actor)) : null,
     isEvent,

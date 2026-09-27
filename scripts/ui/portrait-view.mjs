@@ -93,6 +93,7 @@ export class PortraitView {
     if ( changed.some(f => f.startsWith("hp") || (f === "damagePct")) ) this.#patchHP(model);
     if ( changed.includes("secPct") ) this.#patchBar2(model);
     if ( changed.some(f => f.startsWith("pip") || (f === "canTogglePips")) ) this.#patchPips(model);
+    if ( changed.some(f => f.startsWith("leg") || (f === "canAdjustLegendary")) ) this.#patchLegendary(model);
     this.model = model;
     return changed;
   }
@@ -111,6 +112,25 @@ export class PortraitView {
     bar.style.setProperty("--scb-hp-pct", `${model.hpPct ?? 0}%`);
     const tempPct = model.hpTemp && model.hpMax ? Math.min(100, Math.round((model.hpTemp / model.hpMax) * 100)) : 0;
     bar.style.setProperty("--scb-hp-temp-pct", `${tempPct}%`);
+  }
+
+  #patchLegendary(model) {
+    const box = this.#slots.legendary;
+    if ( !box ) return;
+    const counters = {
+      actions: [model.legActValue, model.legActMax],
+      resistances: [model.legResValue, model.legResMax]
+    };
+    for ( const button of box.querySelectorAll(".scb-leg") ) {
+      const [value, max] = counters[button.dataset.kind];
+      button.hidden = value === null;
+      button.disabled = !model.canAdjustLegendary;
+      button.classList.toggle("is-empty", value === 0);
+      button.querySelector("span").textContent = value ?? "";
+      button.dataset.tooltip = value === null ? "" : game.i18n.format(
+        `sogrom-simple-combat-bar.legendary.${button.dataset.kind}Tooltip`, { value, max });
+    }
+    box.classList.toggle("is-empty", (model.legActValue === null) && (model.legResValue === null));
   }
 
   #patchPips(model) {

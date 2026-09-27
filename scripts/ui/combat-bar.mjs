@@ -585,6 +585,13 @@ export class CombatBar {
     if ( !combat ) return;
     switch ( action ) {
       case "rollInitiative": return combatant && this.#rollInitiative(combatant, event);
+      case "legendary": {
+        const kind = event.target.closest("[data-kind]")?.dataset.kind;
+        const adapter = adapterFor(game.system.id);
+        if ( !combatant?.actor || !kind || !adapter.adjustLegendary ) return;
+        if ( !combatant.isOwner && !game.user.isGM ) return;
+        return adapter.adjustLegendary(combatant.actor, kind, event.shiftKey ? -1 : 1);
+      }
       case "togglePip": {
         const slot = event.target.closest("[data-pip]")?.dataset.pip;
         if ( combatant && slot && (combatant.isOwner || game.user.isGM) ) return toggleSlot(combatant, slot);

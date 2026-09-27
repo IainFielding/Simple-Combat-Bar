@@ -2,6 +2,11 @@
  * dnd5e 6.x adapter.
  */
 
+import { adjustSpent } from "../model/legendary.mjs";
+
+/** dnd5e's resource keys for each legendary counter. */
+const LEGENDARY_KEYS = Object.freeze({ actions: "legact", resistances: "legres" });
+
 /** Actor `system` keys that affect a portrait. An update touching none of these is ignored. */
 const WATCHED = new Set(["attributes", "details", "resources"]);
 
@@ -94,6 +99,25 @@ export const dnd5eAdapter = {
     if ( !helper || !path ) return null;
     const label = helper(path) ?? helper(`${path}.value`);
     return label ? game.i18n.localize(label) : null;
+  },
+
+  /**
+   * Legendary actions and resistances left. dnd5e spends actions as legendary abilities are used and
+   * refills them at the end of the creature's turn, and spends resistances from a failed save's
+   * Resist button; the bar only shows them, and adjusts them by hand.
+   */
+  legendary(actor) {
+    const resources = actor?.system?.resources ?? {};
+    const read = key => (resources[key]?.max > 0 ? { value: resources[key].value, max: resources[key].max } : null);
+    return { actions: read("legact"), resistances: read("legres") };
+  },
+
+  /** Spend (+1) or give back (-1) one, through `spent` as dnd5e itself does. */
+  async adjustLegendary(actor, kind, delta) {
+    const key = LEGENDARY_KEYS[kind];
+    const resource = actor?.system?.resources?.[key];
+    if ( !resource?.max ) return;
+    await actor.update({ [`system.resources.${key}.spent`]: adjustSpent(resource.spent, resource.max, delta) });
   },
 
   /** Tooltip values a new world starts with. Labels are dnd5e's own i18n keys. */

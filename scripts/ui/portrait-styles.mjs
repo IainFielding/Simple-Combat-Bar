@@ -37,6 +37,18 @@ const PIPS = `
       <i class="fa-solid fa-sparkle"></i></button>
   </div>`;
 
+/**
+ * Legendary counters under the initiative badge: actions left (bolt), resistances left (shield).
+ * Click spends one, Shift-click gives one back.
+ */
+const LEGENDARY = `
+  <div class="scb-legendary" data-slot="legendary">
+    <button type="button" class="scb-leg scb-leg-actions" data-action="legendary" data-kind="actions" tabindex="-1">
+      <i class="fa-solid fa-bolt"></i><span></span></button>
+    <button type="button" class="scb-leg scb-leg-resistances" data-action="legendary" data-kind="resistances"
+      tabindex="-1"><i class="fa-solid fa-shield-halved"></i><span></span></button>
+  </div>`;
+
 const ROLL_BUTTON = `
   <button type="button" class="scb-roll" data-action="rollInitiative" tabindex="-1">
     <i class="fa-solid fa-dice-d20"></i>
@@ -92,6 +104,7 @@ registerPortraitStyle({
       ${DAMAGE_FILL}
       ${SHARED_FLAGS}
       ${PIPS}
+      ${LEGENDARY}
     </div>
     <span class="scb-init" data-slot="initiative"></span>
     ${ROLL_BUTTON}
@@ -109,6 +122,7 @@ registerPortraitStyle({
       ${DAMAGE_FILL}
       ${SHARED_FLAGS}
       ${PIPS}
+      ${LEGENDARY}
       <span class="scb-init" data-slot="initiative"></span>
       ${ROLL_BUTTON}
       <span class="scb-name" data-slot="name"></span>

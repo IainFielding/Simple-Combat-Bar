@@ -13,6 +13,9 @@
  *           roll for this actor will use. Resolves false if the user cancelled.
  * @property {(actor: Actor) => void} [clearInitiative]  Drop a roll prepared by configureInitiative.
  * @property {(path: string) => string|null} [attributeLabel]  A readable name for an attribute path.
+ * @property {(actor: Actor) => {actions: {value: number, max: number}|null,
+ *   resistances: {value: number, max: number}|null}} [legendary]  Legendary counters, if any.
+ * @property {(actor: Actor, kind: "actions"|"resistances", delta: number) => Promise<void>} [adjustLegendary]
  * @property {() => Array<{attr: string, label: string, icon?: string}>} [defaultAttributes]
  *           Tooltip values a new world starts with.
  * @property {(actor: Actor) => Set<string>} [watchedPaths]  Top-level `system` keys whose change

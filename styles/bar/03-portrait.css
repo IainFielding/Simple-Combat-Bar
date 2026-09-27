@@ -235,6 +235,51 @@
   filter: brightness(1.35);
 }
 
+/* ---------------------------------------------------------------- legendary counters
+   Stacked under the initiative badge on the card's right edge. Gold, like the rest of the
+   dnd5e-flavoured furniture; an empty counter goes grey. */
+.scb-root .scb-legendary {
+  position: absolute;
+  z-index: 1;
+  top: calc(max(10px, var(--scb-size) * 0.16) * 1.4 + 7px);
+  right: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.scb-root .scb-legendary.is-empty {
+  display: none;
+}
+
+.scb-root .scb-leg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0 4px;
+  border: 1px solid var(--scb-frame);
+  border-radius: 8px;
+  background: rgba(10, 10, 12, 0.88);
+  color: var(--scb-bright);
+  font-family: var(--scb-font-display);
+  font-size: max(10px, calc(var(--scb-size) * 0.14));
+  font-weight: 700;
+  line-height: 1.35;
+  box-shadow: none;
+}
+
+.scb-root .scb-leg[hidden] { display: none; }
+.scb-root .scb-leg i { font-size: 0.8em; color: var(--scb-frame); }
+.scb-root .scb-leg:not(:disabled) { cursor: pointer; }
+.scb-root .scb-leg:not(:disabled):hover { border-color: var(--scb-settled-bright); }
+.scb-root .scb-leg.is-empty { color: #6b6f78; }
+.scb-root .scb-leg.is-empty i { color: #6b6f78; }
+
 /* ---------------------------------------------------------------- initiative / roll */
 .scb-root .scb-init {
   position: absolute;

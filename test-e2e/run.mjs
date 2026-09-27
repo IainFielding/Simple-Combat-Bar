@@ -26,11 +26,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers,settingsUi,responsive,economy").split(",");
+const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers,settingsUi,responsive,economy,legendary").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers", "settingsUi", "responsive", "economy"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers", "settingsUi", "responsive", "economy", "legendary"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -152,6 +152,44 @@ const SUITES = {
     const { failures } = await session.eval(() => __scb.ordering());
     return { pass: !failures.length, failures,
       lines: failures.slice(0, 5).map(f => JSON.stringify(f)) };
+  },
+
+  /** Legendary badges: shown to the GM, clickable, follow dnd5e's own spending, hidden from players. */
+  async legendary(gm) {
+    const failures = [];
+    const check = (ok, message) => ok || failures.push(message);
+    const ids = await gm.eval(() => __scb.legendarySetup());
+    const view = () => gm.eval(id => __scb.legendaryView(id), ids.dragon);
+    const badge = kind => `#scb-root .scb-portrait[data-combatant-id="${ids.dragon}"] .scb-leg-${kind}`;
+
+    let v = await view();
+    check(v.actions === "3" && v.resistances === "3", `dragon should show 3 and 3: ${JSON.stringify(v)}`);
+    await gm.page.click(badge("actions"));
+    v = await view();
+    check(v.actions === "2", `click didn't spend a legendary action: ${v.actions}`);
+    await gm.page.click(badge("actions"), { modifiers: ["Shift"] });
+    v = await view();
+    check(v.actions === "3", `Shift-click didn't give it back: ${v.actions}`);
+    await gm.page.click(badge("resistances"));
+    v = await view();
+    check(v.resistances === "2", `click didn't spend a legendary resistance: ${v.resistances}`);
+
+    if ( ids.activity ) {
+      await gm.eval(uuid => __scb.useActivity(uuid), ids.activity);
+      v = await view();
+      check(v.actions === "2", `using a legendary ability didn't show on the badge: ${v.actions}`);
+    } else failures.push("the dragon has no legendary-costing activity to test with");
+
+    const player = await Session.open({ user: PLAYER_USER });
+    try {
+      await loadSuites(player);
+      const pv = await player.eval(id => __scb.legendaryView(id), ids.dragon);
+      check(pv.actions === null && pv.resistances === null, `a player can see the dragon's badges: ${JSON.stringify(pv)}`);
+    } finally {
+      await player.close({ shutDownWorld: false });
+    }
+    await gm.eval(() => __scbFixtures.cleanup());
+    return { pass: !failures.length, failures, lines: failures };
   },
 
   /** Pips spend on use, flip on click, show the reaction everywhere, and reset on the turn. */

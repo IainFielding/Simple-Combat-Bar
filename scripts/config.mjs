@@ -47,6 +47,7 @@ export const DEFAULTS = Object.freeze({
   groupTeams: "off",
   trackEconomy: true,
   autoSpendEconomy: true,
+  legendaryBadges: true,
   effectDescriptions: "owner",
   hideCalendar: true,
   sidebarOnCombat: "collapse",

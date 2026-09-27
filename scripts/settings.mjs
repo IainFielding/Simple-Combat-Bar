@@ -59,6 +59,7 @@ export function registerSettings(getBar) {
   register("hideDefeated", { type: Boolean });
   register("trackEconomy", { type: Boolean });
   register("autoSpendEconomy", { type: Boolean });
+  register("legendaryBadges", { type: Boolean });
   register("groupTeams", { type: String, choices: choices("groupTeams", ["off", "visual", "bg3"]) });
   register("hideCalendar", { type: Boolean });
   register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["collapse", "leave"]) });
