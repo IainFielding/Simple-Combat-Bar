@@ -64,6 +64,7 @@ export function registerSettings(getBar) {
   register("effectDescriptions", { type: String, choices: choices("effectDescriptions", ["none", "owner", "all"]) });
   register("groupTeams", { type: String, choices: choices("groupTeams", ["off", "visual", "bg3"]) });
   register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["collapse", "leave"]) });
+  register("xpSummary", { type: Boolean, onChange: invalidateSettings });
   register("debug", { scope: "user", type: Boolean });
 
   // Edited in the Configure Trackers window rather than the settings list.

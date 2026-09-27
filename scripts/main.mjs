@@ -16,6 +16,9 @@ import { economyProvider, spendSlot } from "./systems/economy.mjs";
 import { groupContext, registerGroupQuery } from "./ui/group-service.mjs";
 import { afterTurnChange, skipBeforeUpdate } from "./ui/arrival-service.mjs";
 import { restoresEconomy } from "./model/group-turns.mjs";
+import { tallyDefeated } from "./model/xp-award.mjs";
+import { DISPOSITIONS } from "./model/visibility.mjs";
+import { adapterFor } from "./systems/adapter.mjs";
 
 /** The session's bar. Null until `ready`, and stays null if the bar mustn't mount. */
 let bar = null;
@@ -45,6 +48,7 @@ Hooks.once("ready", () => {
 
   Hooks.on("createCombat", sync);
   Hooks.on("deleteCombat", sync);
+  Hooks.on("deleteCombat", postXPSummary);
   // Late arrivals: move a turn change past anyone not here yet, before it's sent.
   Hooks.on("combatStart", (combat, updateData) => skipBeforeUpdate(combat, updateData));
   Hooks.on("combatRound", skipBeforeUpdate);
@@ -130,6 +134,35 @@ async function expireEvents(combat) {
   const list = game.i18n.getListFormatter().format(names.map(n => `<strong>${Handlebars.escapeExpression(n)}</strong>`));
   await ChatMessage.create({
     content: `<p>${t("events.expired", { names: list })}</p>`,
+    whisper: game.users.filter(u => u.isGM).map(u => u.id),
+    speaker: { alias: t("title") }
+  });
+}
+
+/**
+ * When a combat ends, whisper the GMs the defeated enemies and their XP, with the system's award
+ * button. Only the active GM posts it, and only for a combat that was actually started.
+ * @param {Combat} combat
+ */
+async function postXPSummary(combat) {
+  if ( !settings().xpSummary || !game.users.activeGM?.isSelf || !combat.started ) return;
+  const adapter = adapterFor(game.system.id);
+  if ( !adapter.xp ) return;
+  // Enemies only: not events, the players' own creatures, or friendly NPCs who fell on their side.
+  const defeated = combat.combatants
+    .filter(c => c.isDefeated && c.actor && !c.flags?.[MODULE_ID]?.event && !c.actor.hasPlayerOwner
+      && (c.token?.disposition !== DISPOSITIONS.FRIENDLY))
+    .map(c => ({ name: c.name, xp: adapter.xp(c.actor) }));
+  const { lines, total } = tallyDefeated(defeated);
+  if ( !lines.length ) return;
+  const esc = Handlebars.escapeExpression;
+  const num = n => n.toLocaleString(game.i18n.lang);
+  const items = lines.map(l => `<li>${t("xp.line", { count: l.count, name: `<strong>${esc(l.name)}</strong>` })}
+    <span class="hint">(${t("xp.each", { xp: num(l.xp) })})</span></li>`);
+  const award = (total > 0) && adapter.awardCommand ? `<p>${adapter.awardCommand(total)}</p>` : "";
+  await ChatMessage.create({
+    content: `<h3>${t("xp.heading")}</h3><ul>${items.join("")}</ul>
+      <p><strong>${t("xp.total", { xp: num(total) })}</strong></p>${award}`,
     whisper: game.users.filter(u => u.isGM).map(u => u.id),
     speaker: { alias: t("title") }
   });

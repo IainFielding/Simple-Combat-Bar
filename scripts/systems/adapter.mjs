@@ -20,6 +20,8 @@
  *           Tooltip values a new world starts with.
  * @property {(actor: Actor) => Set<string>} [watchedPaths]  Top-level `system` keys whose change
  *           should refresh a portrait. Anything else in an actor update is ignored.
+ * @property {(actor: Actor) => number|null} [xp]  XP for defeating this actor, or null if it gives none.
+ * @property {(xp: number) => string} [awardCommand]  Chat text that lets the GM award this much XP.
  */
 
 import { genericAdapter } from "./generic.mjs";

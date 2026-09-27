@@ -39,6 +39,10 @@ describe("displayName", () => {
     expect(displayName("owner", { ...f, isOwner: true })).toBe("Goblin Boss");
     expect(displayName("owner", { ...f, isGM: true })).toBe("Goblin Boss");
   });
+  it("observers see the name whatever the mode", () => {
+    expect(displayName("owner", { ...f, canObserve: true }, "?")).toBe("Goblin Boss");
+    expect(displayName("token", { ...f, canObserve: true }, "?")).toBe("Goblin Boss");
+  });
   it("'always' shows it to everyone", () => {
     expect(displayName("always", f)).toBe("Goblin Boss");
   });

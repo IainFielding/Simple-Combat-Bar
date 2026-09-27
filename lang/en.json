@@ -64,11 +64,11 @@
       },
       "nameVisibility": {
         "name": "Combatant Names",
-        "hint": "When players see the names of combatants they don't own. The GM always sees names.",
+        "hint": "When players see the names of combatants they don't own or observe. The GM always sees names.",
         "choices": {
           "always": "Always",
           "token": "When the token's name is shown on hover or always",
-          "owner": "Only for combatants they own"
+          "owner": "Only for combatants they own or observe"
         }
       },
       "hpVisibility": {
@@ -152,6 +152,10 @@
           "leave": "Leave it as it is"
         }
       },
+      "xpSummary": {
+        "name": "XP Summary When Combat Ends",
+        "hint": "When the GM ends a combat, whisper them a card listing the defeated enemies and their total XP, with an Award button."
+      },
       "trackers": {
         "name": "Trackers",
         "label": "Configure Trackers",
@@ -161,6 +165,12 @@
         "name": "Debug Logging",
         "hint": "Write the bar's internal events to the browser console. Only affects you."
       }
+    },
+    "xp": {
+      "heading": "Enemies Defeated",
+      "line": "{count} × {name}",
+      "each": "{xp} XP each",
+      "total": "Total: {xp} XP"
     },
     "events": {
       "title": "Add Event",

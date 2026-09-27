@@ -53,11 +53,12 @@ export function isShown({ isGM, hidden, canObserve, isFriendly, hasActed, hideUn
  * @param {string} f.name
  * @param {boolean} f.isGM
  * @param {boolean} f.isOwner
+ * @param {boolean} [f.canObserve]          User has at least Observer on the actor.
  * @param {number|null} f.tokenDisplayName  Token's `displayName` mode, if there's a token.
  * @param {string} unknown                   What to show instead (localised "Unknown").
  */
-export function displayName(mode, { name, isGM, isOwner, tokenDisplayName }, unknown = "???") {
-  if ( isGM || isOwner || (mode === "always") ) return name;
+export function displayName(mode, { name, isGM, isOwner, canObserve, tokenDisplayName }, unknown = "???") {
+  if ( isGM || isOwner || canObserve || (mode === "always") ) return name;
   if ( mode === "owner" ) return unknown;
   const visible = [DISPLAY_MODES.HOVER, DISPLAY_MODES.ALWAYS].includes(tokenDisplayName);
   return visible ? name : unknown;

@@ -132,5 +132,17 @@ export const dnd5eAdapter = {
 
   watchedPaths() {
     return WATCHED;
+  },
+
+  /** An NPC's XP as its sheet shows it (dnd5e derives it from CR, lair included). */
+  xp(actor) {
+    if ( actor?.type !== "npc" ) return null;
+    const xp = actor.system?.details?.xp?.value;
+    return typeof xp === "number" ? xp : null;
+  },
+
+  /** dnd5e's award enricher: a GM-only button that opens its Award window with this much XP. */
+  awardCommand(xp) {
+    return `[[/award ${xp}xp]]`;
   }
 };
