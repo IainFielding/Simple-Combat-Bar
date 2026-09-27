@@ -10,9 +10,11 @@ import { t } from "../config.mjs";
 
 /**
  * @param {object} model   A portrait model (model/portrait-model.mjs).
+ * @param {Array<{label: string, icon: string, text: string}>} [attributes]  Tooltip values, read at
+ *   hover time (model/trackers.mjs#readAttributes); empty for viewers who don't receive the data.
  * @returns {HTMLElement}
  */
-export function buildTooltip(model) {
+export function buildTooltip(model, attributes = []) {
   const root = el("div", "scb-tooltip-body");
 
   const header = el("header", "scb-tt-header");
@@ -31,6 +33,16 @@ export function buildTooltip(model) {
     root.append(row("fa-solid fa-heart", `${model.hpValue} / ${model.hpMax}${temp}`, t("tooltip.hp")));
   } else if ( model.hpShown && (model.hpState !== "unknown") ) {
     root.append(row("fa-solid fa-heart-pulse", t(`health.${model.hpState}`)));
+  }
+
+  if ( model.secPct !== null ) {
+    root.append(row("fa-solid fa-bars-progress", `${model.secValue} / ${model.secMax}`, t("tooltip.secondary")));
+  }
+
+  if ( attributes.length ) {
+    const list = el("div", "scb-tt-attributes");
+    for ( const a of attributes ) list.append(row(a.icon, a.text, a.label));
+    root.append(list);
   }
 
   if ( model.isEvent && (model.eventRoundsLeft !== null) ) {

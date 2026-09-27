@@ -23,6 +23,7 @@ import { portraitStyle } from "./portrait-styles.mjs";
 import { buildTooltip } from "./tooltip.mjs";
 import { openEventDialog } from "./event-dialog.mjs";
 import { rememberEvent } from "../model/events.mjs";
+import { readAttributes, safeColor } from "../model/trackers.mjs";
 
 /** Combatant fields whose change can move a combatant or change who is shown. */
 const ORDER_FIELDS = ["initiative", "hidden", "defeated", "tokenId", "actorId", "group"];
@@ -387,6 +388,8 @@ export class CombatBar {
       size = Math.max(40, Math.min(max, Math.floor(available / ((count * 1.1) + 0.18))));
     }
     this.root.dataset.overflow = cfg.overflow;
+    this.root.classList.toggle("has-bar2", !!cfg.secondaryResource);
+    this.root.style.setProperty("--scb-bar2", safeColor(cfg.secondaryColor, "#5aa9e6"));
     this.root.style.setProperty("--scb-size", `${size}px`);
     this.root.style.setProperty("--scb-aspect", String(style.aspect));
     this.root.style.setProperty("--scb-divider-width", `${DIVIDER_WIDTH}px`);
@@ -523,7 +526,16 @@ export class CombatBar {
       this.#tooltipTimer = null;
       const view = this.#portraits.get(li.dataset.combatantId);
       if ( !view?.model || !li.isConnected ) return;
-      game.tooltip.activate(li, { html: buildTooltip(view.model), direction: "DOWN", cssClass: `${CSS}-tooltip` });
+      // Tooltip values are read now, on hover, and only for viewers who receive the actor's data.
+      const actor = this.combat?.combatants.get(li.dataset.combatantId)?.actor;
+      const adapter = adapterFor(game.system.id);
+      const attributes = view.model.trusted
+        ? readAttributes(actor?.system, settings().tooltipAttributes, {
+          localize: key => game.i18n.localize(key),
+          labelFor: path => adapter.attributeLabel?.(path) ?? null
+        }) : [];
+      game.tooltip.activate(li, { html: buildTooltip(view.model, attributes), direction: "DOWN",
+        cssClass: `${CSS}-tooltip` });
     }, TOOLTIP_DELAY);
   }
 

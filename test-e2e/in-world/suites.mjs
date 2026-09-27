@@ -253,3 +253,62 @@ export async function nextRound() {
   await game.combat.nextRound();
   await settle(300);
 }
+
+/* -------------------------------------------- */
+/*  Trackers                                    */
+/* -------------------------------------------- */
+
+/** GM: a combat with the dragon (legendary actions) and the party; the bar choices on offer. */
+export async function trackersSetup() {
+  await game.settings.set(MODULE_ID, "tooltipAttributes", []);
+  await game.settings.set(MODULE_ID, "secondaryResource", "");
+  await game.settings.set(MODULE_ID, "hpBar", true);
+  const combat = await freshCombat({ allies: 2, enemies: 1, enemyNames: ["Adult Red Dragon"] });
+  const tracked = TokenDocument.implementation.getTrackedAttributes();
+  return {
+    dragon: combat.combatants.find(c => c.actor?.type === "npc").id,
+    hero: combat.combatants.find(c => c.actor?.type === "character").id,
+    bars: tracked.bar.map(p => p.join("."))
+  };
+}
+
+/** Open the Configure Trackers window the way the settings button does. */
+export async function openTrackers() {
+  const menu = game.settings.menus.get(`${MODULE_ID}.trackers`);
+  await new menu.type().render({ force: true });
+  await settle(200);
+}
+
+/** The second bar, HP bar and settings as they stand. */
+export async function trackersState(ids) {
+  await settle(200);
+  const bar = id => document.querySelector(`#scb-root .scb-portrait[data-combatant-id="${id}"]`);
+  const read = id => {
+    const li = bar(id);
+    return {
+      bar2Empty: li?.querySelector(".scb-bar2")?.classList.contains("is-empty") ?? null,
+      bar2Pct: li?.querySelector(".scb-bar2")?.style.getPropertyValue("--scb-bar2-pct") ?? null,
+      bar2Shown: li ? getComputedStyle(li.querySelector(".scb-bar2")).display !== "none" : null,
+      hpEmpty: li?.querySelector(".scb-hp")?.classList.contains("is-empty") ?? null
+    };
+  };
+  return {
+    dragon: read(ids.dragon),
+    hero: read(ids.hero),
+    settings: {
+      secondaryResource: game.settings.get(MODULE_ID, "secondaryResource"),
+      tooltipAttributes: game.settings.get(MODULE_ID, "tooltipAttributes")
+    }
+  };
+}
+
+/** Put the trackers back as a fresh world has them (tooltip values at the system's defaults). */
+export async function resetTrackers() {
+  const defaults = game.settings.settings.get(`${MODULE_ID}.tooltipAttributes`).default;
+  await setTrackerSettings({ hpBar: true, secondaryResource: "", tooltipAttributes: defaults });
+}
+
+export async function setTrackerSettings(values) {
+  for ( const [k, v] of Object.entries(values) ) await game.settings.set(MODULE_ID, k, v);
+  await settle(200);
+}

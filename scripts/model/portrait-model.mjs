@@ -29,6 +29,8 @@ import { displayName, healthState, hpDetail, showsInitiative } from "./visibilit
  * @property {{value: number|null, max: number|null, temp: number|null}|null} hp
  * @property {"healthy"|"bloodied"|"critical"|"down"|null} [healthHint]
  *           Coarse health from statuses, for viewers who don't receive HP numbers.
+ * @property {{value: number, max: number, pct: number}|null} [secondary]  The second bar, if any.
+ * @property {boolean} [trusted]  This viewer receives the actor's data (GM, owner, observer).
  * @property {string|null} description
  * @property {boolean} isEvent          An "Add Event" pseudo-combatant.
  * @property {number|null} eventRoundsLeft
@@ -93,7 +95,11 @@ export function buildPortraitModel(facts, { settings, current, acted, run, decim
     canRoll: !rolled && (facts.isOwner || facts.isGM) && !facts.isEvent,
     hpShown: (hpMode !== "none") && ((hpPct !== null) || (hpState !== "unknown")),
     // The bar needs a number; a viewer who only knows the state gets the damage fill instead.
-    hpBar: (hpMode !== "none") && (hpPct !== null),
+    hpBar: settings.hpBar && (hpMode !== "none") && (hpPct !== null),
+    secPct: facts.secondary?.pct ?? null,
+    secValue: facts.secondary?.value ?? null,
+    secMax: facts.secondary?.max ?? null,
+    trusted: !!facts.trusted,
     hpState,
     hpPct: hpMode === "none" ? null : hpPct,
     hpValue,

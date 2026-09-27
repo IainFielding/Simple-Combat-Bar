@@ -14,7 +14,8 @@
     },
     "tooltip": {
       "hp": "HP",
-      "roundsLeft": "{rounds} rounds left"
+      "roundsLeft": "{rounds} rounds left",
+      "secondary": "Tracked"
     },
     "health": {
       "healthy": "Healthy",
@@ -81,6 +82,10 @@
         "name": "Fill Portraits With Damage",
         "hint": "Portraits fill red from the top as hit points are lost. Follows the Hit Points setting: exact for those who may see hit points, in coarse steps for those who only see how wounded a combatant is."
       },
+      "hpBar": {
+        "name": "HP Bar Under Portraits",
+        "hint": "Show a hit point bar under each portrait, for those allowed to see hit points. Turn it off if the red damage fill is enough."
+      },
       "hideEnemyInitiative": {
         "name": "Hide Enemy Initiative",
         "hint": "Players don't see initiative values for combatants they don't own."
@@ -120,6 +125,11 @@
           "leave": "Leave it as it is"
         }
       },
+      "trackers": {
+        "name": "Trackers",
+        "label": "Configure Trackers",
+        "hint": "Add a second bar under each portrait, and choose the values shown when hovering one."
+      },
       "debug": {
         "name": "Debug Logging",
         "hint": "Write the bar's internal events to the browser console. Only affects you."
@@ -146,6 +156,20 @@
         "initiative": "Give the event an initiative number.",
         "duration": "Duration must be a whole number of rounds, or blank."
       }
+    },
+    "trackers": {
+      "title": "Configure Trackers",
+      "none": "None",
+      "attr": "Attribute",
+      "label": "Label",
+      "icon": "Icon",
+      "color": "Colour",
+      "add": "Add a Value",
+      "remove": "Remove",
+      "secondary": "Second Bar",
+      "secondaryHint": "A second bar under each portrait's hit points, for a resource with a maximum: legendary actions, spell slots, a class resource. Like hit points, it's shown only to those who can see the creature's sheet.",
+      "tooltip": "Tooltip Values",
+      "tooltipHint": "Shown when hovering a portrait, to the GM and to those who can see the creature's sheet. Pick an attribute from the list or type its path; leave the label blank to show the path."
     }
   }
 }

@@ -43,7 +43,18 @@ Hooks.once("simpleCombatBar.init", api => {
     hp: actor => ({ value: actor.system.health.value, max: actor.system.health.max, temp: null }),
     // Top-level `system` keys whose changes should refresh a portrait. Return null to refresh on
     // every actor update.
-    watchedPaths: () => new Set(["health", "rank"])
+    watchedPaths: () => new Set(["health", "rank"]),
+    // Optional: coarse health from data every user receives (statuses), for viewers who can't
+    // observe the actor and so never receive its HP. "healthy" | "bloodied" | "critical" | "down".
+    healthState: actor => (actor.statuses.has("dead") ? "down" : "healthy"),
+    // Optional: a readable name for an attribute path, used in Configure Trackers and tooltips.
+    attributeLabel: path => null,
+    // Optional: the tooltip values a new world starts with.
+    defaultAttributes: () => [{ attr: "rank", label: "Rank", icon: "fa-solid fa-star" }],
+    // Optional: show the system's initiative dialog and prepare the next initiative roll;
+    // resolve false if the user cancels. clearInitiative drops the prepared roll afterwards.
+    configureInitiative: async (actor, event) => true,
+    clearInitiative: actor => {}
   });
 });
 ```
@@ -51,8 +62,9 @@ Hooks.once("simpleCombatBar.init", api => {
 ## Portrait styles
 
 A style supplies markup and CSS; the bar supplies the data. The markup must contain elements marked
-`data-slot="img"`, `"initiative"`, `"hp"`, `"name"` and `"damage"`, and may contain a
-`data-action="rollInitiative"` button. Scope your stylesheet under `.scb-root[data-style="<id>"]`.
+`data-slot="img"`, `"initiative"`, `"hp"`, `"name"` and `"damage"`. It may also contain `"bar2"` (the
+second tracker bar), `"rounds"` (an event's rounds left) and a `data-action="rollInitiative"` button;
+the bar skips any it doesn't find. Scope your stylesheet under `.scb-root[data-style="<id>"]`.
 
 ```js
 Hooks.once("simpleCombatBar.init", api => {

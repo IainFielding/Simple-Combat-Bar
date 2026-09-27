@@ -44,3 +44,24 @@
   border-radius: 50%;
   object-fit: cover;
 }
+
+/* ---------------------------------------------------------------- Configure Trackers window */
+.scb-trackers-config .scb-tracker-rows {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.scb-trackers-config .scb-tracker-row {
+  display: grid;
+  grid-template-columns: 2fr 1.4fr 1.4fr 20px 28px;
+  align-items: center;
+  gap: 6px;
+}
+
+.scb-trackers-config .scb-tracker-preview {
+  text-align: center;
+  color: var(--color-text-secondary, #9a978f);
+}

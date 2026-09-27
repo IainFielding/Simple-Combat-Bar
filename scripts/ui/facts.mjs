@@ -6,6 +6,7 @@
 import { MODULE_ID } from "../config.mjs";
 import { sideOf } from "../model/visibility.mjs";
 import { roundsLeft } from "../model/events.mjs";
+import { secondaryBar } from "../model/trackers.mjs";
 
 /**
  * @param {Combatant} combatant
@@ -44,6 +45,9 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
     tokenDisplayName: tokenDoc?.displayName ?? null,
     hp: actor && !isEvent && trustsHP ? safe(() => adapter.hp(actor)) : null,
     healthHint: actor && !isEvent && !trustsHP ? safe(() => adapter.healthState?.(actor)) : null,
+    // Like HP numbers: only for viewers who actually receive the actor's data.
+    secondary: actor && !isEvent && trustsHP ? safe(() => secondaryBar(actor.system, settings.secondaryResource)) : null,
+    trusted: trustsHP,
     description: actor && !isEvent ? safe(() => adapter.describe(actor)) : null,
     isEvent,
     eventRoundsLeft

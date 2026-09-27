@@ -7,6 +7,8 @@
 
 import { DEFAULTS, MODULE_ID, invalidateSettings } from "./config.mjs";
 import { portraitStyleChoices } from "./ui/portrait-styles.mjs";
+import { TrackersConfig } from "./ui/trackers-config.mjs";
+import { adapterFor } from "./systems/adapter.mjs";
 
 const k = key => `${MODULE_ID}.settings.${key}`;
 
@@ -50,6 +52,7 @@ export function registerSettings(getBar) {
   register("nameVisibility", { type: String, choices: choices("nameVisibility", ["always", "token", "owner"]) });
   register("hpVisibility", { type: String, choices: choices("hpVisibility", ["all", "owner", "ownerOnly"]) });
   register("damageFill", { type: Boolean });
+  register("hpBar", { type: Boolean });
   register("hideEnemyInitiative", { type: Boolean });
   register("initiativeDialog", { type: String, choices: choices("initiativeDialog", ["none", "npcs", "players", "all"]) });
   register("hideUnseenFirstRound", { type: Boolean });
@@ -57,6 +60,22 @@ export function registerSettings(getBar) {
   register("groupTeams", { type: String, choices: choices("groupTeams", ["off", "visual", "bg3"]) });
   register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["collapse", "leave"]) });
   register("debug", { scope: "user", type: Boolean });
+
+  // Edited in the Configure Trackers window rather than the settings list.
+  game.settings.registerMenu(MODULE_ID, "trackers", {
+    name: `${k("trackers")}.name`,
+    label: `${k("trackers")}.label`,
+    hint: `${k("trackers")}.hint`,
+    icon: "fa-solid fa-bars-progress",
+    type: TrackersConfig,
+    restricted: true
+  });
+  const hidden = (key, type, fallback) => game.settings.register(MODULE_ID, key, {
+    scope: "world", config: false, type, default: fallback, onChange: refresh
+  });
+  hidden("secondaryResource", String, DEFAULTS.secondaryResource);
+  hidden("secondaryColor", String, DEFAULTS.secondaryColor);
+  hidden("tooltipAttributes", Array, adapterFor(game.system.id).defaultAttributes?.() ?? []);
 
   // The Add Event dialog's recent events. Not shown in the settings window.
   game.settings.register(MODULE_ID, "recentEvents", { scope: "world", config: false, type: Array, default: [] });

@@ -155,6 +155,35 @@
 .scb-root .scb-portrait[data-hp="critical"] .scb-hp-fill,
 .scb-root .scb-portrait[data-hp="down"] .scb-hp-fill { background: var(--scb-hp-critical); }
 
+/* ---------------------------------------------------------------- second bar
+   Only laid out when a second resource is configured; a combatant without that resource keeps
+   the space so the cards stay in line. */
+.scb-root .scb-bar2 {
+  position: relative;
+  display: none;
+  height: max(3px, calc(var(--scb-size) * 0.05));
+  margin-top: 2px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+}
+
+.scb-root.has-bar2 .scb-bar2 {
+  display: block;
+}
+
+.scb-root .scb-bar2.is-empty {
+  visibility: hidden;
+}
+
+.scb-root .scb-bar2-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--scb-bar2-pct, 0%);
+  background: var(--scb-bar2, #5aa9e6);
+  transition: width 400ms ease-out;
+}
+
 /* ---------------------------------------------------------------- initiative / roll */
 .scb-root .scb-init {
   position: absolute;
@@ -283,4 +312,13 @@
 
 .scb-root .scb-portrait.has-rounds .scb-rounds {
   display: inline-flex;
+}
+
+/* On an event card the top edge belongs to the initiative badge: the rounds sit centred under the
+   event's icon instead, clear of it and of the name plate. */
+.scb-root .scb-portrait.is-event .scb-rounds {
+  top: auto;
+  left: 50%;
+  bottom: 28%;
+  transform: translateX(-50%);
 }

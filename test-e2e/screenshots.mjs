@@ -29,7 +29,8 @@ try {
   await gm.eval(async ({ id, style }) => {
     const f = await import(`/modules/${id}/test-e2e/in-world/fixtures.mjs`);
     if ( style ) await game.settings.set(id, "portraitStyle", style);
-    const combat = await f.freshCombat({ allies: 4, enemies: 5, enemyNames: ["Goblin", "Orc", "Ogre"] });
+    await game.settings.set(id, "secondaryResource", "resources.legact");
+    const combat = await f.freshCombat({ allies: 4, enemies: 5, enemyNames: ["Goblin", "Orc", "Adult Red Dragon"] });
     const npcs = combat.combatants.filter(c => c.actor?.type === "npc");
     const pcs = combat.combatants.filter(c => c.actor?.type === "character");
     const hurt = async (c, pct) => {
@@ -49,6 +50,23 @@ try {
   await gm.page.waitForTimeout(800);
   await gm.page.screenshot({ path: path.join(out, "gm.png"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
 
+  // Hover tooltip on the first hero (the current combatant).
+  await gm.page.hover("#scb-root .scb-portrait.is-current");
+  await gm.page.waitForTimeout(900);
+  await gm.page.screenshot({ path: path.join(out, "tooltip.png"), clip: { x: 300, y: 0, width: 1100, height: 520 } });
+  await gm.page.mouse.move(5, 700);
+
+  // Configure Trackers window.
+  await gm.eval(async id => {
+    const menu = game.settings.menus.get(`${id}.trackers`);
+    await new menu.type().render({ force: true });
+  }, MODULE_ID);
+  const trackers = gm.page.locator("#scb-trackers-config");
+  await trackers.waitFor();
+  await gm.page.waitForTimeout(400);
+  await trackers.screenshot({ path: path.join(out, "trackers.png") });
+  await trackers.locator('.header-control[data-action="close"]').first().click().catch(() => {});
+
   await gm.page.click("#scb-root .scb-tab.addEvent");
   const dialog = gm.page.locator(".scb-event-dialog");
   await dialog.waitFor();
@@ -67,6 +85,8 @@ try {
       const f = await import(`/modules/${id}/test-e2e/in-world/fixtures.mjs`);
       await f.cleanup();
       await game.settings.set(id, "portraitStyle", "card");
+      await game.settings.set(id, "secondaryResource", "");
+      await game.settings.set(id, "tooltipAttributes", game.settings.settings.get(`${id}.tooltipAttributes`).default);
     }, MODULE_ID).catch(() => {});
     await gm.close();
   }

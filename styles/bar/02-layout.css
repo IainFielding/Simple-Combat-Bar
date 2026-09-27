@@ -19,10 +19,10 @@
   margin: 0;
   padding: 4px 10px 8px;
   pointer-events: auto;
-  background: linear-gradient(180deg, rgba(8, 9, 12, 0.96), var(--scb-bg));
+  background: var(--scb-surface);
   border: 1px solid var(--scb-frame);
   border-top: none;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 var(--scb-radius) var(--scb-radius);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
 }
 

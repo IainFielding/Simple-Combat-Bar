@@ -50,6 +50,9 @@
      sheet read as one set. */
   --scb-frame: var(--dnd5e-color-gold, #9f9275);
   --scb-frame-black: var(--dnd5e-color-black, #000);
+  /* One surface for the bar, its side tabs and the hanging round tab, so they read as one piece. */
+  --scb-surface: #0b0c0f;
+  --scb-radius: 12px;
 
   --scb-font-display: "Cinzel", "Signika", serif;
   --scb-font-body: "Spectral", "Signika", serif;

@@ -26,11 +26,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,ordering,permissions,events").split(",");
+const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,trackers").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions", "events"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events", "trackers"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -152,6 +152,56 @@ const SUITES = {
     const { failures } = await session.eval(() => __scb.ordering());
     return { pass: !failures.length, failures,
       lines: failures.slice(0, 5).map(f => JSON.stringify(f)) };
+  },
+
+  /** Configure the trackers through their real window, then check the bars and the tooltip. */
+  async trackers(gm) {
+    const failures = [];
+    const check = (ok, message) => ok || failures.push(message);
+    const ids = await gm.eval(() => __scb.trackersSetup());
+    const page = gm.page;
+    const lines = [`bar attributes offered: ${ids.bars.join(", ")}`];
+
+    // Real window: pick the second bar, add a tooltip row, save.
+    await gm.eval(() => __scb.openTrackers());
+    const form = page.locator("#scb-trackers-config");
+    await form.waitFor({ timeout: 10_000 });
+    const choice = ids.bars.includes("resources.legact") ? "resources.legact" : null;
+    if ( choice ) await form.locator('select[name="secondaryResource"]').selectOption(choice);
+    await form.locator('button[data-action="addRow"]').click();
+    await form.locator('[name="rows.0.attr"]').fill("attributes.ac.value");
+    await form.locator('[name="rows.0.label"]').fill("Armour");
+    await form.locator('button[type="submit"]').click();
+    await form.waitFor({ state: "detached", timeout: 10_000 });
+
+    let s = await gm.eval(i => __scb.trackersState(i), ids);
+    check(s.settings.tooltipAttributes[0]?.attr === "attributes.ac.value", "tooltip row not saved from the window");
+    if ( !choice ) {
+      failures.push("resources.legact is not offered as a bar attribute; set directly for the rest of the suite");
+      await gm.eval(() => __scb.setTrackerSettings({ secondaryResource: "resources.legact" }));
+      s = await gm.eval(i => __scb.trackersState(i), ids);
+    }
+    check(s.settings.secondaryResource === "resources.legact", `second bar is "${s.settings.secondaryResource}"`);
+    check(s.dragon.bar2Shown && (s.dragon.bar2Empty === false), "dragon's legendary-action bar isn't showing");
+    check(s.dragon.bar2Pct === "100%", `dragon's legendary actions at ${s.dragon.bar2Pct}, expected 100%`);
+    check(s.hero.bar2Shown && (s.hero.bar2Empty === true), "a hero without legendary actions should keep an empty slot");
+
+    // Hover tooltip carries the configured value.
+    await page.hover(`#scb-root .scb-portrait[data-combatant-id="${ids.hero}"]`);
+    await page.waitForTimeout(900);
+    const tip = await page.locator("#tooltip.scb-tooltip").innerText().catch(() => "");
+    check(/Armour/.test(tip), `tooltip doesn't show the configured value: ${JSON.stringify(tip)}`);
+    const labelled = await gm.eval(() => dnd5e.utils.getHumanReadableAttributeLabel("resources.legact.value"));
+    lines.push(`dnd5e names resources.legact "${await gm.eval(k => game.i18n.localize(k), labelled)}"`);
+    await page.mouse.move(5, 500);
+
+    // HP bar switch.
+    await gm.eval(() => __scb.setTrackerSettings({ hpBar: false }));
+    s = await gm.eval(i => __scb.trackersState(i), ids);
+    check(s.hero.hpEmpty === true, "HP bar still showing with the switch off");
+    await gm.eval(() => __scb.resetTrackers());
+    await gm.eval(() => __scbFixtures.cleanup());
+    return { pass: !failures.length, failures, lines: [...lines, ...failures] };
   },
 
   /** Add an event through the real dialog, then watch it count down and expire. */

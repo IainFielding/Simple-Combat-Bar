@@ -6,7 +6,7 @@
  * lives in `styles/portrait/<id>.css`, scoped under `.scb-root[data-style="<id>"]`.
  *
  * Slots a style must contain (each marked with `data-slot`):
- *   img, initiative, hp, name, damage (and, from the shared flags, rounds)
+ *   img, initiative, hp, bar2, name, damage (and, from the shared flags, rounds)
  * Buttons it may contain (each marked with `data-action`): rollInitiative.
  */
 
@@ -17,6 +17,11 @@ const SHARED_FLAGS = `
 
 /** Red overlay rising from the top of the portrait as HP is lost (the `damageFill` setting). */
 const DAMAGE_FILL = `<div class="scb-damage" data-slot="damage" aria-hidden="true"></div>`;
+
+/** The HP bar, and the optional second bar under it (the `secondaryResource` tracker). */
+const BARS = `
+  <div class="scb-hp" data-slot="hp"><div class="scb-hp-fill"></div><div class="scb-hp-temp"></div></div>
+  <div class="scb-bar2" data-slot="bar2"><div class="scb-bar2-fill"></div></div>`;
 
 const ROLL_BUTTON = `
   <button type="button" class="scb-roll" data-action="rollInitiative" tabindex="-1">
@@ -75,7 +80,7 @@ registerPortraitStyle({
     </div>
     <span class="scb-init" data-slot="initiative"></span>
     ${ROLL_BUTTON}
-    <div class="scb-hp" data-slot="hp"><div class="scb-hp-fill"></div><div class="scb-hp-temp"></div></div>
+    ${BARS}
     <span class="scb-name" data-slot="name"></span>`
 });
 
@@ -92,5 +97,5 @@ registerPortraitStyle({
       ${ROLL_BUTTON}
       <span class="scb-name" data-slot="name"></span>
     </div>
-    <div class="scb-hp" data-slot="hp"><div class="scb-hp-fill"></div><div class="scb-hp-temp"></div></div>`
+    ${BARS}`
 });

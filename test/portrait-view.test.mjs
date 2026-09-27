@@ -15,7 +15,7 @@ const model = (over = {}) => buildPortraitModel({
 describe("PortraitView", () => {
   it.each(["medallion", "card"])("builds the %s style with every required slot", id => {
     const view = new PortraitView("c1", portraitStyle(id));
-    for ( const slot of ["img", "initiative", "hp", "name", "damage"] ) {
+    for ( const slot of ["img", "initiative", "hp", "bar2", "name", "damage", "rounds"] ) {
       expect(view.element.querySelector(`[data-slot="${slot}"]`), slot).not.toBeNull();
     }
   });

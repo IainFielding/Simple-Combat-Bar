@@ -12,6 +12,9 @@
  *           Show the system's initiative roll dialog and prepare the roll the next initiative
  *           roll for this actor will use. Resolves false if the user cancelled.
  * @property {(actor: Actor) => void} [clearInitiative]  Drop a roll prepared by configureInitiative.
+ * @property {(path: string) => string|null} [attributeLabel]  A readable name for an attribute path.
+ * @property {() => Array<{attr: string, label: string, icon?: string}>} [defaultAttributes]
+ *           Tooltip values a new world starts with.
  * @property {(actor: Actor) => Set<string>} [watchedPaths]  Top-level `system` keys whose change
  *           should refresh a portrait. Anything else in an actor update is ignored.
  */

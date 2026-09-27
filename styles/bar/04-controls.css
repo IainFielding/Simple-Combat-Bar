@@ -1,21 +1,28 @@
 /* GM tabs, the round / End Turn hanger, and the portrait tooltip. */
 
 /* ---------------------------------------------------------------- GM tabs
-   Drawn like the dnd5e sheet's vertical tabs (`.dnd5e2.vertical-tabs nav.tabs`): a black column
-   in a gold frame, sticking out of the bar's end, with gold icons that invert on hover. The colours
-   come from dnd5e's own tokens when the system is loaded, so they follow its theme. */
+   Drawn like the dnd5e sheet's vertical tabs (`.dnd5e2.vertical-tabs nav.tabs`), gold icons that
+   invert on hover, but built as part of the bar: the same surface, the full height of the bar, and
+   when they're showing the bar's own bottom corners go square and the tabs carry the rounding, so
+   the GM's bar is one shape. The buttons flex a little so a short bar still fits them. */
 .scb-root .scb-tabs {
   --scb-tab-gold: var(--scb-frame);
   --scb-tab-black: var(--scb-frame-black);
   position: absolute;
-  top: 6px;
+  top: 0;
+  /* -1px: down over the bar's bottom border, so the two bottom edges are one line. */
+  bottom: -1px;
   display: none;
   flex-direction: column;
+  justify-content: center;
   align-items: stretch;
   width: 38px;
-  padding-block: 2px;
-  background: var(--scb-tab-black);
+  padding-block: 3px;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--scb-surface);
   border: 1px solid var(--scb-tab-gold);
+  border-top: none;
   pointer-events: auto;
 }
 
@@ -23,27 +30,31 @@
   display: flex;
 }
 
+.scb-root.is-gm .scb-bar {
+  border-radius: 0;
+}
+
 .scb-root .scb-tabs-start {
   right: 100%;
   border-right: none;
-  border-radius: 6px 0 0 6px;
+  border-radius: 0 0 0 var(--scb-radius);
 }
 
 .scb-root .scb-tabs-end {
   left: 100%;
   border-left: none;
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 0 var(--scb-radius) 0;
 }
 
 .scb-root .scb-tab {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 26px;
+  flex: 0 1 26px;
   width: auto;
   height: 26px;
-  min-height: 0;
-  margin: 2px 5px;
+  min-height: 18px;
+  margin: 1px 5px;
   padding: 0;
   line-height: 1;
   border: none;
@@ -79,7 +90,7 @@
   align-items: stretch;
   margin-top: -1px;
   pointer-events: auto;
-  background: var(--scb-bg);
+  background: var(--scb-surface);
   border: 1px solid var(--scb-frame);
   border-top: none;
   border-radius: 0 0 10px 10px;

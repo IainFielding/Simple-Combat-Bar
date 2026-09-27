@@ -91,6 +91,7 @@ export class PortraitView {
       }
     }
     if ( changed.some(f => f.startsWith("hp") || (f === "damagePct")) ) this.#patchHP(model);
+    if ( changed.includes("secPct") ) this.#patchBar2(model);
     this.model = model;
     return changed;
   }
@@ -109,6 +110,13 @@ export class PortraitView {
     bar.style.setProperty("--scb-hp-pct", `${model.hpPct ?? 0}%`);
     const tempPct = model.hpTemp && model.hpMax ? Math.min(100, Math.round((model.hpTemp / model.hpMax) * 100)) : 0;
     bar.style.setProperty("--scb-hp-temp-pct", `${tempPct}%`);
+  }
+
+  #patchBar2(model) {
+    const bar = this.#slots.bar2;
+    if ( !bar ) return;
+    bar.classList.toggle("is-empty", model.secPct === null);
+    bar.style.setProperty("--scb-bar2-pct", `${model.secPct ?? 0}%`);
   }
 
   /** Remove from the DOM. The bar drops its reference, so this is all the cleanup there is. */

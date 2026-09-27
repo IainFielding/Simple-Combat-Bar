@@ -27,6 +27,14 @@ export const genericAdapter = {
     return actor?.statuses?.has(defeated) ? "down" : null;
   },
 
+  defaultAttributes() {
+    return [];
+  },
+
+  attributeLabel() {
+    return null;
+  },
+
   watchedPaths() {
     return null;
   }

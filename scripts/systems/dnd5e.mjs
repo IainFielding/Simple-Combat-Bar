@@ -85,6 +85,27 @@ export const dnd5eAdapter = {
     delete actor._cachedInitiativeRoll;
   },
 
+  /**
+   * A readable name for an attribute path, from dnd5e's own helper (the one its token config uses).
+   * A bar's parent path ("resources.legact") is tried as its ".value" too.
+   */
+  attributeLabel(path) {
+    const helper = globalThis.dnd5e?.utils?.getHumanReadableAttributeLabel;
+    if ( !helper || !path ) return null;
+    const label = helper(path) ?? helper(`${path}.value`);
+    return label ? game.i18n.localize(label) : null;
+  },
+
+  /** Tooltip values a new world starts with. Labels are dnd5e's own i18n keys. */
+  defaultAttributes() {
+    return [
+      { attr: "attributes.ac.value", label: "DND5E.ArmorClass", icon: "fa-solid fa-shield-halved" },
+      { attr: "attributes.movement.walk", label: "DND5E.Speed", icon: "fa-solid fa-person-running" },
+      { attr: "attributes.spell.dc", label: "DND5E.SpellDC", icon: "fa-solid fa-wand-sparkles" },
+      { attr: "skills.prc.passive", label: "DND5E.PassivePerception", icon: "fa-solid fa-eye" }
+    ];
+  },
+
   watchedPaths() {
     return WATCHED;
   }
