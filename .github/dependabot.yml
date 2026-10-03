@@ -9,3 +9,22 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+
+  # Dev tooling (lint, unit tests, the e2e harness). None of it ships in the module archive, but it
+  # runs on contributors' machines and in CI, so security fixes matter. Grouped into one PR per
+  # directory a week to keep the noise down.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dev-tooling:
+        patterns: ["*"]
+
+  - package-ecosystem: "npm"
+    directory: "/test-e2e"
+    schedule:
+      interval: "weekly"
+    groups:
+      e2e-tooling:
+        patterns: ["*"]

@@ -169,6 +169,11 @@ export class CombatBar {
     life.hook("createActiveEffect", effect => this.#onEffect(effect));
     life.hook("deleteActiveEffect", effect => this.#onEffect(effect));
     life.hook("updateActiveEffect", effect => this.#onEffect(effect));
+    // Items carry what a card shows too: class levels (the description) and the effects they
+    // transfer, which change with the item without firing any ActiveEffect hook.
+    life.hook("createItem", item => this.#onItem(item));
+    life.hook("updateItem", item => this.#onItem(item));
+    life.hook("deleteItem", item => this.#onItem(item));
     life.hook("hoverToken", (token, hovered) => this.#toggleTokenClass(token, "is-hovered", hovered));
     life.hook("controlToken", (token, controlled) => this.#toggleTokenClass(token, "is-controlled", controlled));
     life.add(() => this.#scheduler.cancel());
@@ -261,6 +266,12 @@ export class CombatBar {
 
   #onEffect(effect) {
     const actor = effect.target ?? effect.parent;
+    if ( !(actor instanceof Actor) ) return;
+    for ( const id of this.#combatantIdsFor(c => c.actor === actor) ) this.#scheduler.markDirty(id);
+  }
+
+  #onItem(item) {
+    const actor = item.parent;
     if ( !(actor instanceof Actor) ) return;
     for ( const id of this.#combatantIdsFor(c => c.actor === actor) ) this.#scheduler.markDirty(id);
   }

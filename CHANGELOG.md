@@ -29,6 +29,9 @@ All notable changes to Simple Combat Bar.
   *Armor Class* is stored as its translation key again, not as fixed English text.
 - **Action pips are spent even when the bar is hidden.** A player who turned the bar off, or a GM
   looking at another encounter in the sidebar, used to stop their abilities spending pips.
+- **Cards keep up with item changes.** Levelling up now updates a character's description in the
+  tooltip straight away, and adding, removing or equipping an item that carries an effect updates
+  the card's effect icons.
 - **Arrives in Round… hides the creature's token** until it arrives, so players don't see on the map
   what the bar keeps from them. It's revealed again when it arrives, as before.
 - **Shift- or Ctrl-clicking Reroll Initiative** in the right-click menu skips the roll window, like
