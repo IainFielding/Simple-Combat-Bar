@@ -30,7 +30,7 @@ import { effectIcons } from "./effects.mjs";
  * @property {number|null} initiative
  * @property {number|null} tokenDisplayName
  * @property {{value: number|null, max: number|null, temp: number|null}|null} hp
- * @property {"healthy"|"bloodied"|"critical"|"down"|null} [healthHint]
+ * @property {"healthy"|"bloodied"|"down"|null} [healthHint]
  *           Coarse health from statuses, for viewers who don't receive HP numbers.
  * @property {{value: number, max: number, pct: number}|null} [secondary]  The second bar, if any.
  * @property {boolean} [trusted]  This viewer receives the actor's data (GM, owner, observer).
@@ -169,7 +169,7 @@ export function damageFill(hpMode, hpPct) {
 }
 
 /** The overlay for each coarse health state. */
-export const STATE_FILL = Object.freeze({ healthy: 0, bloodied: 50, critical: 75, down: 100 });
+export const STATE_FILL = Object.freeze({ healthy: 0, bloodied: 50, down: 100 });
 
 /**
  * Shallow equality over model fields. Models are flat and primitive, so this is exact.

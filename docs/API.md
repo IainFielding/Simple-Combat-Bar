@@ -45,7 +45,7 @@ Hooks.once("simpleCombatBar.init", api => {
     // every actor update.
     watchedPaths: () => new Set(["health", "rank"]),
     // Optional: coarse health from data every user receives (statuses), for viewers who can't
-    // observe the actor and so never receive its HP. "healthy" | "bloodied" | "critical" | "down".
+    // observe the actor and so never receive its HP. "healthy" | "bloodied" | "down".
     healthState: actor => (actor.statuses.has("dead") ? "down" : "healthy"),
     // Optional: a readable name for an attribute path, used in Configure Trackers and tooltips.
     attributeLabel: path => null,

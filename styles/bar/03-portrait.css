@@ -152,7 +152,6 @@
 }
 
 .scb-root .scb-portrait[data-hp="bloodied"] .scb-hp-fill { background: var(--scb-hp-bloodied); }
-.scb-root .scb-portrait[data-hp="critical"] .scb-hp-fill,
 .scb-root .scb-portrait[data-hp="down"] .scb-hp-fill { background: var(--scb-hp-critical); }
 
 /* ---------------------------------------------------------------- second bar

@@ -81,12 +81,11 @@ export function hpDetail(mode, { isGM, canObserve }) {
 /**
  * The coarse health state shown when numbers are hidden. 5e's "bloodied" is at or below half.
  * @param {number|null} pct   0–100, or null when unknown.
- * @returns {"unknown"|"healthy"|"bloodied"|"critical"|"down"}
+ * @returns {"unknown"|"healthy"|"bloodied"|"down"}
  */
 export function healthState(pct) {
   if ( (pct === null) || (pct === undefined) || Number.isNaN(pct) ) return "unknown";
   if ( pct <= 0 ) return "down";
-  if ( pct <= 25 ) return "critical";
   if ( pct <= 50 ) return "bloodied";
   return "healthy";
 }

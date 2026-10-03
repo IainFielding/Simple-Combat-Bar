@@ -72,7 +72,7 @@ describe("hpDetail", () => {
 
 describe("healthState", () => {
   it.each([[null, "unknown"], [100, "healthy"], [51, "healthy"], [50, "bloodied"], [26, "bloodied"],
-    [25, "critical"], [1, "critical"], [0, "down"]])("%s%% → %s", (pct, state) => {
+    [25, "bloodied"], [1, "bloodied"], [0, "down"]])("%s%% → %s", (pct, state) => {
     expect(healthState(pct)).toBe(state);
   });
 });

@@ -24,7 +24,7 @@ Players see a combat as soon as it exists, so they can roll initiative before it
 
 - **Names** follow each token's own name setting, or you can show or hide them all.
 - **Hit points.** Players see exact hit points for their own characters. For enemies, the default is
-  just how wounded they are (healthy, bloodied, badly wounded), taken from D&D 5e's own Bloodied and
+  just how wounded they are (healthy, bloodied, down), taken from D&D 5e's own Bloodied and
   Dead conditions, and the red fill moves in steps rather than showing an exact number.
 - **Enemy initiative** can be hidden.
 - **Enemies can be revealed as they act**, so players don't see the whole enemy side in round one.
@@ -102,7 +102,7 @@ or hides the bar for you alone; it has no key until you give it one in Configure
 
 Everything is under **Game Settings → Configure Settings → Simple Combat Bar**, including who sees
 names, hit points, effect descriptions and initiative, the portrait style and size, whether the
-sidebar collapses during combat, and the action pips, legendary badges
+sidebar switches to Chat when combat starts, and the action pips, legendary badges
 and effect icons.
 
 Turn on **XP Summary When Combat Ends** and ending a combat whispers the GM a card listing the

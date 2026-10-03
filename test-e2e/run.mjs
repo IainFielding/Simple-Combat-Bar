@@ -334,6 +334,9 @@ const SUITES = {
     const check = (ok, message) => ok || failures.push(message);
     const page = gm.page;
     const original = page.viewportSize();
+    // Fit to width is what's under test; the default is now Scroll sideways.
+    const before = await gm.eval(() => game.settings.get("sogrom-simple-combat-bar", "overflow"));
+    await gm.eval(() => __scb.setTrackerSettings({ overflow: "autofit" }));
     await gm.eval(() => __scbFixtures.freshCombat({ allies: 4, enemies: 10 }));
     const wide = await gm.eval(() => __scb.barMetrics());
     await page.setViewportSize({ width: 1100, height: original.height });
@@ -375,6 +378,7 @@ const SUITES = {
     check(narrow.tabsLeft >= narrow.sceneNavRight, `when narrow the GM tabs cover the scene pill (${Math.round(narrow.tabsLeft)} < ${Math.round(narrow.sceneNavRight)})`);
     check(back.size === wide.size, `portraits didn't grow back (${back.size}px, was ${wide.size}px)`);
     await gm.eval(() => __scbFixtures.cleanup());
+    await gm.eval(v => __scb.setTrackerSettings({ overflow: v }), before);
     return { pass: !failures.length, failures,
       lines: [`portrait size ${wide.size} -> ${narrow.size} -> ${back.size}px; narrow mode ${narrow.overflow}`,
         `at 1920px, combatants:size ${sizes.join(" ")}`, ...failures] };

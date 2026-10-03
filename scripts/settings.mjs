@@ -63,7 +63,7 @@ export function registerSettings(getBar) {
   register("showEffects", { type: Boolean });
   register("effectDescriptions", { type: String, choices: choices("effectDescriptions", ["none", "owner", "all"]) });
   register("groupTeams", { type: String, choices: choices("groupTeams", ["off", "visual", "bg3"]) });
-  register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["collapse", "leave"]) });
+  register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["chat", "leave"]) });
   register("xpSummary", { type: Boolean, onChange: invalidateSettings });
   register("debug", { scope: "user", type: Boolean });
 
