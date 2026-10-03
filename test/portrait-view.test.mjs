@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULTS } from "../scripts/config.mjs";
 import { buildPortraitModel } from "../scripts/model/portrait-model.mjs";
 import { PortraitView } from "../scripts/ui/portrait-view.mjs";
-import { portraitStyle } from "../scripts/ui/portrait-styles.mjs";
+import { portraitStyle, portraitStyleChoices, registerPortraitStyle } from "../scripts/ui/portrait-styles.mjs";
 import { fitSize, runPosition, trackWidth } from "../scripts/ui/combat-bar.mjs";
 
 const model = (over = {}) => buildPortraitModel({
@@ -113,5 +113,27 @@ describe("runPosition", () => {
   const items = [{ run: "r1" }, { run: "r1" }, { run: "r1" }, { run: null }, { run: "r2" }];
   it("labels the ends and middle of a run", () => {
     expect(items.map((_, i) => runPosition(items, i))).toEqual(["first", "middle", "last", null, null]);
+  });
+});
+
+describe("portrait style choices", () => {
+  it("is one live object, so a style registered after the setting still shows up in it", () => {
+    const choices = portraitStyleChoices();
+    expect(choices).toMatchObject({ card: "sogrom-simple-combat-bar.styles.card" });
+    registerPortraitStyle({ id: "test-shield", label: "TEST.Shield", markup: "<img data-slot=\"img\">" });
+    expect(portraitStyleChoices()).toBe(choices);
+    expect(choices["test-shield"]).toBe("TEST.Shield");
+  });
+});
+
+describe("PortraitView accessibility", () => {
+  it("names its icon-only buttons, and marks a spent pip as pressed", () => {
+    const view = new PortraitView("c1", portraitStyle("card"));
+    expect(view.element.querySelector(".scb-roll").getAttribute("aria-label")).toBe("COMBAT.InitiativeRoll");
+    view.patch(model({ economy: { action: true, bonus: false, reaction: false }, trusted: true }));
+    const pip = slot => view.element.querySelector(`.scb-pip[data-pip="${slot}"]`);
+    expect(pip("action").getAttribute("aria-label")).toBe("sogrom-simple-combat-bar.economy.action");
+    expect(pip("action").getAttribute("aria-pressed")).toBe("true");
+    expect(pip("bonus").getAttribute("aria-pressed")).toBe("false");
   });
 });

@@ -6,10 +6,10 @@
  */
 
 import { HOOKS, MODULE_ID, invalidateSettings, settings, t } from "./config.mjs";
-import { registerKeybindings, registerSettings } from "./settings.mjs";
+import { registerAdapterSettings, registerKeybindings, registerSettings } from "./settings.mjs";
 import { CombatBar } from "./ui/combat-bar.mjs";
 import { registerPortraitStyle } from "./ui/portrait-styles.mjs";
-import { registerAdapter } from "./systems/adapter.mjs";
+import { adapterFor, registerAdapter } from "./systems/adapter.mjs";
 import { expiredEvents } from "./model/events.mjs";
 import { activationSlot, anySpent, emptyEconomy } from "./model/economy.mjs";
 import { economyProvider, spendSlot } from "./systems/economy.mjs";
@@ -18,7 +18,6 @@ import { afterTurnChange, skipBeforeUpdate } from "./ui/arrival-service.mjs";
 import { restoresEconomy } from "./model/group-turns.mjs";
 import { tallyDefeated } from "./model/xp-award.mjs";
 import { DISPOSITIONS } from "./model/visibility.mjs";
-import { adapterFor } from "./systems/adapter.mjs";
 
 /** The session's bar. Null until `ready`, and stays null if the bar mustn't mount. */
 let bar = null;
@@ -38,6 +37,7 @@ Hooks.once("init", () => {
   registerGroupQuery();
   game.modules.get(MODULE_ID).api = api;
   Hooks.callAll(HOOKS.init, api);
+  registerAdapterSettings(() => bar);
 });
 
 Hooks.once("ready", () => {
@@ -66,10 +66,10 @@ Hooks.once("ready", () => {
     if ( viewed !== bar.combat ) sync();
   });
   // Action economy: spend on use (on the client that used it, which owns the combatant), and
-  // restore at the start of each combatant's turn (on the active GM's client only).
+  // restore at the start of each combatant's turn (on the active GM's client only). Core fires
+  // combatTurnChange for the first turn too, once the start has been saved.
   Hooks.on("dnd5e.postUseActivity", activity => spendForActivity(activity));
   Hooks.on("combatTurnChange", (combat, _previous, current) => resetEconomy(combat, current?.combatantId));
-  Hooks.on("combatStart", combat => resetEconomy(combat, combat.combatant?.id));
 
   Hooks.on("combatStart", () => {
     if ( settings().sidebarOnCombat === "collapse" ) ui.sidebar?.collapse();
@@ -88,10 +88,16 @@ async function spendForActivity(activity) {
   const provider = economyProvider();
   if ( !cfg.trackEconomy || !cfg.autoSpendEconomy || provider.spendsItself ) return;
   const slot = activationSlot(activity?.activation?.type);
-  const combat = bar?.combat;
-  if ( !slot || !combat?.started ) return;
-  const actor = activity.actor;
-  const combatant = combat.combatants.find(c => c.actor === actor);
+  const actor = activity?.actor;
+  if ( !slot || !actor ) return;
+  // The started combat the actor is fighting in: not necessarily the one this user is viewing, and
+  // still spent if they've hidden the bar, since the pips are shared state everyone else sees.
+  let combatant = null;
+  for ( const combat of [game.combat, ...game.combats] ) {
+    if ( !combat?.started ) continue;
+    combatant = combat.combatants.find(c => c.actor === actor);
+    if ( combatant ) break;
+  }
   if ( !combatant?.isOwner ) return;
   await spendSlot(combatant, slot);
 }

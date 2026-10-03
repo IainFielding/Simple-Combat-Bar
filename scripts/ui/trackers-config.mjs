@@ -71,6 +71,7 @@ export class TrackersConfig extends ApplicationV2 {
           placeholder="${esc(t("trackers.attr"))}" aria-label="${esc(t("trackers.attr"))}">
         <input type="text" name="rows.${i}.label" value="${esc(game.i18n.localize(r.label ?? ""))}"
           placeholder="${esc(t("trackers.label"))}" aria-label="${esc(t("trackers.label"))}">
+        <input type="hidden" name="rows.${i}.key" value="${esc(r.label)}">
         <input type="text" name="rows.${i}.icon" value="${esc(r.icon)}"
           placeholder="fa-solid fa-shield" aria-label="${esc(t("trackers.icon"))}">
         <i class="scb-tracker-preview ${esc(r.icon || "fa-solid fa-circle-info")}" aria-hidden="true"></i>
@@ -114,7 +115,7 @@ export class TrackersConfig extends ApplicationV2 {
   #readForm() {
     const data = foundry.utils.expandObject(new foundry.applications.ux.FormDataExtended(this.element).object);
     this.#draft = {
-      rows: Object.values(data.rows ?? {}),
+      rows: keepLabelKeys(Object.values(data.rows ?? {})),
       secondary: data.secondaryResource ?? "",
       color: data.secondaryColor ?? this.#draft?.color
     };
@@ -133,9 +134,23 @@ export class TrackersConfig extends ApplicationV2 {
 
   static async #onSubmit(_event, _form, formData) {
     const data = foundry.utils.expandObject(formData.object);
-    await game.settings.set(MODULE_ID, "tooltipAttributes", normaliseAttributes(Object.values(data.rows ?? {})));
+    await game.settings.set(MODULE_ID, "tooltipAttributes",
+      normaliseAttributes(keepLabelKeys(Object.values(data.rows ?? {}))));
     await game.settings.set(MODULE_ID, "secondaryResource", data.secondaryResource ?? "");
     await game.settings.set(MODULE_ID, "secondaryColor", safeColor(data.secondaryColor, "#5aa9e6"));
     invalidateSettings();
   }
+}
+
+/**
+ * A label box shows its i18n key localised. Where the GM left it as shown, store the key again, so
+ * each viewer still reads it in their own language.
+ * @param {Array<{attr?: string, label?: string, icon?: string, key?: string}>} rows  As submitted.
+ * @returns {Array<{attr?: string, label?: string, icon?: string}>}
+ */
+function keepLabelKeys(rows) {
+  return rows.map(({ key, ...row }) => {
+    const unedited = key && (row.label === game.i18n.localize(key));
+    return unedited ? { ...row, label: key } : row;
+  });
 }

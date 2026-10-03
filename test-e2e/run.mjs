@@ -542,6 +542,7 @@ const SUITES = {
       let s = await state();
       check(s.arrival?.round === 2, `arrival not stored: ${JSON.stringify(s.arrival)}`);
       check(s.hidden === true, "scheduled combatant isn't hidden from players");
+      check(s.tokenHidden === true, "scheduled combatant's token still shows on the map");
       check(s.waiting === true, "GM's card isn't marked as waiting");
       check(s.badge === "R2", `badge reads "${s.badge}", expected R2`);
 

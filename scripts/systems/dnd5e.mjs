@@ -71,19 +71,21 @@ export const dnd5eAdapter = {
    * rolls through the actor's *canvas tokens*; the bar rolls through the combat instead, so it only
    * borrows the dialog half. dnd5e's `Combatant5e#getInitiativeRoll` asks the actor, which returns
    * the roll cached here (spec R12 exception: `Actor5e#_cachedInitiativeRoll`).
+   * The dialog's roll mode is written into the message config; it's handed back so the roll's chat
+   * message uses it, as `rollInitiativeDialog` does.
    */
   async configureInitiative(actor, event) {
     const rollConfig = actor.getInitiativeRollConfig?.({ event });
     if ( !rollConfig ) return false;
-    if ( rollConfig.options?.fixed !== undefined ) return true;
+    if ( rollConfig.options?.fixed !== undefined ) return {};
     const config = { evaluate: false, event, hookNames: ["initiativeDialog", "abilityCheck", "d20Test"],
       rolls: [rollConfig], subject: actor };
+    const message = { rollMode: CONFIG.Dice.BasicRoll.getMessageMode?.() };
     const rolls = await CONFIG.Dice.D20Roll.build(config,
-      { options: { title: game.i18n.localize("DND5E.InitiativeRoll") } },
-      { rollMode: CONFIG.Dice.BasicRoll.getMessageMode?.() });
+      { options: { title: game.i18n.localize("DND5E.InitiativeRoll") } }, message);
     if ( !rolls?.length ) return false;
     actor._cachedInitiativeRoll = rolls[0];
-    return true;
+    return message.rollMode ? { messageMode: message.rollMode } : {};
   },
 
   clearInitiative(actor) {

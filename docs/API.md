@@ -21,11 +21,11 @@ const api = game.modules.get("sogrom-simple-combat-bar")?.api;
 
 | Hook | Arguments | When |
 | --- | --- | --- |
-| `simpleCombatBar.init` | `api` | During Foundry's `init`, after settings are registered. Register adapters and portrait styles here. |
+| `simpleCombatBar.init` | `api` | During Foundry's `init`, after settings are registered. Register adapters and portrait styles here; the bar reads your adapter's `defaultAttributes` straight after. |
 | `simpleCombatBar.ready` | `api` | During Foundry's `ready`, after the bar is created and bound. |
 | `simpleCombatBar.bind` | `bar, combat` | The bar starts showing a combat. |
 | `simpleCombatBar.unbind` | `bar, combat` | The bar stops showing a combat. |
-| `simpleCombatBar.renderPortrait` | `model, element, changed` | A portrait was created or patched. `changed` lists the model fields that changed. Add your own decorations to `element` here; the bar never re-creates it, so anything you add stays until the combatant leaves the bar. |
+| `simpleCombatBar.renderPortrait` | `model, element, changed` | A portrait was created or patched. `changed` lists the model fields that changed. Add your own decorations to `element` here; patches never re-create it, so anything you add stays until the combatant leaves the bar, the portrait style changes, or the bar switches to another combat. |
 
 Hook names are part of the API. Renaming one is a breaking change, which is why the test suite
 asserts them literally.
@@ -51,9 +51,10 @@ Hooks.once("simpleCombatBar.init", api => {
     attributeLabel: path => null,
     // Optional: the tooltip values a new world starts with.
     defaultAttributes: () => [{ attr: "rank", label: "Rank", icon: "fa-solid fa-star" }],
-    // Optional: show the system's initiative dialog and prepare the next initiative roll;
-    // resolve false if the user cancels. clearInitiative drops the prepared roll afterwards.
-    configureInitiative: async (actor, event) => true,
+    // Optional: show the system's initiative dialog and prepare the next initiative roll. Resolve
+    // to options for Combat#rollInitiative (e.g. the dialog's { messageMode }), or false if the
+    // user cancels. clearInitiative drops the prepared roll afterwards.
+    configureInitiative: async (actor, event) => ({}),
     clearInitiative: actor => {}
   });
 });

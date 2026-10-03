@@ -12,7 +12,7 @@ your card, and players only ever see as much of an enemy as you allow.
 
 - **Reads like BG3.** The combatant acting now comes first, then everyone still to act this round, a divider for the next round, then those who have already acted.
 - **Hangs from the top of the screen**, with the round and an **End Turn** button in a tab beneath it. End Turn shows for whoever owns the combatant acting, and for the GM.
-- **Portraits fill with blood** As hit points are lost.
+- **Portraits fill with blood** as hit points are lost.
 - **Cards or medallions.** Tall portrait cards by default, or round medallions.
 - **Fits the window.** Portraits shrink to fit a crowded fight, and the bar scrolls sideways once
   they're as small as they go.
@@ -95,13 +95,14 @@ roll for everyone or for NPCs, reset initiative, step back a turn or a round, st
 combat, add an event, and open the settings. Right-click a portrait to make it the current turn,
 ping or pan to its token, re-roll or clear its initiative, hide it, mark it defeated, or remove it.
 
-Keyboard: **Shift+M** ends the turn and **Shift+N** goes back one (GM).
+Keyboard: **Shift+M** ends the turn and **Shift+N** goes back one (GM). **Toggle Combat Bar** shows
+or hides the bar for you alone; it has no key until you give it one in Configure Controls.
 
 ## Settings
 
 Everything is under **Game Settings → Configure Settings → Simple Combat Bar**, including who sees
 names, hit points, effect descriptions and initiative, the portrait style and size, whether the
-sidebar collapses and the D&D calendar hides during combat, and the action pips, legendary badges
+sidebar collapses during combat, and the action pips, legendary badges
 and effect icons.
 
 Turn on **XP Summary When Combat Ends** and ending a combat whispers the GM a card listing the

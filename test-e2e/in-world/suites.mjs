@@ -148,6 +148,19 @@ export async function ordering() {
     await combat.nextTurn();
     await settle(80);
   }
+
+  // Reset Initiative writes every combatant through one combat update, not one per combatant.
+  await combat.resetAll();
+  await settle(150);
+  const stale = Array.from(document.querySelectorAll("#scb-root .scb-portrait.has-initiative"),
+    li => li.dataset.combatantId);
+  if ( stale.length ) failures.push({ error: `initiative still shown after Reset Initiative: ${stale.join(", ")}` });
+  const order = read().filter(id => id !== "|");
+  const turns = combat.turns.map(c => c.id);
+  const reordered = [...turns.slice(combat.turn), ...turns.slice(0, combat.turn)];
+  if ( JSON.stringify(order) !== JSON.stringify(reordered) ) {
+    failures.push({ error: "order not rebuilt after Reset Initiative", expected: reordered, actual: order });
+  }
   await cleanup();
   return { failures };
 }
@@ -260,15 +273,15 @@ export async function nextRound() {
 
 /**
  * GM: the Death Tyrant's fight. Four combatants, then a monster at -0.01 (count 0, losing ties) whose
- * token is hidden on the map. Not started, so the GM can schedule it first. Clears the chat so the
- * arrival whisper can be counted.
+ * token is left showing on the map: scheduling its arrival must hide it. Not started, so the GM can
+ * schedule it first. Clears the chat so the arrival whisper can be counted.
  */
 export async function arrivalsSetup() {
   const ids = game.messages.map(m => m.id);
   if ( ids.length ) await ChatMessage.deleteDocuments(ids);
   const combat = await freshCombat({ allies: 2, enemies: 3, initiative: [20, 18, 15, 12, -0.01], start: false });
   const tyrant = combat.turns.at(-1);
-  await tyrant.token.update({ hidden: true });
+  if ( tyrant.token.hidden ) await tyrant.token.update({ hidden: false });
   await settle(150);
   return { tyrant: tyrant.id, name: tyrant.name };
 }

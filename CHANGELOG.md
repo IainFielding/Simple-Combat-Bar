@@ -2,6 +2,63 @@
 
 All notable changes to Simple Combat Bar.
 
+## 0.4.0
+
+### New
+
+- **Show or hide the bar from the keyboard.** A new **Toggle Combat Bar** keybinding switches the
+  *Show the Combat Bar* setting for you alone. It has no key by default; pick one in Configure
+  Controls.
+
+### Fixed
+
+- **The initiative roll window's roll mode is kept.** Choosing *Private GM Roll* (or any other mode)
+  in the roll window now posts the roll that way, instead of in the default mode.
+- **Reroll Initiative from the right-click menu** opens the roll window too, when the *Initiative
+  Roll Window* setting asks for one.
+- **Portrait styles from other modules** now appear in the *Portrait Style* setting.
+- **A system adapter's default tooltip values are used.** One registered in `simpleCombatBar.init`,
+  as docs/API.md says to, was read too late for its `defaultAttributes` to apply.
+- **Grouped turns update when a late arrival comes in**, even if the arrival stays hidden.
+- **Pressing Enter on a button inside a portrait** presses the button, rather than panning to the
+  token.
+- **A group turn change that doesn't reach the GM** now tells the player so, instead of silently doing
+  nothing.
+- **Pan To** is only offered in the right-click menu when it works: for combatants you can observe.
+- **Saving Configure Trackers keeps D&D 5e's labels translatable.** An unedited label such as
+  *Armor Class* is stored as its translation key again, not as fixed English text.
+- **Action pips are spent even when the bar is hidden.** A player who turned the bar off, or a GM
+  looking at another encounter in the sidebar, used to stop their abilities spending pips.
+- **Cards keep up with item changes.** Levelling up now updates a character's description in the
+  tooltip straight away, and adding, removing or equipping an item that carries an effect updates
+  the card's effect icons.
+- **Arrives in Round… hides the creature's token** until it arrives, so players don't see on the map
+  what the bar keeps from them. It's revealed again when it arrives, as before.
+- **Shift- or Ctrl-clicking Reroll Initiative** in the right-click menu skips the roll window, like
+  the d20 does.
+- **Shift+M and Shift+N only act when there's a turn to change.** Outside combat (or, for Shift+M,
+  when it isn't your turn) the keys are left for other modules' shortcuts instead of being swallowed.
+- **An initiative roll still lands if the bar moves to another encounter** while the roll window is
+  open.
+- **Screen readers** now name the action pips (and say whether each is spent), the legendary
+  counters and the d20.
+- The *Fill Portraits With Damage* hint said the fill rises from the top; it rises from the bottom.
+- No more Foundry v14 deprecation warnings from the right-click menu.
+
+## 0.3.0
+
+### New
+
+- **XP summary when combat ends.** Turn on *XP Summary When Combat Ends* and ending a combat
+  whispers the GM a card listing the defeated enemies and their total XP, with D&D 5e's Award
+  button to hand it out (the same as typing `/award`). The players' own creatures and friendly NPCs
+  aren't counted. Off by default.
+
+### Changed
+
+- **Observers see names.** A player with Observer permission on a creature now sees its name on the
+  bar, whatever the name setting, just as its owner does.
+
 ## 0.2.0
 
 ### New

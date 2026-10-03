@@ -31,7 +31,8 @@
     },
     "keybindings": {
       "previousTurn": "Previous Turn",
-      "endTurn": "End Turn"
+      "endTurn": "End Turn",
+      "toggleBar": "Toggle Combat Bar"
     },
     "settings": {
       "enabled": {
@@ -82,7 +83,7 @@
       },
       "damageFill": {
         "name": "Fill Portraits With Damage",
-        "hint": "Portraits fill red from the top as hit points are lost. Follows the Hit Points setting: exact for those who may see hit points, in coarse steps for those who only see how wounded a combatant is."
+        "hint": "Portraits fill red from the bottom as hit points are lost. Follows the Hit Points setting: exact for those who may see hit points, in coarse steps for those who only see how wounded a combatant is."
       },
       "hpBar": {
         "name": "HP Bar Under Portraits",
@@ -241,7 +242,8 @@
     "groupTurns": {
       "takeTurn": "Click to take this turn",
       "ended": "Turn ended",
-      "noGM": "A GM needs to be connected to change turns within a group."
+      "noGM": "A GM needs to be connected to change turns within a group.",
+      "failed": "The GM's client didn't respond, so the turn didn't change. Try again."
     },
     "effects": {
       "removeTitle": "Remove Effect",
