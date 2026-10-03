@@ -6,7 +6,7 @@
  */
 
 import { HOOKS, MODULE_ID, invalidateSettings, settings, t } from "./config.mjs";
-import { registerKeybindings, registerSettings } from "./settings.mjs";
+import { registerAdapterSettings, registerKeybindings, registerSettings } from "./settings.mjs";
 import { CombatBar } from "./ui/combat-bar.mjs";
 import { registerPortraitStyle } from "./ui/portrait-styles.mjs";
 import { adapterFor, registerAdapter } from "./systems/adapter.mjs";
@@ -37,6 +37,7 @@ Hooks.once("init", () => {
   registerGroupQuery();
   game.modules.get(MODULE_ID).api = api;
   Hooks.callAll(HOOKS.init, api);
+  registerAdapterSettings(() => bar);
 });
 
 Hooks.once("ready", () => {

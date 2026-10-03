@@ -17,6 +17,8 @@ All notable changes to Simple Combat Bar.
 - **Reroll Initiative from the right-click menu** opens the roll window too, when the *Initiative
   Roll Window* setting asks for one.
 - **Portrait styles from other modules** now appear in the *Portrait Style* setting.
+- **A system adapter's default tooltip values are used.** One registered in `simpleCombatBar.init`,
+  as docs/API.md says to, was read too late for its `defaultAttributes` to apply.
 - **Grouped turns update when a late arrival comes in**, even if the arrival stays hidden.
 - **Pressing Enter on a button inside a portrait** presses the button, rather than panning to the
   token.

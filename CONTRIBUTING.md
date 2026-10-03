@@ -8,7 +8,7 @@ system, so most changes need checking in a real world as well as in the test sui
 ```sh
 npm install        # dev tooling only — nothing here ships in the module archive
 npm run check      # JSON validation, lint, unit tests (what CI runs)
-npm run e2e        # local only: drives a real Foundry install, see test-e2e/README.md
+npm run e2e        # local only: drives a real Foundry install; set up from test-e2e/config.example.mjs
 ```
 
 To try the module in Foundry, symlink or copy the repository into your
@@ -20,10 +20,10 @@ creates a junction for you on Windows).
 - `npm run check` passes locally.
 - User-facing strings go through `lang/en.json` rather than being hard-coded.
 - The public hook and API surface still matches [docs/API.md](docs/API.md). The hook names in
-  `test/api.test.mjs` are asserted literally on purpose — if that test fails because you renamed
+  `test/house.test.mjs` are asserted literally on purpose — if that test fails because you renamed
   one, the test is right and the rename is a breaking change for every module using it. Adding a
-  hook means adding it to `HOOKS` in `scripts/config.mjs`, emitting it through `fireHook()` or
-  `fireCancellableHook()`, extending that assertion, and documenting it.
+  hook means adding it to `HOOKS` in `scripts/config.mjs`, firing it with `Hooks.callAll`,
+  extending that assertion, and documenting it.
 - Unit tests cover the changed behaviour where the behaviour is testable outside Foundry.
 - The change has been clicked through in a real world — unit tests don't cover the UI.
   Say which Foundry version, D&D 5e system version, and content modules you tested against.

@@ -81,10 +81,25 @@ export function registerSettings(getBar) {
   });
   hidden("secondaryResource", String, DEFAULTS.secondaryResource);
   hidden("secondaryColor", String, DEFAULTS.secondaryColor);
-  hidden("tooltipAttributes", Array, adapterFor(game.system.id).defaultAttributes?.() ?? []);
 
   // The Add Event dialog's recent events. Not shown in the settings window.
   game.settings.register(MODULE_ID, "recentEvents", { scope: "world", config: false, type: Array, default: [] });
+}
+
+/**
+ * Settings whose default comes from the system adapter. Registered after `simpleCombatBar.init`,
+ * where other modules register their adapters, so a system's own defaults are the ones used.
+ * @param {() => import("./ui/combat-bar.mjs").CombatBar|null} getBar
+ */
+export function registerAdapterSettings(getBar) {
+  game.settings.register(MODULE_ID, "tooltipAttributes", {
+    scope: "world", config: false, type: Array,
+    default: adapterFor(game.system.id).defaultAttributes?.() ?? [],
+    onChange: () => {
+      invalidateSettings();
+      getBar()?.refresh();
+    }
+  });
 }
 
 /**

@@ -1,8 +1,8 @@
 /* Self-hosted Cinzel + Spectral (latin + latin-ext subsets), vendored from
-   Google Fonts so the creator renders correctly offline / on a LAN with no
+   Google Fonts so the bar renders correctly offline / on a LAN with no
    network round-trip or render-blocking @import. Cinzel ships as a single
    variable file per subset (covers weights 500-700); Spectral is static, one
-   file per weight/style. To refresh, re-run tools/fetch-fonts.mjs. */
+   file per weight/style. Licence: fonts/OFL.txt. */
 
 @font-face {
   font-family: 'Cinzel';

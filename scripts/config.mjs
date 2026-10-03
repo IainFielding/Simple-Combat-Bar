@@ -13,7 +13,7 @@ export const CSS = "scb";
 
 /**
  * Public hooks. Names are part of the API: renaming one is a breaking change for every module
- * that listens to it, so `test/api.test.mjs` asserts them literally.
+ * that listens to it, so `test/house.test.mjs` asserts them literally.
  */
 export const HOOKS = Object.freeze({
   init: "simpleCombatBar.init",

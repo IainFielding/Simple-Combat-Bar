@@ -1,6 +1,6 @@
 /**
  * Fail-fast JSON validation for the files Foundry parses at load: the module manifest and
- * every language file. A stray trailing comma in `lang/en.json` silently breaks localisation
+ * every language file it lists. A stray trailing comma in `lang/en.json` silently breaks localisation
  * in the live game with no build step to catch it, so CI parses them here on every push.
  *
  * `module.json` carries `#{VERSION}#`-style release tokens that are substituted at publish
@@ -14,7 +14,13 @@ import { dirname, resolve } from "node:path";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-const files = ["module.json", "lang/en.json"];
+// The manifest, then every language file it lists, so a new translation is checked as soon as it's
+// added to module.json (and one listed there but missing fails too).
+const files = ["module.json"];
+try {
+  const manifest = JSON.parse(await readFile(resolve(root, "module.json"), "utf8"));
+  for ( const { path } of manifest.languages ?? [] ) files.push(path);
+} catch { /* reported below, when module.json itself is parsed */ }
 
 let failures = 0;
 for ( const rel of files ) {
