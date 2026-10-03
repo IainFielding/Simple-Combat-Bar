@@ -43,6 +43,12 @@ export class PortraitView {
     li.append(style.template.content.cloneNode(true));
     this.element = li;
     for ( const el of li.querySelectorAll("[data-slot]") ) this.#slots[el.dataset.slot] = el;
+    // Icon-only button: give it a name for screen readers (and core's tooltip).
+    const roll = li.querySelector("[data-action=\"rollInitiative\"]");
+    if ( roll ) {
+      roll.setAttribute("aria-label", game.i18n.localize("COMBAT.InitiativeRoll"));
+      roll.dataset.tooltip = "COMBAT.InitiativeRoll";
+    }
   }
 
   /**
@@ -167,6 +173,8 @@ export class PortraitView {
       button.querySelector("span").textContent = value ?? "";
       button.dataset.tooltip = value === null ? "" : game.i18n.format(
         `sogrom-simple-combat-bar.legendary.${button.dataset.kind}Tooltip`, { value, max });
+      if ( button.dataset.tooltip ) button.setAttribute("aria-label", button.dataset.tooltip);
+      else button.removeAttribute("aria-label");
     }
     box.classList.toggle("is-empty", (model.legActValue === null) && (model.legResValue === null));
   }
@@ -181,6 +189,11 @@ export class PortraitView {
       else delete pip.dataset.state;
       pip.disabled = !model.canTogglePips;
       pip.dataset.tooltip = state ? `sogrom-simple-combat-bar.economy.${pip.dataset.pip}` : "";
+      // A toggle: pressed means spent.
+      if ( state ) {
+        pip.setAttribute("aria-label", game.i18n.localize(pip.dataset.tooltip));
+        pip.setAttribute("aria-pressed", String(state === "spent"));
+      }
     }
     pips.classList.toggle("is-empty", !Object.values(states).some(Boolean));
   }

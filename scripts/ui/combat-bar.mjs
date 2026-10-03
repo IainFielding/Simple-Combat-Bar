@@ -792,7 +792,8 @@ export class CombatBar {
         label: "COMBATANT.ACTIONS.Reroll",
         icon: '<i class="fa-solid fa-dice-d20"></i>',
         visible: li => gm() || !!combatantOf(li)?.isOwner,
-        onClick: (_event, li) => combatantOf(li) && this.#rollInitiative(combatantOf(li))
+        // The click event carries Shift / Ctrl, which skip the roll window as on the d20.
+        onClick: (event, li) => combatantOf(li) && this.#rollInitiative(combatantOf(li), event)
       },
       {
         label: "COMBATANT.ACTIONS.Clear",

@@ -125,3 +125,15 @@ describe("portrait style choices", () => {
     expect(choices["test-shield"]).toBe("TEST.Shield");
   });
 });
+
+describe("PortraitView accessibility", () => {
+  it("names its icon-only buttons, and marks a spent pip as pressed", () => {
+    const view = new PortraitView("c1", portraitStyle("card"));
+    expect(view.element.querySelector(".scb-roll").getAttribute("aria-label")).toBe("COMBAT.InitiativeRoll");
+    view.patch(model({ economy: { action: true, bonus: false, reaction: false }, trusted: true }));
+    const pip = slot => view.element.querySelector(`.scb-pip[data-pip="${slot}"]`);
+    expect(pip("action").getAttribute("aria-label")).toBe("sogrom-simple-combat-bar.economy.action");
+    expect(pip("action").getAttribute("aria-pressed")).toBe("true");
+    expect(pip("bonus").getAttribute("aria-pressed")).toBe("false");
+  });
+});

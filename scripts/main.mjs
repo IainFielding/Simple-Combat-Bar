@@ -87,10 +87,16 @@ async function spendForActivity(activity) {
   const provider = economyProvider();
   if ( !cfg.trackEconomy || !cfg.autoSpendEconomy || provider.spendsItself ) return;
   const slot = activationSlot(activity?.activation?.type);
-  const combat = bar?.combat;
-  if ( !slot || !combat?.started ) return;
-  const actor = activity.actor;
-  const combatant = combat.combatants.find(c => c.actor === actor);
+  const actor = activity?.actor;
+  if ( !slot || !actor ) return;
+  // The started combat the actor is fighting in: not necessarily the one this user is viewing, and
+  // still spent if they've hidden the bar, since the pips are shared state everyone else sees.
+  let combatant = null;
+  for ( const combat of [game.combat, ...game.combats] ) {
+    if ( !combat?.started ) continue;
+    combatant = combat.combatants.find(c => c.actor === actor);
+    if ( combatant ) break;
+  }
   if ( !combatant?.isOwner ) return;
   await spendSlot(combatant, slot);
 }

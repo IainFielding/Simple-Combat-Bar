@@ -83,7 +83,7 @@
       },
       "damageFill": {
         "name": "Fill Portraits With Damage",
-        "hint": "Portraits fill red from the top as hit points are lost. Follows the Hit Points setting: exact for those who may see hit points, in coarse steps for those who only see how wounded a combatant is."
+        "hint": "Portraits fill red from the bottom as hit points are lost. Follows the Hit Points setting: exact for those who may see hit points, in coarse steps for those who only see how wounded a combatant is."
       },
       "hpBar": {
         "name": "HP Bar Under Portraits",

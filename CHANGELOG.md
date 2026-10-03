@@ -25,6 +25,15 @@ All notable changes to Simple Combat Bar.
 - **Pan To** is only offered in the right-click menu when it works: for combatants you can observe.
 - **Saving Configure Trackers keeps D&D 5e's labels translatable.** An unedited label such as
   *Armor Class* is stored as its translation key again, not as fixed English text.
+- **Action pips are spent even when the bar is hidden.** A player who turned the bar off, or a GM
+  looking at another encounter in the sidebar, used to stop their abilities spending pips.
+- **Arrives in Round… hides the creature's token** until it arrives, so players don't see on the map
+  what the bar keeps from them. It's revealed again when it arrives, as before.
+- **Shift- or Ctrl-clicking Reroll Initiative** in the right-click menu skips the roll window, like
+  the d20 does.
+- **Screen readers** now name the action pips (and say whether each is spent), the legendary
+  counters and the d20.
+- The *Fill Portraits With Damage* hint said the fill rises from the top; it rises from the bottom.
 - No more Foundry v14 deprecation warnings from the right-click menu.
 
 ## 0.3.0

@@ -260,15 +260,15 @@ export async function nextRound() {
 
 /**
  * GM: the Death Tyrant's fight. Four combatants, then a monster at -0.01 (count 0, losing ties) whose
- * token is hidden on the map. Not started, so the GM can schedule it first. Clears the chat so the
- * arrival whisper can be counted.
+ * token is left showing on the map: scheduling its arrival must hide it. Not started, so the GM can
+ * schedule it first. Clears the chat so the arrival whisper can be counted.
  */
 export async function arrivalsSetup() {
   const ids = game.messages.map(m => m.id);
   if ( ids.length ) await ChatMessage.deleteDocuments(ids);
   const combat = await freshCombat({ allies: 2, enemies: 3, initiative: [20, 18, 15, 12, -0.01], start: false });
   const tyrant = combat.turns.at(-1);
-  await tyrant.token.update({ hidden: true });
+  if ( tyrant.token.hidden ) await tyrant.token.update({ hidden: false });
   await settle(150);
   return { tyrant: tyrant.id, name: tyrant.name };
 }

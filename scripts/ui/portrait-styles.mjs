@@ -16,7 +16,7 @@ const SHARED_FLAGS = `
   <span class="scb-flag scb-flag-hidden" aria-hidden="true"><i class="fa-solid fa-eye-slash"></i></span>
   <span class="scb-flag scb-flag-defeated" aria-hidden="true"><i class="fa-solid fa-skull"></i></span>`;
 
-/** Red overlay rising from the top of the portrait as HP is lost (the `damageFill` setting). */
+/** Red overlay rising from the bottom of the portrait as HP is lost (the `damageFill` setting). */
 const DAMAGE_FILL = `<div class="scb-damage" data-slot="damage" aria-hidden="true"></div>`;
 
 /** The HP bar, and the optional second bar under it (the `secondaryResource` tracker). */

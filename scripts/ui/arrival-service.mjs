@@ -70,15 +70,17 @@ export async function afterTurnChange(combat, changes, options = {}) {
 }
 
 /**
- * Put off a combatant's arrival until `round`. It's hidden from players until then.
+ * Put off a combatant's arrival until `round`. It, and its token, are hidden from players until then.
  * @param {Combatant} combatant
  * @param {number} round
  */
-export function scheduleArrival(combatant, round) {
+export async function scheduleArrival(combatant, round) {
   // A creature arrives into view. An event keeps the GM's own "hidden from players" choice.
   const flags = flagsOf(combatant);
   const hidden = flags.event ? (flags.arrival?.hidden ?? combatant.hidden) : false;
-  return combatant.update({ hidden: true, [`flags.${MODULE_ID}.arrival`]: { round, hidden: !!hidden } });
+  await combatant.update({ hidden: true, [`flags.${MODULE_ID}.arrival`]: { round, hidden: !!hidden } });
+  // Its token too, or players would see on the map what the bar hides; arrive() reveals it again.
+  if ( !hidden && combatant.token && !combatant.token.hidden ) await combatant.token.update({ hidden: true });
 }
 
 /**
