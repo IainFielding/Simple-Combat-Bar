@@ -417,9 +417,7 @@ export class CombatBar {
     const root = this.root;
     root.classList.toggle("is-started", combat.started);
     root.classList.toggle("is-gm", game.user.isGM);
-    const current = combat.combatant;
-    const canEnd = combat.started && (game.user.isGM || !!current?.isOwner);
-    root.querySelector(".scb-endturn").hidden = !canEnd;
+    root.querySelector(".scb-endturn").hidden = !this.canEndTurn;
     root.querySelector(".scb-round-value").textContent = combat.started ? combat.round : "–";
   }
 
@@ -715,7 +713,8 @@ export class CombatBar {
     const configured = dialog ? await adapter.configureInitiative(actor, event) : {};
     if ( !configured ) return;
     try {
-      await this.combat?.rollInitiative([combatant.id], typeof configured === "object" ? configured : {});
+      // The combatant's own combat: the bar may have moved to another while the dialog was open.
+      await combatant.combat?.rollInitiative([combatant.id], typeof configured === "object" ? configured : {});
     } finally {
       if ( dialog ) adapter.clearInitiative?.(actor);
     }
@@ -747,11 +746,16 @@ export class CombatBar {
     return combatant ?? null;
   }
 
+  /** Whether this user may end the current turn: the GM, or the acting combatant's owner. */
+  get canEndTurn() {
+    const combat = this.combat;
+    return !!combat?.started && (game.user.isGM || !!combat.combatant?.isOwner);
+  }
+
   /** End the current turn, if this user may. */
   async endTurn() {
     const combat = this.combat;
-    if ( !combat?.started ) return;
-    if ( !game.user.isGM && !combat.combatant?.isOwner ) return;
+    if ( !this.canEndTurn ) return;
     // In a group turn, ending hands the turn to the next waiting member, or leaves the run.
     if ( groupContext(combat) ) return requestGroupTurn("end", combat.combatant);
     return combat.nextTurn();

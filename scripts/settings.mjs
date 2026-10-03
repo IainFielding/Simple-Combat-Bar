@@ -97,8 +97,11 @@ export function registerKeybindings(getBar) {
     name: `${MODULE_ID}.keybindings.previousTurn`,
     editable: [{ key: "KeyN", modifiers: [SHIFT] }],
     restricted: true,
+    // Only claim the key when there's a turn to step back, so other modules' bindings still get it.
     onDown: () => {
-      getBar()?.combat?.previousTurn();
+      const combat = getBar()?.combat;
+      if ( !combat?.started ) return false;
+      combat.previousTurn();
       return true;
     }
   });
@@ -106,7 +109,9 @@ export function registerKeybindings(getBar) {
     name: `${MODULE_ID}.keybindings.endTurn`,
     editable: [{ key: "KeyM", modifiers: [SHIFT] }],
     onDown: () => {
-      getBar()?.endTurn();
+      const bar = getBar();
+      if ( !bar?.canEndTurn ) return false;
+      bar.endTurn();
       return true;
     }
   });

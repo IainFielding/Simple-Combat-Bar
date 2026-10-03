@@ -31,6 +31,10 @@ All notable changes to Simple Combat Bar.
   what the bar keeps from them. It's revealed again when it arrives, as before.
 - **Shift- or Ctrl-clicking Reroll Initiative** in the right-click menu skips the roll window, like
   the d20 does.
+- **Shift+M and Shift+N only act when there's a turn to change.** Outside combat (or, for Shift+M,
+  when it isn't your turn) the keys are left for other modules' shortcuts instead of being swallowed.
+- **An initiative roll still lands if the bar moves to another encounter** while the roll window is
+  open.
 - **Screen readers** now name the action pips (and say whether each is spent), the legendary
   counters and the d20.
 - The *Fill Portraits With Damage* hint said the fill rises from the top; it rises from the bottom.

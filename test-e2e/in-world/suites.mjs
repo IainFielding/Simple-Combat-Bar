@@ -148,6 +148,19 @@ export async function ordering() {
     await combat.nextTurn();
     await settle(80);
   }
+
+  // Reset Initiative writes every combatant through one combat update, not one per combatant.
+  await combat.resetAll();
+  await settle(150);
+  const stale = Array.from(document.querySelectorAll("#scb-root .scb-portrait.has-initiative"),
+    li => li.dataset.combatantId);
+  if ( stale.length ) failures.push({ error: `initiative still shown after Reset Initiative: ${stale.join(", ")}` });
+  const order = read().filter(id => id !== "|");
+  const turns = combat.turns.map(c => c.id);
+  const reordered = [...turns.slice(combat.turn), ...turns.slice(0, combat.turn)];
+  if ( JSON.stringify(order) !== JSON.stringify(reordered) ) {
+    failures.push({ error: "order not rebuilt after Reset Initiative", expected: reordered, actual: order });
+  }
   await cleanup();
   return { failures };
 }
