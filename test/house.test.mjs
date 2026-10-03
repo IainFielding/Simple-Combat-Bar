@@ -71,7 +71,7 @@ describe("lang/en.json", () => {
   });
 
   it("covers every health state the model can produce", () => {
-    for ( const state of ["healthy", "bloodied", "critical", "down"] ) expect(has(`health.${state}`)).toBe(true);
+    for ( const state of ["healthy", "bloodied", "down"] ) expect(has(`health.${state}`)).toBe(true);
   });
 });
 

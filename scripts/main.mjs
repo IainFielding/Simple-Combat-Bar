@@ -71,8 +71,9 @@ Hooks.once("ready", () => {
   Hooks.on("dnd5e.postUseActivity", activity => spendForActivity(activity));
   Hooks.on("combatTurnChange", (combat, _previous, current) => resetEconomy(combat, current?.combatantId));
 
+  // Worlds saved before 0.5.0 may still hold "collapse", the choice this replaced.
   Hooks.on("combatStart", () => {
-    if ( settings().sidebarOnCombat === "collapse" ) ui.sidebar?.collapse();
+    if ( ["chat", "collapse"].includes(settings().sidebarOnCombat) ) ui.chat?.activate();
   });
 
   sync();

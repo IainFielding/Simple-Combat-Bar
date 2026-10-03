@@ -29,18 +29,18 @@ export const HOOKS = Object.freeze({
  */
 export const DEFAULTS = Object.freeze({
   enabled: true,
-  portraitSize: 72,
-  overflow: "autofit",
+  portraitSize: 100,
+  overflow: "scroll",
   portraitStyle: "card",
   portraitImage: "actor",
-  nameVisibility: "token",
+  nameVisibility: "always",
   hpVisibility: "owner",
   damageFill: true,
-  hpBar: true,
+  hpBar: false,
   secondaryResource: "",
   secondaryColor: "#5aa9e6",
   tooltipAttributes: [],
-  hideEnemyInitiative: false,
+  hideEnemyInitiative: true,
   initiativeDialog: "players",
   hideUnseenFirstRound: false,
   hideDefeated: false,
@@ -50,7 +50,7 @@ export const DEFAULTS = Object.freeze({
   legendaryBadges: true,
   showEffects: true,
   effectDescriptions: "owner",
-  sidebarOnCombat: "collapse",
+  sidebarOnCombat: "chat",
   xpSummary: false,
   debug: false
 });

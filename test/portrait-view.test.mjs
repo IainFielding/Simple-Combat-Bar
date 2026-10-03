@@ -10,7 +10,7 @@ const model = (over = {}) => buildPortraitModel({
   id: "c1", name: "Lae'zel", img: "laezel.webp", side: "ally", isGM: false, isOwner: true, canObserve: true,
   isPC: true, hidden: false, defeated: false, initiative: 18, tokenDisplayName: 0,
   hp: { value: 10, max: 40, temp: null }, description: null, isEvent: false, eventRoundsLeft: null, ...over
-}, { settings: DEFAULTS, current: true, acted: false, run: null });
+}, { settings: { ...DEFAULTS, hpBar: true }, current: true, acted: false, run: null });
 
 describe("PortraitView", () => {
   it.each(["medallion", "card"])("builds the %s style with every required slot", id => {

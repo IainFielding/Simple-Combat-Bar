@@ -35,11 +35,11 @@ describe("buildPortraitModel", () => {
 
   it("masks initiative for enemies when asked", () => {
     expect(buildPortraitModel(facts(), ctx({ hideEnemyInitiative: true })).initiative).toBe("?");
-    expect(buildPortraitModel(facts(), ctx()).initiative).toBe("14");
+    expect(buildPortraitModel(facts(), ctx({ hideEnemyInitiative: false })).initiative).toBe("14");
   });
 
   it("shows only the decimals each initiative has", () => {
-    const at = initiative => buildPortraitModel(facts({ initiative }), { ...ctx(), decimals: 2 }).initiative;
+    const at = initiative => buildPortraitModel(facts({ initiative }), { ...ctx({ hideEnemyInitiative: false }), decimals: 2 }).initiative;
     expect(at(14.02)).toBe("14.02");
     expect(at(21.5)).toBe("21.5");
     expect(at(25)).toBe("25");
@@ -70,7 +70,7 @@ describe("damage fill (default on)", () => {
   it("is banded for viewers who see only the state, so it can't be read as a number", () => {
     expect(buildPortraitModel(facts(), ctx()).damagePct).toBe(50);
     expect(damageFill("state", 90)).toBe(0);
-    expect(damageFill("state", 20)).toBe(75);
+    expect(damageFill("state", 20)).toBe(50);
     expect(damageFill("state", 0)).toBe(100);
   });
 
@@ -110,7 +110,7 @@ describe("viewers who don't receive HP (spec: unlinked token deltas reach player
 describe("sameModel / changedFields", () => {
   it("detects exactly the changed fields", () => {
     const a = buildPortraitModel(facts(), ctx());
-    const b = buildPortraitModel(facts({ hp: { value: 1, max: 7 } }), ctx());
+    const b = buildPortraitModel(facts({ hp: { value: 0, max: 7 } }), ctx());
     expect(sameModel(a, { ...a })).toBe(true);
     expect(changedFields(a, b).sort()).toEqual(["damagePct", "hpPct", "hpState"]);
     expect(changedFields(null, a)).toEqual(Object.keys(a));

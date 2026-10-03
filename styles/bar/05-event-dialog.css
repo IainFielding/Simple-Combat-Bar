@@ -1,6 +1,12 @@
 /* The Add Event dialog. It is a core DialogV2 window, outside .scb-root, so its rules are scoped by
-   the class the bar gives it instead. Only the recent-events chips need styling; the form itself
-   uses core's standard form layout. */
+   the class the bar gives it instead. The form groups use core's standard layout, but sit inside our
+   own wrapper, so the wrapper has to supply the spacing core's form would give between them. */
+
+.scb-event-dialog .scb-event-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 
 .scb-event-dialog .scb-event-recent {
   display: grid;

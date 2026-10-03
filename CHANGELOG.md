@@ -2,6 +2,21 @@
 
 All notable changes to Simple Combat Bar.
 
+## 0.5.0
+
+### Changed
+
+- **The sidebar switches to Chat when combat starts**, instead of collapsing. The bar already shows
+  the turn order, so the sidebar stays open on the rolls. *Sidebar When Combat Starts* now offers
+  *Switch to Chat* or *Leave it as it is*; worlds set to collapse it switch to Chat.
+- **New defaults for a fresh install.** Portraits start at 100px and the bar scrolls sideways when
+  full, combatant names are always shown, enemy initiative is hidden from players, and the HP bar
+  under portraits is off (the red damage fill still shows wounds). Settings you've already changed
+  are kept.
+- **No more "Badly Wounded".** Players never saw it for enemies (D&D 5e has no condition for it), so
+  the health states are now healthy, bloodied and down, and the *Hit Points* setting says so. The HP
+  bar turns red only at 0 HP. A system adapter's `healthState` should no longer return `"critical"`.
+
 ## 0.4.0
 
 ### New

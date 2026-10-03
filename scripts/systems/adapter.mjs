@@ -5,7 +5,7 @@
  * @property {string} id                                  A game system id, or "generic".
  * @property {(actor: Actor) => string|null} describe     One-line summary for the tooltip.
  * @property {(actor: Actor) => {value: number|null, max: number|null, temp: number|null}|null} hp
- * @property {(actor: Actor) => ("healthy"|"bloodied"|"critical"|"down"|null)} [healthState]
+ * @property {(actor: Actor) => ("healthy"|"bloodied"|"down"|null)} [healthState]
  *           Coarse health from data every user receives (statuses), for viewers who can't observe
  *           the actor and so never receive its HP.
  * @property {(actor: Actor, event?: Event) => Promise<{messageMode?: string}|false>} [configureInitiative]

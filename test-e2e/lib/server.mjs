@@ -43,7 +43,7 @@ export async function startFoundry(worldId, { verbose = false } = {}) {
       if ( !/already locked/i.test(err.message) || (attempt >= 3) ) {
         if ( /already locked/i.test(err.message) ) {
           throw new Error(`Foundry's data directory is locked by another process. Close any `
-            + `running Foundry (the desktop app or a previous harness run) and try again.`);
+            + `running Foundry (the desktop app or a previous harness run) and try again.`, { cause: err });
         }
         throw err;
       }

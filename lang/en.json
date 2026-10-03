@@ -22,7 +22,6 @@
     "health": {
       "healthy": "Healthy",
       "bloodied": "Bloodied",
-      "critical": "Badly Wounded",
       "down": "Down"
     },
     "styles": {
@@ -77,7 +76,7 @@
         "hint": "How much players see of the hit points of combatants they can't observe. Foundry doesn't send the hit points of unlinked tokens to players who can't observe them, so for those the bar shows how wounded they are from their Bloodied and Dead conditions instead.",
         "choices": {
           "all": "Everyone sees exact hit points (when Foundry shares them)",
-          "owner": "Others see only healthy / bloodied / badly wounded",
+          "owner": "Others see only healthy / bloodied / down",
           "ownerOnly": "Others see nothing"
         }
       },
@@ -147,9 +146,9 @@
       },
       "sidebarOnCombat": {
         "name": "Sidebar When Combat Starts",
-        "hint": "Collapse the sidebar when combat starts, to give the scene more room.",
+        "hint": "Switch the sidebar to the Chat tab when combat starts. The bar does the Combat Tracker's job, and chat is where the rolls land.",
         "choices": {
-          "collapse": "Collapse it",
+          "chat": "Switch to Chat",
           "leave": "Leave it as it is"
         }
       },

@@ -71,8 +71,8 @@ describe("safeColor", () => {
 });
 
 describe("defaults", () => {
-  it("shows the HP bar and no second bar by default", () => {
-    expect(DEFAULTS.hpBar).toBe(true);
+  it("shows no HP bar and no second bar by default", () => {
+    expect(DEFAULTS.hpBar).toBe(false);
     expect(DEFAULTS.secondaryResource).toBe("");
   });
 
