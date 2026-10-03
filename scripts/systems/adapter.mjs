@@ -8,9 +8,10 @@
  * @property {(actor: Actor) => ("healthy"|"bloodied"|"critical"|"down"|null)} [healthState]
  *           Coarse health from data every user receives (statuses), for viewers who can't observe
  *           the actor and so never receive its HP.
- * @property {(actor: Actor, event?: Event) => Promise<boolean>} [configureInitiative]
+ * @property {(actor: Actor, event?: Event) => Promise<{messageMode?: string}|false>} [configureInitiative]
  *           Show the system's initiative roll dialog and prepare the roll the next initiative
- *           roll for this actor will use. Resolves false if the user cancelled.
+ *           roll for this actor will use. Resolves to options for `Combat#rollInitiative` (the
+ *           message mode picked in the dialog), or false if the user cancelled.
  * @property {(actor: Actor) => void} [clearInitiative]  Drop a roll prepared by configureInitiative.
  * @property {(path: string) => string|null} [attributeLabel]  A readable name for an attribute path.
  * @property {(actor: Actor) => {actions: {value: number, max: number}|null,

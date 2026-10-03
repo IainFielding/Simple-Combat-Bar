@@ -234,7 +234,11 @@ export class CombatBar {
 
   #onUpdateCombatant(combatant, changes) {
     if ( !this.#ifOurs(combatant) ) return;
-    if ( ORDER_FIELDS.some(f => f in changes) ) this.#scheduler.markOrder();
+    // An arrival changes the combatant's side for team runs (facts.mjs#runSideOf), even when its
+    // hidden state stays the same.
+    const ours = changes.flags?.[MODULE_ID] ?? {};
+    const arrival = ("arrival" in ours) || ("-=arrival" in ours);
+    if ( arrival || ORDER_FIELDS.some(f => f in changes) ) this.#scheduler.markOrder();
     else this.#scheduler.markDirty(combatant.id);
   }
 
@@ -578,6 +582,8 @@ export class CombatBar {
 
   #onKeyDown(event) {
     if ( (event.key !== "Enter") && (event.key !== " ") ) return;
+    // Only the portrait itself: Enter on a button inside it must still press the button.
+    if ( !event.target.matches?.(`.${CSS}-portrait`) ) return;
     const combatant = this.#portraitOf(event);
     if ( !combatant ) return;
     event.preventDefault();
@@ -651,8 +657,8 @@ export class CombatBar {
   }
 
   async #selectAndPan(combatant) {
-    const token = combatant.token?.object;
-    if ( !token || !combatant.actor?.testUserPermission(game.user, "OBSERVER") ) return;
+    if ( !canPanTo(combatant) ) return;
+    const token = combatant.token.object;
     if ( token.isOwner ) token.control({ releaseOthers: true });
     if ( canvas.ready ) await canvas.animatePan(token.center);
   }
@@ -700,14 +706,16 @@ export class CombatBar {
    * Roll one combatant's initiative, through the system's roll dialog when the
    * `initiativeDialog` setting asks for it (so the roller can pick advantage or disadvantage).
    */
-  async #rollInitiative(combatant, event) {
+  async #rollInitiative(combatant, event = null) {
     const adapter = adapterFor(game.system.id);
     const actor = combatant.actor;
     const dialog = !!actor && !!adapter.configureInitiative
       && wantsInitiativeDialog(settings().initiativeDialog, !!actor.hasPlayerOwner);
-    if ( dialog && !(await adapter.configureInitiative(actor, event)) ) return;
+    // An adapter may resolve plain `true` (the API before roll modes were passed on).
+    const configured = dialog ? await adapter.configureInitiative(actor, event) : {};
+    if ( !configured ) return;
     try {
-      await this.combat?.rollInitiative([combatant.id], { event });
+      await this.combat?.rollInitiative([combatant.id], typeof configured === "object" ? configured : {});
     } finally {
       if ( dialog ) adapter.clearInitiative?.(actor);
     }
@@ -754,91 +762,91 @@ export class CombatBar {
     const gm = () => game.user.isGM;
     return [
       {
-        name: "sogrom-simple-combat-bar.context.setCurrent",
+        label: "sogrom-simple-combat-bar.context.setCurrent",
         icon: '<i class="fa-solid fa-hourglass-start"></i>',
         // One that hasn't arrived would only be stepped straight past: bring it in first.
-        condition: li => gm() && this.combat?.started && (combatantOf(li) !== this.combat.combatant)
+        visible: li => gm() && this.combat?.started && (combatantOf(li) !== this.combat.combatant)
           && !isWaiting(combatantOf(li)),
-        callback: li => {
+        onClick: (_event, li) => {
           const index = this.combat.turns.findIndex(c => c.id === li.dataset.combatantId);
           if ( index >= 0 ) this.combat.update({ turn: index });
         }
       },
       {
-        name: "COMBATANT.PanTo",
+        label: "COMBATANT.PanTo",
         icon: '<i class="fa-solid fa-location-crosshairs"></i>',
-        condition: li => !!combatantOf(li)?.token?.object,
-        callback: li => this.#selectAndPan(combatantOf(li))
+        visible: li => canPanTo(combatantOf(li)),
+        onClick: (_event, li) => this.#selectAndPan(combatantOf(li))
       },
       {
-        name: "COMBATANT.Ping",
+        label: "COMBATANT.Ping",
         icon: '<i class="fa-solid fa-bullseye-arrow"></i>',
-        condition: li => canvas.ready && (combatantOf(li)?.sceneId === canvas.scene?.id)
+        visible: li => canvas.ready && (combatantOf(li)?.sceneId === canvas.scene?.id)
           && game.user.hasPermission("PING_CANVAS"),
-        callback: li => {
+        onClick: (_event, li) => {
           const token = combatantOf(li)?.token?.object;
           if ( token?.visible ) canvas.ping(token.center);
         }
       },
       {
-        name: "COMBATANT.ACTIONS.Reroll",
+        label: "COMBATANT.ACTIONS.Reroll",
         icon: '<i class="fa-solid fa-dice-d20"></i>',
-        condition: li => gm() || !!combatantOf(li)?.isOwner,
-        callback: li => this.combat.rollInitiative([li.dataset.combatantId])
+        visible: li => gm() || !!combatantOf(li)?.isOwner,
+        onClick: (_event, li) => combatantOf(li) && this.#rollInitiative(combatantOf(li))
       },
       {
-        name: "COMBATANT.ACTIONS.Clear",
+        label: "COMBATANT.ACTIONS.Clear",
         icon: '<i class="fa-solid fa-eraser"></i>',
-        condition: li => gm() && (combatantOf(li)?.initiative !== null),
-        callback: li => combatantOf(li)?.update({ initiative: null })
+        visible: li => gm() && (combatantOf(li)?.initiative !== null),
+        onClick: (_event, li) => combatantOf(li)?.update({ initiative: null })
       },
       {
-        name: "sogrom-simple-combat-bar.context.arrivesLater",
+        label: "sogrom-simple-combat-bar.context.arrivesLater",
         icon: '<i class="fa-solid fa-door-open"></i>',
-        condition: li => gm() && !!combatantOf(li) && (combatantOf(li) !== this.combat?.combatant),
-        callback: li => openArrivalDialog(combatantOf(li))
+        visible: li => gm() && !!combatantOf(li) && (combatantOf(li) !== this.combat?.combatant),
+        onClick: (_event, li) => openArrivalDialog(combatantOf(li))
       },
       {
-        name: "sogrom-simple-combat-bar.context.arriveNow",
+        label: "sogrom-simple-combat-bar.context.arriveNow",
         icon: '<i class="fa-solid fa-person-walking-arrow-right"></i>',
-        condition: li => gm() && isWaiting(combatantOf(li)),
-        callback: li => arrive(combatantOf(li))
+        visible: li => gm() && isWaiting(combatantOf(li)),
+        onClick: (_event, li) => arrive(combatantOf(li))
       },
       {
-        name: "COMBATANT.Hide",
+        label: "COMBATANT.Hide",
         icon: '<i class="fa-solid fa-eye-slash"></i>',
-        condition: li => gm() && !combatantOf(li)?.hidden,
-        callback: li => combatantOf(li)?.update({ hidden: true })
+        visible: li => gm() && !combatantOf(li)?.hidden,
+        onClick: (_event, li) => combatantOf(li)?.update({ hidden: true })
       },
       {
-        name: "COMBATANT.Show",
+        label: "COMBATANT.Show",
         icon: '<i class="fa-solid fa-eye"></i>',
-        condition: li => gm() && !!combatantOf(li)?.hidden,
-        callback: li => combatantOf(li)?.update({ hidden: false })
+        visible: li => gm() && !!combatantOf(li)?.hidden,
+        onClick: (_event, li) => combatantOf(li)?.update({ hidden: false })
       },
       {
-        name: "COMBATANT.MarkDefeated",
+        label: "COMBATANT.MarkDefeated",
         icon: '<i class="fa-solid fa-skull"></i>',
-        condition: li => gm() && !combatantOf(li)?.isDefeated,
-        callback: li => toggleDefeated(combatantOf(li))
+        visible: li => gm() && !combatantOf(li)?.isDefeated,
+        onClick: (_event, li) => toggleDefeated(combatantOf(li))
       },
       {
-        name: "COMBATANT.UnmarkDefeated",
+        label: "COMBATANT.UnmarkDefeated",
         icon: '<i class="fa-solid fa-heart-pulse"></i>',
-        condition: li => gm() && !!combatantOf(li)?.isDefeated,
-        callback: li => toggleDefeated(combatantOf(li))
+        visible: li => gm() && !!combatantOf(li)?.isDefeated,
+        onClick: (_event, li) => toggleDefeated(combatantOf(li))
       },
       {
-        name: "COMBATANT.ACTIONS.Update",
+        label: "COMBATANT.ACTIONS.Update",
         icon: '<i class="fa-solid fa-pen-to-square"></i>',
-        condition: gm,
-        callback: li => combatantOf(li)?.sheet.render(true)
+        visible: gm,
+        onClick: (_event, li) => combatantOf(li)?.sheet.render(true)
       },
       {
-        name: "COMBATANT.ACTIONS.Remove",
+        label: "COMBATANT.ACTIONS.Remove",
         icon: '<i class="fa-solid fa-trash"></i>',
-        condition: gm,
-        callback: li => combatantOf(li)?.delete()
+        visible: gm,
+        onClick: (_event, li) => combatantOf(li)?.delete()
       }
     ];
   }
@@ -893,6 +901,11 @@ export function runPosition(items, index) {
   if ( next ) return "first";
   if ( prev ) return "last";
   return null;
+}
+
+/** Whether this user may select and pan to a combatant's token: it's on the canvas, and they observe it. */
+function canPanTo(combatant) {
+  return !!combatant?.token?.object && !!combatant.actor?.testUserPermission(game.user, "OBSERVER");
 }
 
 /** Core's own defeat toggle, re-implemented on public API (spec R12). */

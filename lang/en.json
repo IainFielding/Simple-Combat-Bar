@@ -242,7 +242,8 @@
     "groupTurns": {
       "takeTurn": "Click to take this turn",
       "ended": "Turn ended",
-      "noGM": "A GM needs to be connected to change turns within a group."
+      "noGM": "A GM needs to be connected to change turns within a group.",
+      "failed": "The GM's client didn't respond, so the turn didn't change. Try again."
     },
     "effects": {
       "removeTitle": "Remove Effect",

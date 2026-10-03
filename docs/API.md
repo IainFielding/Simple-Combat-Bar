@@ -51,9 +51,10 @@ Hooks.once("simpleCombatBar.init", api => {
     attributeLabel: path => null,
     // Optional: the tooltip values a new world starts with.
     defaultAttributes: () => [{ attr: "rank", label: "Rank", icon: "fa-solid fa-star" }],
-    // Optional: show the system's initiative dialog and prepare the next initiative roll;
-    // resolve false if the user cancels. clearInitiative drops the prepared roll afterwards.
-    configureInitiative: async (actor, event) => true,
+    // Optional: show the system's initiative dialog and prepare the next initiative roll. Resolve
+    // to options for Combat#rollInitiative (e.g. the dialog's { messageMode }), or false if the
+    // user cancels. clearInitiative drops the prepared roll afterwards.
+    configureInitiative: async (actor, event) => ({}),
     clearInitiative: actor => {}
   });
 });

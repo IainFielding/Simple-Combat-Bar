@@ -58,6 +58,34 @@ describe("dnd5e adapter", () => {
   });
 });
 
+describe("dnd5e initiative dialog", () => {
+  beforeEach(() => installFoundryShims());
+
+  /** dnd5e's D20Roll.build: the dialog writes the chosen mode into the message config it's given. */
+  const dice = picked => ({
+    BasicRoll: { getMessageMode: () => "public" },
+    D20Roll: { build: async (_config, _dialog, message) => {
+      if ( picked === null ) return [];
+      message.rollMode = picked;
+      return [{ formula: "1d20" }];
+    } }
+  });
+
+  it("caches the roll and hands back the roll mode picked in the dialog", async () => {
+    globalThis.CONFIG = { Dice: dice("gmroll") };
+    const actor = { getInitiativeRollConfig: () => ({ options: {} }) };
+    expect(await dnd5eAdapter.configureInitiative(actor)).toEqual({ messageMode: "gmroll" });
+    expect(actor._cachedInitiativeRoll).toEqual({ formula: "1d20" });
+  });
+
+  it("resolves false when the dialog is closed", async () => {
+    globalThis.CONFIG = { Dice: dice(null) };
+    const actor = { getInitiativeRollConfig: () => ({ options: {} }) };
+    expect(await dnd5eAdapter.configureInitiative(actor)).toBe(false);
+    expect(actor._cachedInitiativeRoll).toBeUndefined();
+  });
+});
+
 describe("adapter registry", () => {
   it("falls back to the generic adapter", () => {
     expect(adapterFor("pf2e").id).toBe("generic");

@@ -49,7 +49,14 @@ export async function requestGroupTurn(action, combatant) {
   }
   const data = { action, combatId: combatant.combat.id, combatantId: combatant.id };
   if ( gm.isSelf ) return handleGroupRequest(data, game.user);
-  return gm.query(GROUP_QUERY, data, { timeout: 10_000 });
+  // The query throws if it times out, the GM drops, or this user's role may not query users.
+  try {
+    return await gm.query(GROUP_QUERY, data, { timeout: 10_000 });
+  } catch ( err ) {
+    console.warn(`${MODULE_ID} |`, err);
+    ui.notifications.warn(t("groupTurns.failed"));
+    return false;
+  }
 }
 
 /**

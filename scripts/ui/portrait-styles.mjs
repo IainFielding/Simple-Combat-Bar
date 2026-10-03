@@ -70,12 +70,20 @@ const ROLL_BUTTON = `
 const styles = new Map();
 
 /**
+ * The setting's choices, kept up to date in place. Core holds this object by reference, so a style
+ * another module registers in `simpleCombatBar.init` (after the setting) still shows up in it.
+ * @type {Record<string, string>}
+ */
+const choices = {};
+
+/**
  * Register a portrait style. Other modules call this through the API.
  * @param {PortraitStyle} style
  */
 export function registerPortraitStyle(style) {
   if ( !style?.id || !style.markup ) throw new Error("A portrait style needs an id and markup.");
   styles.set(style.id, { aspect: 1, ...style, template: null });
+  choices[style.id] = style.label ?? style.id;
 }
 
 /**
@@ -93,9 +101,9 @@ export function portraitStyle(id) {
   return style;
 }
 
-/** Every registered style, for the settings choices. */
+/** Every registered style, for the settings choices. The same live object every call. */
 export function portraitStyleChoices() {
-  return Object.fromEntries(Array.from(styles.values(), s => [s.id, s.label]));
+  return choices;
 }
 
 registerPortraitStyle({

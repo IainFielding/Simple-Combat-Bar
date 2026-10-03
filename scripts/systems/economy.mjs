@@ -118,7 +118,7 @@ export function midiEffectData(slot, id) {
     name: game.i18n.localize(`${MODULE_ID}.economy.${slot}Used`),
     img: bonus ? "icons/skills/movement/feet-winged-boots-brown.webp" : "icons/magic/time/clock-stopwatch-white-blue.webp",
     flags: { [MODULE_ID]: { economyBridge: slot } },
-    duration: { turns: 1 }
+    duration: { value: 1, units: "turns" }
   };
 }
 

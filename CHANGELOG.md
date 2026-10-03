@@ -10,6 +10,23 @@ All notable changes to Simple Combat Bar.
   *Show the Combat Bar* setting for you alone. It has no key by default; pick one in Configure
   Controls.
 
+### Fixed
+
+- **The initiative roll window's roll mode is kept.** Choosing *Private GM Roll* (or any other mode)
+  in the roll window now posts the roll that way, instead of in the default mode.
+- **Reroll Initiative from the right-click menu** opens the roll window too, when the *Initiative
+  Roll Window* setting asks for one.
+- **Portrait styles from other modules** now appear in the *Portrait Style* setting.
+- **Grouped turns update when a late arrival comes in**, even if the arrival stays hidden.
+- **Pressing Enter on a button inside a portrait** presses the button, rather than panning to the
+  token.
+- **A group turn change that doesn't reach the GM** now tells the player so, instead of silently doing
+  nothing.
+- **Pan To** is only offered in the right-click menu when it works: for combatants you can observe.
+- **Saving Configure Trackers keeps D&D 5e's labels translatable.** An unedited label such as
+  *Armor Class* is stored as its translation key again, not as fixed English text.
+- No more Foundry v14 deprecation warnings from the right-click menu.
+
 ## 0.3.0
 
 ### New
