@@ -90,7 +90,7 @@
       },
       "hideEnemyInitiative": {
         "name": "Hide Enemy Initiative",
-        "hint": "Players don't see initiative values for combatants they don't own."
+        "hint": "Players don't see initiative values for combatants they don't own. NPC initiative rolled from the bar goes to the GM only in chat."
       },
       "initiativeDialog": {
         "name": "Initiative Roll Window",
