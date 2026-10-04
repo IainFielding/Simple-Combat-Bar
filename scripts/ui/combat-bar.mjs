@@ -90,6 +90,14 @@ const GM_CONTROLS_END = [
   ["nextTurn", "fa-solid fa-angle-right", "COMBAT.TurnNext"]
 ];
 
+/**
+ * `Combat#rollInitiative` options for NPC rolls: GM-only chat messages while players are kept
+ * from seeing enemy initiative, so the chat log doesn't give away what the bar masks.
+ */
+function npcRollMode() {
+  return settings().hideEnemyInitiative ? { messageMode: "gm" } : {};
+}
+
 export class CombatBar {
 
   /** @type {HTMLElement} */
@@ -698,8 +706,12 @@ export class CombatBar {
     }
     if ( !game.user.isGM ) return;
     switch ( action ) {
-      case "rollAll": return combat.rollAll({ event });
-      case "rollNPC": return combat.rollNPC({ event });
+      case "rollAll": {
+        // NPCs first, so their rolls can go to the GM alone; whoever's left is a player character.
+        if ( settings().hideEnemyInitiative ) await combat.rollNPC({ event, ...npcRollMode() });
+        return combat.rollAll({ event });
+      }
+      case "rollNPC": return combat.rollNPC({ event, ...npcRollMode() });
       case "resetAll": return combat.resetAll();
       case "previousRound": return combat.previousRound();
       case "previousTurn": return combat.previousTurn();
@@ -723,9 +735,11 @@ export class CombatBar {
     // An adapter may resolve plain `true` (the API before roll modes were passed on).
     const configured = dialog ? await adapter.configureInitiative(actor, event) : {};
     if ( !configured ) return;
+    // A mode picked in the dialog wins; otherwise an NPC's roll stays private when its initiative is hidden.
+    const options = { ...(combatant.isNPC ? npcRollMode() : {}), ...(typeof configured === "object" ? configured : {}) };
     try {
       // The combatant's own combat: the bar may have moved to another while the dialog was open.
-      await combatant.combat?.rollInitiative([combatant.id], typeof configured === "object" ? configured : {});
+      await combatant.combat?.rollInitiative([combatant.id], options);
     } finally {
       if ( dialog ) adapter.clearInitiative?.(actor);
     }
