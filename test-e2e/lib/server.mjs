@@ -8,20 +8,28 @@
  */
 
 import { spawn } from "node:child_process";
+import net from "node:net";
 import { setTimeout as sleep } from "node:timers/promises";
-import { BASE_URL, DATA_PATH, FOUNDRY_ROOT, PORT, SERVER_TIMEOUT_MS } from "../config.mjs";
+import { DATA_PATH, FOUNDRY_ROOT, PORT, SERVER_TIMEOUT_MS } from "../config.mjs";
+import { allowAutoLaunch } from "./worlds.mjs";
 
 /** Grace period between the port opening and the first client connection. See `startFoundry`. */
 const SETTLE_MS = 3000;
 
 /** Whether something is already listening on our port (usually a leftover from a crashed run). */
-export async function portInUse() {
-  try {
-    await fetch(BASE_URL, { signal: AbortSignal.timeout(2000) });
-    return true;
-  } catch {
-    return false;
-  }
+export function portInUse() {
+  // A bare connection, not a request: Foundry serves HTTPS with a self-signed certificate, which
+  // `fetch` refuses, and whether the port answers is all that's being asked.
+  return new Promise(resolve => {
+    const socket = net.connect({ host: "127.0.0.1", port: PORT, timeout: 2000 });
+    const done = open => {
+      socket.destroy();
+      resolve(open);
+    };
+    socket.once("connect", () => done(true));
+    socket.once("timeout", () => done(false));
+    socket.once("error", () => done(false));
+  });
 }
 
 /**
@@ -32,6 +40,7 @@ export async function portInUse() {
  * @returns {Promise<{stop: () => Promise<void>, log: string[]}>}
  */
 export async function startFoundry(worldId, { verbose = false } = {}) {
+  allowAutoLaunch(worldId);
   // Foundry locks its *data directory*, so only one instance can use it at a time — including the
   // user's own Foundry. A hard-killed instance leaves a lock that `proper-lockfile` treats as
   // stale after ~10s, so a retry clears the common case (a crashed run) while a genuinely running
@@ -89,8 +98,8 @@ async function launch(worldId, { verbose = false } = {}) {
   let exited = null;
   child.on("exit", (code, signal) => { exited = { code, signal }; });
 
-  // Poll until the HTTP server answers. Foundry's own "listening" log line is localised and has
-  // moved between releases, so a real request is the more durable readiness signal.
+  // Poll until the server accepts a connection. Foundry's own "listening" log line is localised and
+  // has moved between releases, so the port itself is the more durable readiness signal.
   const deadline = Date.now() + SERVER_TIMEOUT_MS;
   while ( Date.now() < deadline ) {
     if ( exited ) {

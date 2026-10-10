@@ -240,7 +240,10 @@ export class CombatBar {
 
   #onUpdateCombat(combat, changes) {
     if ( combat !== this.combat ) return;
-    if ( ("turn" in changes) || ("round" in changes) || ("started" in changes) || ("active" in changes) ) {
+    // "combatants": Reset Initiative writes every combatant through the combat, with no
+    // updateCombatant hook, and before the combat starts there is no turn change to go with it.
+    if ( ("turn" in changes) || ("round" in changes) || ("started" in changes) || ("active" in changes)
+      || ("combatants" in changes) ) {
       this.#scheduler.markOrder();
     }
   }

@@ -17,7 +17,11 @@ export const DATA_DIR = `${DATA_PATH}/Data`;
 /** Port for the harness's own Foundry. Not 30000, so a Foundry the user already runs is left alone. */
 export const PORT = 30098;
 
-export const BASE_URL = `http://127.0.0.1:${PORT}`;
+/**
+ * Foundry serves HTTPS with a self-signed certificate (`sslCert`/`sslKey` in `Config/options.json`).
+ * On an install without one, change this to `http://`.
+ */
+export const BASE_URL = `https://127.0.0.1:${PORT}`;
 
 /** The module under test, junction-linked into `Data/modules` by `npm run link-module`. */
 export const MODULE_ID = "sogrom-simple-combat-bar";
