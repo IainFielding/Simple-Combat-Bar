@@ -161,6 +161,14 @@ export async function ordering() {
   if ( JSON.stringify(order) !== JSON.stringify(reordered) ) {
     failures.push({ error: "order not rebuilt after Reset Initiative", expected: reordered, actual: order });
   }
+
+  // Before the start there is no turn change to go with the reset: the d20s must still come back.
+  const waiting = await freshCombat({ allies: 2, enemies: 2, start: false });
+  await waiting.resetAll();
+  await settle(150);
+  const noDice = Array.from(document.querySelectorAll("#scb-root .scb-portrait:not(.can-roll)"),
+    li => li.dataset.combatantId);
+  if ( noDice.length ) failures.push({ error: `no d20 after Reset Initiative before the start: ${noDice.join(", ")}` });
   await cleanup();
   return { failures };
 }

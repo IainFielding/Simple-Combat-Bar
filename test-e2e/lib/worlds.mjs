@@ -11,6 +11,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { CORE_VERSION, DATA_DIR, SYSTEM, SYSTEM_VERSION, WORLDS } from "../config.mjs";
 
+/** Foundry's major version, e.g. "14". */
+const GENERATION = String(Math.trunc(Number(CORE_VERSION)));
+
 /** Absolute path of a world directory. */
 export function worldDir(worldId) {
   return path.join(DATA_DIR, "worlds", worldId);
@@ -54,13 +57,29 @@ export function ensureWorld(worldId, { force = false } = {}) {
     system: SYSTEM,
     systemVersion: SYSTEM_VERSION,
     coreVersion: CORE_VERSION,
-    compatibility: { minimum: String(Math.trunc(Number(CORE_VERSION))), verified: CORE_VERSION },
+    compatibility: { minimum: GENERATION, verified: GENERATION },
     joinTheme: "minimal",
     playtime: 0,
     flags: {}
   };
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
   return { created: true, dir };
+}
+
+/**
+ * Make sure Foundry will launch the world from the command line. It refuses (`World#canAutoLaunch`)
+ * when the manifest's `compatibility.verified` names a build older than the one installed, which
+ * every Foundry patch release would otherwise cause; a bare generation is accepted for all of it.
+ * @param {string} worldId
+ */
+export function allowAutoLaunch(worldId) {
+  const manifestPath = path.join(worldDir(worldId), "world.json");
+  if ( !fs.existsSync(manifestPath) ) return;
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  if ( manifest.compatibility?.verified === GENERATION ) return;
+  manifest.compatibility = { ...manifest.compatibility, verified: GENERATION };
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}
+`, "utf8");
 }
 
 /**

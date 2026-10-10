@@ -56,7 +56,8 @@ export class Session {
         "--disable-dev-shm-usage"
       ]
     });
-    const context = await browser.newContext({ viewport, deviceScaleFactor });
+    // Foundry's certificate is self-signed.
+    const context = await browser.newContext({ viewport, deviceScaleFactor, ignoreHTTPSErrors: true });
     const page = await context.newPage();
     const session = new Session(browser, page);
     session.user = user;
@@ -121,11 +122,12 @@ export class Session {
    * minimal theme (`body.join-theme-minimal`) renders a free-text `<input name="username">` instead.
    * Waiting on the select alone timed out against a minimal-themed world with an error that named
    * only the missing locator, which reads like the world failed to launch when it is up and serving.
+   * The select's name changed case in 14.369 (`userId`), hence the case-insensitive match.
    */
   async join() {
     await this.page.goto(`${BASE_URL}/join`, { waitUntil: "domcontentloaded" });
 
-    const select = this.page.locator("select[name=userid]");
+    const select = this.page.locator("select[name=userid i]");
     const username = this.page.locator("input[name=username]");
     await Promise.race([
       select.waitFor({ timeout: 30_000 }),
