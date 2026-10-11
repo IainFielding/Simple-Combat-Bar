@@ -243,9 +243,10 @@
 }
 
 /* ---------------------------------------------------------------- dnd5e calendar
-   The calendar HUD (dnd5e's #calendar-hud) sits in #ui-top with the bar. While the bar shows a
-   combat, from rolling initiative until the combat ends, it puts this class on <body> and the
-   calendar steps aside. */
-body.scb-hide-calendar #calendar-hud {
+   The calendar HUD (dnd5e's #calendar-hud, or Ember's #ember-calendar, which replaces it) sits in
+   #ui-top with the bar. While the bar shows a combat, from rolling initiative until the combat
+   ends, it puts this class on <body> and the calendar steps aside. */
+body.scb-hide-calendar #calendar-hud,
+body.scb-hide-calendar #ember-calendar {
   display: none;
 }
