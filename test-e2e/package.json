@@ -11,6 +11,6 @@
     "compare": "node run.mjs playwright-combat playwright-ctd --suites=lifecycle,budget"
   },
   "devDependencies": {
-    "playwright": "^1.62.1"
+    "playwright": "^1.64.0"
   }
 }
