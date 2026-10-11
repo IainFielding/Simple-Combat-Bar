@@ -47,6 +47,8 @@ other people's turns.
 
 ### Initiative
 Owners get a d20 on their card until they've rolled. You choose who gets D&D 5e's roll window.
+With **Dice So Nice** holding results back until its dice stop, the bar waits too: the card shows
+"…" and keeps its place until the roll lands.
 
 ### Group Turns
 Optional, and off by default. With **Group Turns** set to *Shared frame (group turns)*, allies (or

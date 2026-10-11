@@ -38,6 +38,13 @@ describe("buildPortraitModel", () => {
     expect(buildPortraitModel(facts(), ctx({ hideEnemyInitiative: false })).initiative).toBe("14");
   });
 
+  it("keeps the result back while its dice are still rolling", () => {
+    const m = buildPortraitModel(facts({ isOwner: true }), { ...ctx(), rolling: true });
+    expect(m.initiative).toBe("…");
+    expect(m.canRoll).toBe(false);
+    expect(buildPortraitModel(facts({ initiative: null }), { ...ctx(), rolling: true }).initiative).toBeNull();
+  });
+
   it("shows only the decimals each initiative has", () => {
     const at = initiative => buildPortraitModel(facts({ initiative }), { ...ctx({ hideEnemyInitiative: false }), decimals: 2 }).initiative;
     expect(at(14.02)).toBe("14.02");

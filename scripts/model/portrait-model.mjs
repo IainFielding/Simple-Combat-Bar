@@ -53,10 +53,11 @@ import { effectIcons } from "./effects.mjs";
  * @param {string|null} ctx.run
  * @param {number} [ctx.decimals=0]        Initiative decimals to show.
  * @param {string} [ctx.unknownName]
+ * @param {boolean} [ctx.rolling]     The initiative roll's dice are still moving (ui/initiative-hold.mjs).
  * @returns {object}
  */
 export function buildPortraitModel(facts, { settings, current, acted, run, activeRun = false, ended = false,
-  canTakeTurn = false, decimals = 0, unknownName = "???" }) {
+  canTakeTurn = false, decimals = 0, unknownName = "???", rolling = false }) {
   const viewer = { isGM: facts.isGM, isOwner: facts.isOwner, canObserve: facts.canObserve || facts.isOwner };
   const hpMode = hpDetail(settings.hpVisibility, viewer);
 
@@ -85,7 +86,8 @@ export function buildPortraitModel(facts, { settings, current, acted, run, activ
   const initVisible = showsInitiative(settings.hideEnemyInitiative, viewer);
   let initiative = null;
   // Each value shows only the decimals it has: one event at 21.5 mustn't turn every 25 into "25.00".
-  if ( rolled ) initiative = initVisible ? String(Number(Number(facts.initiative).toFixed(decimals))) : "?";
+  if ( rolled && rolling ) initiative = "…";
+  else if ( rolled ) initiative = initVisible ? String(Number(Number(facts.initiative).toFixed(decimals))) : "?";
 
   return {
     id: facts.id,

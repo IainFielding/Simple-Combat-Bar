@@ -21,6 +21,7 @@ import { combatantFacts, readEffects, runSideOf } from "./facts.mjs";
 import { showsDescriptions } from "../model/effects.mjs";
 import { effectDescriptions } from "./effect-text.mjs";
 import { groupContext, requestGroupTurn } from "./group-service.mjs";
+import { InitiativeHold, diceHoldInitiative } from "./initiative-hold.mjs";
 import { arrive, isWaiting, openArrivalDialog } from "./arrival-service.mjs";
 import { PortraitView } from "./portrait-view.mjs";
 import { portraitStyle } from "./portrait-styles.mjs";
@@ -115,6 +116,10 @@ export class CombatBar {
   #session = new Lifecycle();
   /** @type {Lifecycle|null} */
   #bound = null;
+  /** @type {InitiativeHold|null}  Rolls whose dice are still moving (Dice So Nice). */
+  #hold = null;
+  /** The combat's turn order when no roll was held, kept while one is. */
+  #turnIds = [];
   #scheduler;
   #items = [];
   #styleId = null;
@@ -171,7 +176,10 @@ export class CombatBar {
     life.hook("updateCombat", (doc, changes) => this.#onUpdateCombat(doc, changes));
     life.hook("createCombatant", doc => this.#ifOurs(doc) && this.#scheduler.markOrder());
     life.hook("deleteCombatant", doc => this.#ifOurs(doc) && this.#scheduler.markOrder());
-    life.hook("updateCombatant", (doc, changes) => this.#onUpdateCombatant(doc, changes));
+    life.hook("updateCombatant", (doc, changes, options) => this.#onUpdateCombatant(doc, changes, options));
+    const hold = this.#hold = new InitiativeHold(life, () => this.#scheduler.markOrder());
+    life.hook("createChatMessage", message => this.#onInitiativeMessage(message, life));
+    life.hook("deleteChatMessage", message => hold.finished(message.id));
     life.hook("updateActor", (actor, changes) => this.#onUpdateActor(actor, changes));
     life.hook("updateToken", (token, changes) => this.#onUpdateToken(token, changes));
     life.hook("createActiveEffect", effect => this.#onEffect(effect));
@@ -202,6 +210,8 @@ export class CombatBar {
     const combat = this.combat;
     this.#bound?.dispose();
     this.#bound = null;
+    this.#hold = null;
+    this.#turnIds = [];
     this.#closeTooltip();
     for ( const view of this.#portraits.values() ) view.destroy();
     this.#portraits.clear();
@@ -249,14 +259,40 @@ export class CombatBar {
     }
   }
 
-  #onUpdateCombatant(combatant, changes) {
+  #onUpdateCombatant(combatant, changes, options) {
     if ( !this.#ifOurs(combatant) ) return;
+    // `turnEvents: false` marks core's initiative rolls apart from an initiative typed in by hand
+    // (until the combat starts; after that every combatant update carries it).
+    if ( (typeof changes.initiative === "number") && (options?.turnEvents === false) && diceHoldInitiative() ) {
+      this.#hold?.expect(combatant.id);
+    }
     // An arrival changes the combatant's side for team runs (facts.mjs#runSideOf), even when its
     // hidden state stays the same.
     const ours = changes.flags?.[MODULE_ID] ?? {};
     const arrival = ("arrival" in ours) || ("-=arrival" in ours);
     if ( arrival || ORDER_FIELDS.some(f => f in changes) ) this.#scheduler.markOrder();
     else this.#scheduler.markDirty(combatant.id);
+  }
+
+  /**
+   * An initiative roll's chat message: while Dice So Nice keeps it hidden for its dice, keep the
+   * result off the bar too.
+   */
+  #onInitiativeMessage(message, life) {
+    const combat = this.combat;
+    if ( !combat || !message.getFlag("core", "initiativeRoll") || !diceHoldInitiative() ) return;
+    const speaker = message.speaker ?? {};
+    const combatant = (speaker.token && combat.combatants.find(c => c.tokenId === speaker.token))
+      || (speaker.actor && combat.combatants.find(c => c.actorId === speaker.actor));
+    if ( !combatant ) return;
+    const hold = this.#hold;
+    hold.arrived(combatant.id, message.id);
+    // A tick later, so Dice So Nice's own hook for this message has run whatever the hook order.
+    // Resolves at once for a roll it isn't animating.
+    Promise.resolve()
+      .then(() => game.dice3d.waitFor3DAnimationByMessageID(message.id))
+      .catch(() => {})
+      .then(() => !life.disposed && hold.finished(message.id));
   }
 
   #onUpdateActor(actor, changes) {
@@ -357,7 +393,8 @@ export class CombatBar {
         const canTakeTurn = (cfg.groupTeams === "bg3") && item.activeRun && !item.ended && !item.current
           && !combatant.isDefeated && (combatant.isOwner || game.user.isGM);
         const model = buildPortraitModel(facts, { settings: cfg, current: item.current, acted: item.acted,
-          run: item.run, activeRun: item.activeRun, ended: item.ended, canTakeTurn, decimals, unknownName });
+          run: item.run, activeRun: item.activeRun, ended: item.ended, canTakeTurn, decimals, unknownName,
+          rolling: !!this.#hold?.has(item.id) });
         const changed = view.patch(model, { runPosition: runPosition(this.#items, index) });
         if ( changed.length ) {
           this.stats.patches++;
@@ -416,8 +453,20 @@ export class CombatBar {
   /** Turn the combat's turn list into the bar's items. */
   #computeOrder(combat, cfg) {
     const user = game.user;
-    const turn = combat.turn;
-    const turns = combat.turns.map((c, index) => {
+    let turn = combat.turn;
+    let list = combat.turns;
+    // While a roll's dice are still moving, nobody changes place: the new order would give the
+    // result away.
+    if ( this.#hold?.active ) {
+      const was = id => {
+        const index = this.#turnIds.indexOf(id);
+        return index < 0 ? this.#turnIds.length : index;
+      };
+      list = list.toSorted((a, b) => was(a.id) - was(b.id));
+      if ( (turn !== null) && combat.combatant ) turn = list.indexOf(combat.combatant);
+    }
+    else this.#turnIds = list.map(c => c.id);
+    const turns = list.map((c, index) => {
       const hasActed = combat.started && ((combat.round > 1) || ((turn !== null) && (index <= turn)));
       const canObserve = c.actor ? c.actor.testUserPermission(user, "OBSERVER") : c.isOwner;
       const disposition = c.token?.disposition ?? 0;
