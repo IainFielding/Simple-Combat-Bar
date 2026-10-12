@@ -79,9 +79,17 @@ describe("healthState", () => {
 
 describe("showsInitiative", () => {
   it("hides enemy initiative from players only when asked", () => {
-    expect(showsInitiative(true, { isGM: false, isOwner: false })).toBe(false);
-    expect(showsInitiative(true, { isGM: false, isOwner: true })).toBe(true);
-    expect(showsInitiative(true, { isGM: true, isOwner: false })).toBe(true);
-    expect(showsInitiative(false, { isGM: false, isOwner: false })).toBe(true);
+    const enemy = { hideEnemyInitiative: true, hideInitiative: false };
+    expect(showsInitiative(enemy, { isGM: false, isOwner: false })).toBe(false);
+    expect(showsInitiative(enemy, { isGM: false, isOwner: true })).toBe(true);
+    expect(showsInitiative(enemy, { isGM: false, isOwner: false, canObserve: true })).toBe(true);
+    expect(showsInitiative(enemy, { isGM: true, isOwner: false })).toBe(true);
+    expect(showsInitiative({ ...enemy, hideEnemyInitiative: false }, { isGM: false, isOwner: false })).toBe(true);
+  });
+  it("hides every initiative from players when asked, and none from the GM", () => {
+    const all = { hideEnemyInitiative: false, hideInitiative: true };
+    expect(showsInitiative(all, { isGM: false, isOwner: true, canObserve: true })).toBe(false);
+    expect(showsInitiative(all, { isGM: false, isOwner: false })).toBe(false);
+    expect(showsInitiative(all, { isGM: true, isOwner: false })).toBe(true);
   });
 });

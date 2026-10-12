@@ -102,7 +102,13 @@ const GM_CONTROLS_END = [
  * from seeing enemy initiative, so the chat log doesn't give away what the bar masks.
  */
 function npcRollMode() {
-  return settings().hideEnemyInitiative ? { messageMode: "gm" } : {};
+  return hidesNPCInitiative() ? { messageMode: "gm" } : {};
+}
+
+/** Whether players are kept from NPC initiative, by either setting. */
+function hidesNPCInitiative() {
+  const cfg = settings();
+  return cfg.hideEnemyInitiative || cfg.hideInitiative;
 }
 
 export class CombatBar {
@@ -801,7 +807,7 @@ export class CombatBar {
     switch ( action ) {
       case "rollAll": {
         // NPCs first, so their rolls can go to the GM alone; whoever's left is a player character.
-        if ( settings().hideEnemyInitiative ) await combat.rollNPC({ event, ...npcRollMode() });
+        if ( hidesNPCInitiative() ) await combat.rollNPC({ event, ...npcRollMode() });
         return combat.rollAll({ event });
       }
       case "rollNPC": return combat.rollNPC({ event, ...npcRollMode() });

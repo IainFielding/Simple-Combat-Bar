@@ -2,6 +2,21 @@
 
 All notable changes to Simple Combat Bar.
 
+## 0.8.1
+
+### New
+
+- **Hide All Initiative From Players.** A new choice in **What Players See**: players get no
+  initiative badge on any portrait, their own included. They can still roll, and the order of the
+  bar still shows who goes when.
+
+### Changed
+
+- **Observers see initiative.** With *Hide Enemy Initiative* on, a player now sees the initiative of
+  any combatant they have Observer permission on, not only the ones they own.
+- **A hidden initiative leaves no badge.** Players used to get a badge reading "?" on combatants
+  whose initiative was kept from them. Now there's no badge there at all.
+
 ## 0.8.0
 
 ### New

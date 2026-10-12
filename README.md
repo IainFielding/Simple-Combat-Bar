@@ -26,7 +26,8 @@ Players see a combat as soon as it exists, so they can roll initiative before it
 - **Hit points.** Players see exact hit points for their own characters. For enemies, the default is
   just how wounded they are (healthy, bloodied, down), taken from D&D 5e's own Bloodied and
   Dead conditions, and the red fill moves in steps rather than showing an exact number.
-- **Enemy initiative** can be hidden.
+- **Initiative** can be hidden: for the combatants a player doesn't own or observe, or for all of
+  them. A hidden initiative leaves no badge on the portrait.
 - **Enemies can be revealed as they act**, so players don't see the whole enemy side in round one.
 
 ![The same fight, from a player's view](docs/screenshots/player.png)
@@ -133,7 +134,7 @@ buttons above it:
 
 - **Look**: the portrait style and image, the damage fill and HP bar, effect icons and legendary
   badges.
-- **What Players See**: names, hit points, enemy initiative, effect descriptions, and whether
+- **What Players See**: names, hit points, initiative, effect descriptions, and whether
   enemies are revealed as they act or removed when defeated.
 - **Turns & Initiative**: the initiative roll window, group turns and the action pips.
 - **Combat Start & End**: the sidebar switching to Chat, a playlist to play while the fight runs

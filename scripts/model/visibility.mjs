@@ -91,10 +91,14 @@ export function healthState(pct) {
 }
 
 /**
- * Whether this user sees the initiative value.
- * @param {boolean} hideEnemyInitiative Setting.
- * @param {{isGM: boolean, isOwner: boolean}} f
+ * Whether this user sees the initiative value. One who doesn't gets no badge at all.
+ * @param {object} s
+ * @param {boolean} s.hideInitiative       Setting: players see no initiative, not even their own.
+ * @param {boolean} s.hideEnemyInitiative  Setting: players see it only for combatants they own or observe.
+ * @param {{isGM: boolean, isOwner: boolean, canObserve?: boolean}} f
  */
-export function showsInitiative(hideEnemyInitiative, { isGM, isOwner }) {
-  return isGM || isOwner || !hideEnemyInitiative;
+export function showsInitiative({ hideInitiative, hideEnemyInitiative }, { isGM, isOwner, canObserve }) {
+  if ( isGM ) return true;
+  if ( hideInitiative ) return false;
+  return isOwner || !!canObserve || !hideEnemyInitiative;
 }

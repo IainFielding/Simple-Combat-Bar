@@ -83,11 +83,11 @@ export function buildPortraitModel(facts, { settings, current, acted, run, activ
   }
 
   const rolled = (facts.initiative !== null) && (facts.initiative !== undefined);
-  const initVisible = showsInitiative(settings.hideEnemyInitiative, viewer);
+  // A viewer kept from the value gets no badge at all, rather than one that says "?".
+  const initVisible = showsInitiative(settings, viewer);
   let initiative = null;
   // Each value shows only the decimals it has: one event at 21.5 mustn't turn every 25 into "25.00".
-  if ( rolled && rolling ) initiative = "…";
-  else if ( rolled ) initiative = initVisible ? String(Number(Number(facts.initiative).toFixed(decimals))) : "?";
+  if ( rolled && initVisible ) initiative = rolling ? "…" : String(Number(Number(facts.initiative).toFixed(decimals)));
 
   return {
     id: facts.id,
