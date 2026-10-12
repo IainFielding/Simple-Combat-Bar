@@ -57,6 +57,7 @@ export function registerSettings(getBar) {
   register("damageFill", { type: Boolean });
   register("hpBar", { type: Boolean });
   register("hideEnemyInitiative", { type: Boolean });
+  register("hideInitiative", { type: Boolean });
   register("initiativeDialog", { type: String, choices: choices("initiativeDialog", ["none", "npcs", "players", "all"]) });
   register("hideUnseenFirstRound", { type: Boolean });
   register("hideDefeated", { type: Boolean });

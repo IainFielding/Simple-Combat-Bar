@@ -61,6 +61,9 @@ try {
     if ( style ) await game.settings.set(id, "portraitStyle", style);
     await game.settings.set(id, "groupTeams", group ? "bg3" : "off");
     await game.settings.set(id, "secondaryResource", "resources.legact");
+    // The player's view as a new world has it: enemy initiative kept back, whatever the suites left set.
+    await game.settings.set(id, "hideEnemyInitiative", true);
+    await game.settings.set(id, "hideInitiative", false);
     const combat = await f.freshCombat({ allies: 4, enemies: 5, enemyNames: ["Goblin", "Orc", "Adult Red Dragon"] });
     const npcs = combat.combatants.filter(c => c.actor?.type === "npc");
     const pcs = combat.combatants.filter(c => c.actor?.type === "character");

@@ -43,6 +43,7 @@ export const DEFAULTS = Object.freeze({
   secondaryColor: "#5aa9e6",
   tooltipAttributes: [],
   hideEnemyInitiative: true,
+  hideInitiative: false,
   initiativeDialog: "players",
   hideUnseenFirstRound: false,
   hideDefeated: false,
@@ -78,8 +79,8 @@ export const SETTING_GROUPS = Object.freeze({
   players: {
     icon: "fa-solid fa-eye",
     restricted: true,
-    keys: ["nameVisibility", "hpVisibility", "hideEnemyInitiative", "hideUnseenFirstRound", "hideDefeated",
-      "effectDescriptions"]
+    keys: ["nameVisibility", "hpVisibility", "hideEnemyInitiative", "hideInitiative", "hideUnseenFirstRound",
+      "hideDefeated", "effectDescriptions"]
   },
   turns: {
     icon: "fa-solid fa-dice-d20",

@@ -133,7 +133,11 @@
       },
       "hideEnemyInitiative": {
         "name": "Hide Enemy Initiative",
-        "hint": "Players don't see initiative values for combatants they don't own. NPC initiative rolled from the bar goes to the GM only in chat."
+        "hint": "Players only see the initiative of combatants they own or observe; the others carry no initiative badge. NPC initiative rolled from the bar goes to the GM only in chat."
+      },
+      "hideInitiative": {
+        "name": "Hide All Initiative From Players",
+        "hint": "Players see no initiative badge on any portrait, their own included. They can still roll, and the order still shows who goes when. NPC initiative rolled from the bar goes to the GM only in chat."
       },
       "initiativeDialog": {
         "name": "Initiative Roll Window",

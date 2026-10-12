@@ -33,9 +33,21 @@ describe("buildPortraitModel", () => {
     expect(m.damagePct).toBeNull();
   });
 
-  it("masks initiative for enemies when asked", () => {
-    expect(buildPortraitModel(facts(), ctx({ hideEnemyInitiative: true })).initiative).toBe("?");
+  it("leaves the initiative off for enemies when asked", () => {
+    expect(buildPortraitModel(facts(), ctx({ hideEnemyInitiative: true })).initiative).toBeNull();
     expect(buildPortraitModel(facts(), ctx({ hideEnemyInitiative: false })).initiative).toBe("14");
+    expect(buildPortraitModel(facts(), { ...ctx({ hideEnemyInitiative: true }), rolling: true }).initiative).toBeNull();
+  });
+
+  it("shows observers the initiative", () => {
+    expect(buildPortraitModel(facts({ canObserve: true }), ctx({ hideEnemyInitiative: true })).initiative).toBe("14");
+  });
+
+  it("shows players no initiative at all when asked, and still lets them roll", () => {
+    const all = ctx({ hideInitiative: true, hideEnemyInitiative: false });
+    expect(buildPortraitModel(facts({ isOwner: true }), all).initiative).toBeNull();
+    expect(buildPortraitModel(facts({ isOwner: true, initiative: null }), all).canRoll).toBe(true);
+    expect(buildPortraitModel(facts({ isGM: true }), all).initiative).toBe("14");
   });
 
   it("keeps the result back while its dice are still rolling", () => {
