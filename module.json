@@ -26,13 +26,6 @@
           "verified": "6.0.5"
         }
       }
-    ],
-    "conflicts": [
-      {
-        "id": "combat-tracker-dock",
-        "type": "module",
-        "reason": "Both modules draw a turn-order bar across the top of the screen. Enable one or the other."
-      }
     ]
   },
   "esmodules": [
