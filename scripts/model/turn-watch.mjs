@@ -20,12 +20,14 @@ import { teamRuns } from "./turn-order.mjs";
 
 /**
  * @typedef {object} TurnWatch
+ * @property {string[]} acting  Everyone acting now. For what the client does, never for showing:
+ *                              it may name a combatant the user can't see.
  * @property {string[]} mine    The user's combatants acting now.
  * @property {string[]} upNext  The user's combatants acting next, and not already acting.
  */
 
 /** Nothing happening: before the start, or no combat. */
-export const IDLE = Object.freeze({ mine: Object.freeze([]), upNext: Object.freeze([]) });
+export const IDLE = Object.freeze({ acting: Object.freeze([]), mine: Object.freeze([]), upNext: Object.freeze([]) });
 
 /**
  * @param {object} f
@@ -62,6 +64,7 @@ export function turnWatch({ turns, turn, started, grouped = false, ended = [] })
 
   const mine = new Set(turns.filter(t => t.mine).map(t => t.id));
   return {
+    acting,
     mine: acting.filter(id => mine.has(id)),
     upNext: upcoming.filter(id => mine.has(id) && !acting.includes(id))
   };

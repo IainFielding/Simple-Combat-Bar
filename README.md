@@ -56,6 +56,11 @@ act. Each player chooses a small banner, a large one or none, in **My Turn** in 
 settings. The GM gets one only for a character assigned to them. The bar adds no sound of its own:
 for that, choose a Combat Theme in the Combat Tracker's settings.
 
+### On Your Turn
+Also in **My Turn**, and off until you turn them on: move the view to your token when your turn
+begins, and clear your targets when your turn ends (they can come back on your next turn). The GM
+can have the acting creature's token selected as each turn begins.
+
 ### Targeting
 Right-click a portrait and choose **Target**, or hover it and press Foundry's Target key (**T**).
 Hold Shift to add to the targets you already have. Your targets carry a reticle on their portraits,

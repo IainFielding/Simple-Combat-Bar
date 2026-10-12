@@ -208,6 +208,23 @@
         "name": "Up Next Notice",
         "hint": "Show the banner one turn early too, when you're the next to act. Needs Turn Notice."
       },
+      "panOnMyTurn": {
+        "name": "Pan to Me on My Turn",
+        "hint": "When your turn begins, select your token and move the view to it."
+      },
+      "targetsOnTurnEnd": {
+        "name": "Targets When My Turn Ends",
+        "hint": "What happens to your targets when your turn ends. They can be brought back when your next turn begins; they're remembered until you reload. For the GM, this applies to every creature's turn.",
+        "choices": {
+          "keep": "Keep them",
+          "clear": "Clear them",
+          "restore": "Clear them, and bring them back on my next turn"
+        }
+      },
+      "autoSelectCurrent": {
+        "name": "Select the Acting Token",
+        "hint": "As each turn begins, select the token of the creature acting. For the GM."
+      },
       "trackers": {
         "name": "Trackers",
         "label": "Configure Trackers",

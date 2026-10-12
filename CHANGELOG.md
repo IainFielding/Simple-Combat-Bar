@@ -18,6 +18,10 @@ All notable changes to Simple Combat Bar.
 - **Target from the bar.** Right-click a portrait and choose **Target** (hold Shift to add to the
   targets you already have), or hover the portrait and press Foundry's Target key, T. Your targets
   carry a reticle on their portraits. Only creatures you can see on the map can be targeted.
+- **Turn conveniences, each player's own choice.** In **My Turn**: move the view to your token when
+  your turn begins, and clear your targets when your turn ends, with the option of having them back
+  on your next turn. The GM can also have the acting creature's token selected as each turn begins.
+  All are off until you turn them on.
 - **The bar drops in when the fight starts.** Pressing Start Combat slides the bar down from the top
   of the screen for everyone, unless their system asks for reduced motion.
 

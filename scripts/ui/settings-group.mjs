@@ -34,7 +34,7 @@ export function settingsGroupApp(groupId) {
     /** The group's settings this user may change, as registered. */
     static #settings() {
       return group.keys.map(key => game.settings.settings.get(`${MODULE_ID}.${key}`))
-        .filter(s => s && ((s.scope !== "world") || game.user.isGM));
+        .filter(s => s && (game.user.isGM || ((s.scope !== "world") && !group.gmOnly?.includes(s.key))));
     }
 
     /** @override */

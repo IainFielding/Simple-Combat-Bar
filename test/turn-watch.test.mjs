@@ -14,27 +14,31 @@ describe("turnWatch", () => {
   });
 
   it("reports my combatant acting, and mine up next", () => {
-    expect(watch(0)).toEqual({ mine: ["a"], upNext: [] });
-    expect(watch(1)).toEqual({ mine: [], upNext: ["b"] });
-    expect(watch(2)).toEqual({ mine: ["b"], upNext: [] });
+    expect(watch(0)).toMatchObject({ mine: ["a"], upNext: [] });
+    expect(watch(1)).toMatchObject({ mine: [], upNext: ["b"] });
+    expect(watch(2)).toMatchObject({ mine: ["b"], upNext: [] });
+  });
+
+  it("knows who is acting even when it isn't mine", () => {
+    expect(watch(1).acting).toEqual(["g"]);
   });
 
   it("says nothing about anyone else's turn", () => {
-    expect(watch(3)).toEqual({ mine: [], upNext: [] });
+    expect(watch(3)).toMatchObject({ mine: [], upNext: [] });
   });
 
   it("looks round the end of the round for who's next", () => {
-    expect(watch(4)).toEqual({ mine: [], upNext: ["a"] });
+    expect(watch(4)).toMatchObject({ mine: [], upNext: ["a"] });
   });
 
   it("passes over the defeated and those not here yet", () => {
     const skipped = [e("x", "enemy"), e("g", "enemy", { skip: true }), e("a", "ally", { mine: true })];
-    expect(turnWatch({ turns: skipped, turn: 0, started: true })).toEqual({ mine: [], upNext: ["a"] });
+    expect(turnWatch({ turns: skipped, turn: 0, started: true })).toMatchObject({ mine: [], upNext: ["a"] });
   });
 
   it("isn't up next after itself when alone", () => {
     expect(turnWatch({ turns: [e("a", "ally", { mine: true })], turn: 0, started: true }))
-      .toEqual({ mine: ["a"], upNext: [] });
+      .toMatchObject({ mine: ["a"], upNext: [] });
   });
 
   describe("with group turns", () => {
@@ -44,28 +48,32 @@ describe("turnWatch", () => {
     const group = (turn, extra = {}) => turnWatch({ turns: grouped, turn, started: true, grouped: true, ...extra });
 
     it("has every member of my run acting at once", () => {
-      expect(group(0)).toEqual({ mine: ["a", "b"], upNext: [] });
-      expect(group(1)).toEqual({ mine: ["a", "b"], upNext: [] });
+      expect(group(0)).toMatchObject({ mine: ["a", "b"], upNext: [] });
+      expect(group(1)).toMatchObject({ mine: ["a", "b"], upNext: [] });
+    });
+
+    it("counts the whole run as acting", () => {
+      expect(group(2).acting).toEqual(["g1", "g2"]);
     });
 
     it("drops a member who has ended their part", () => {
-      expect(group(1, { ended: ["a"] })).toEqual({ mine: ["b"], upNext: [] });
+      expect(group(1, { ended: ["a"] })).toMatchObject({ mine: ["b"], upNext: [] });
     });
 
     it("has the whole next run up next", () => {
-      expect(group(2)).toEqual({ mine: [], upNext: ["d"] });
-      expect(group(4)).toEqual({ mine: ["d"], upNext: ["a", "b"] });
+      expect(group(2)).toMatchObject({ mine: [], upNext: ["d"] });
+      expect(group(4)).toMatchObject({ mine: ["d"], upNext: ["a", "b"] });
     });
 
     it("treats the run as single turns when grouping is off", () => {
-      expect(turnWatch({ turns: grouped, turn: 0, started: true })).toEqual({ mine: ["a"], upNext: ["b"] });
+      expect(turnWatch({ turns: grouped, turn: 0, started: true })).toMatchObject({ mine: ["a"], upNext: ["b"] });
     });
   });
 });
 
 describe("turnNotice", () => {
   it("announces a turn that has just become mine", () => {
-    expect(turnNotice({ mine: [], upNext: ["a"] }, { mine: ["a"], upNext: [] })).toEqual({ kind: "yourTurn", ids: ["a"] });
+    expect(turnNotice({ ...IDLE, upNext: ["a"] }, { mine: ["a"], upNext: [] })).toEqual({ kind: "yourTurn", ids: ["a"] });
   });
 
   it("announces being up next", () => {

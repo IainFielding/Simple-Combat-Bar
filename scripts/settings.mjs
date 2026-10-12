@@ -70,6 +70,10 @@ export function registerSettings(getBar) {
   register("turnNotice", { scope: "user", type: String, choices: choices("turnNotice", ["off", "subtle", "large"]),
     onChange: invalidateSettings });
   register("upNextNotice", { scope: "user", type: Boolean, onChange: invalidateSettings });
+  register("panOnMyTurn", { scope: "user", type: Boolean, onChange: invalidateSettings });
+  register("targetsOnTurnEnd", { scope: "user", type: String,
+    choices: choices("targetsOnTurnEnd", ["keep", "clear", "restore"]), onChange: invalidateSettings });
+  register("autoSelectCurrent", { scope: "user", type: Boolean, onChange: invalidateSettings });
   register("debug", { scope: "user", type: Boolean });
 
   for ( const [id, group] of Object.entries(SETTING_GROUPS) ) {

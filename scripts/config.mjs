@@ -55,6 +55,9 @@ export const DEFAULTS = Object.freeze({
   xpSummary: false,
   turnNotice: "subtle",
   upNextNotice: true,
+  panOnMyTurn: false,
+  targetsOnTurnEnd: "keep",
+  autoSelectCurrent: false,
   debug: false
 });
 
@@ -62,7 +65,7 @@ export const DEFAULTS = Object.freeze({
  * The settings submenus, in the order their buttons are listed, and the settings each one holds.
  * A setting named here is edited in its group's window (ui/settings-group.mjs) instead of the
  * settings list; any other stays in the list. `requires` names the setting a row depends on: the
- * row is disabled while that one is off.
+ * row is disabled while that one is off. `gmOnly` rows are left out of a player's window.
  */
 export const SETTING_GROUPS = Object.freeze({
   look: {
@@ -91,7 +94,8 @@ export const SETTING_GROUPS = Object.freeze({
   myTurn: {
     icon: "fa-solid fa-bell",
     restricted: false,
-    keys: ["turnNotice", "upNextNotice"]
+    keys: ["turnNotice", "upNextNotice", "panOnMyTurn", "targetsOnTurnEnd", "autoSelectCurrent"],
+    gmOnly: ["autoSelectCurrent"]
   }
 });
 

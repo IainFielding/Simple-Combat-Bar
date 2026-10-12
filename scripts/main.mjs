@@ -19,6 +19,7 @@ import { restoresEconomy } from "./model/group-turns.mjs";
 import { tallyDefeated } from "./model/xp-award.mjs";
 import { DISPOSITIONS } from "./model/visibility.mjs";
 import { forgetTurnWatch, onTurnChange, watchTurn } from "./ui/turn-watch.mjs";
+import { forgetTurnHabits, turnHabits } from "./ui/turn-habits.mjs";
 
 /** The session's bar. Null until `ready`, and stays null if the bar mustn't mount. */
 let bar = null;
@@ -74,7 +75,9 @@ Hooks.once("ready", () => {
   // What a turn change means for this user: their turn, or theirs next.
   Hooks.on("combatTurnChange", combat => watchTurn(combat));
   Hooks.on("deleteCombat", forgetTurnWatch);
+  Hooks.on("deleteCombat", forgetTurnHabits);
   onTurnChange(announceTurn);
+  onTurnChange(turnHabits);
 
   // Worlds saved before 0.5.0 may still hold "collapse", the choice this replaced.
   Hooks.on("combatStart", () => {
