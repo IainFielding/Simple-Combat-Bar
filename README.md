@@ -56,6 +56,8 @@ act. Each player chooses a small banner, a large one or none, in **My Turn** in 
 settings. The GM gets one only for a character assigned to them. The bar adds no sound of its own:
 for that, choose a Combat Theme in the Combat Tracker's settings.
 
+![The Your Turn banner](docs/screenshots/your-turn.png)
+
 ### On Your Turn
 Also in **My Turn**, and off until you turn them on: move the view to your token when your turn
 begins, and clear your targets when your turn ends (they can come back on your next turn). The GM
@@ -65,6 +67,8 @@ can have the acting creature's token selected as each turn begins.
 Right-click a portrait and choose **Target**, or hover it and press Foundry's Target key (**T**).
 Hold Shift to add to the targets you already have. Your targets carry a reticle on their portraits,
 and you can only target a creature you can see on the map.
+
+![Two enemies targeted from the bar](docs/screenshots/targeting.png)
 
 ### Group Turns
 Optional, and off by default. With **Group Turns** set to *Shared frame (group turns)*, allies (or
@@ -135,6 +139,10 @@ buttons above it:
 - **Combat Start & End**: the sidebar switching to Chat, a playlist to play while the fight runs
   (what was playing before comes back afterwards), and the XP summary.
 - **My Turn**: open to every player, for their own turn banner.
+
+![The settings list and its submenus](docs/screenshots/settings.png)
+
+![The My Turn window](docs/screenshots/my-turn.png)
 - **Configure Trackers**: the second bar and the tooltip's values.
 
 Turn on **XP Summary When Combat Ends** and ending a combat whispers the GM a card listing the

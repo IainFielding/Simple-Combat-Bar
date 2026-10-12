@@ -118,11 +118,60 @@ try {
   await gm.page.waitForTimeout(400);
   await dialog.screenshot({ path: shot("event-dialog") });
   await dialog.locator('button[data-action="close"], .header-control[data-action="close"]').first().click().catch(() => {});
+
+  // The settings list with its submenu buttons, then one of the submenus.
+  await gm.eval(id => new foundry.applications.settings.SettingsConfig({ initialCategory: id }).render({ force: true }),
+    MODULE_ID);
+  const config = gm.page.locator("#settings-config");
+  await config.waitFor();
+  // Off the window, so no button is lit and no tooltip is up.
+  await gm.page.mouse.move(5, 700);
+  await gm.eval(() => game.tooltip.deactivate());
+  await gm.page.waitForTimeout(600);
+  await config.screenshot({ path: shot("settings") });
+  await config.locator(`button[data-key="${MODULE_ID}.myTurn"]`).click();
+  const myTurn = gm.page.locator("#scb-settings-myTurn");
+  await myTurn.waitFor();
+  await gm.page.waitForTimeout(400);
+  await myTurn.screenshot({ path: shot("my-turn") });
+  await gm.eval(() => {
+    for ( const id of ["scb-settings-myTurn", "settings-config"] ) foundry.applications.instances.get(id)?.close();
+  });
   }
 
   player = await Session.open({ viewport, deviceScaleFactor: 2, user: PLAYER_USER });
   await player.page.waitForTimeout(1200);
   await player.page.screenshot({ path: shot("player"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
+
+  if ( !group ) {
+    // The player's turn banner, and their targets: these need the map, so a session with the canvas on.
+    await player.close({ shutDownWorld: false });
+    player = await Session.open({ viewport, deviceScaleFactor: 2, user: PLAYER_USER, canvas: true });
+    await player.page.waitForTimeout(2500);
+    const targeted = await player.eval(() => {
+      ui.notifications.clear();
+      const enemies = game.combat.turns.filter(c => !c.isOwner && !c.isDefeated && c.token?.object?.visible);
+      for ( const c of enemies.slice(0, 2) ) c.token.object.setTarget(true, { releaseOthers: false });
+      return game.user.targets.size;
+    });
+    if ( targeted < 2 ) console.warn(`Only ${targeted} target(s) set for the targeting shot.`);
+    await player.page.mouse.move(5, 700);
+    await player.page.waitForTimeout(600);
+    await player.page.screenshot({ path: shot("targeting"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
+    // The banner is on screen for a few seconds, and a software-rendered canvas can take that long
+    // to capture: stop the clock that takes it down, and hold its animation where it's fully shown.
+    await player.page.clock.install();
+    await player.eval(id => {
+      game.user.targets.forEach(t => t.setTarget(false));
+      const bar = game.modules.get(id).api.bar;
+      bar.announce("yourTurn", [bar.combat.combatant.name], "large");
+      for ( const animation of bar.root.querySelector(".scb-notice-card").getAnimations() ) {
+        animation.currentTime = 1000;
+        animation.pause();
+      }
+    }, MODULE_ID);
+    await player.page.screenshot({ path: shot("your-turn"), clip: { x: 0, y: 0, width: viewport.width, height: 420 } });
+  }
   console.log(`Saved to ${path.relative(process.cwd(), out)}`);
 } finally {
   if ( player ) await player.close({ shutDownWorld: false });
