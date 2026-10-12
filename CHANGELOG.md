@@ -15,6 +15,8 @@ All notable changes to Simple Combat Bar.
   player sets it in the new **My Turn** window: a small banner, a large one, or none, with or without
   the early warning. The GM gets one only for a character assigned to them. For a sound as well,
   choose a Combat Theme in the Combat Tracker's own settings.
+- **The bar drops in when the fight starts.** Pressing Start Combat slides the bar down from the top
+  of the screen for everyone, unless their system asks for reduced motion.
 
 ### Changed
 

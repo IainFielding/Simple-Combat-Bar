@@ -65,6 +65,9 @@ const TAB_WIDTH = 38;
 /** Duration of the slide when portraits change places. */
 const MOVE_MS = 260;
 
+/** Duration of the bar's drop from the top edge as a combat starts. */
+const INTRO_MS = 480;
+
 /** Body class that hides the calendar HUD (dnd5e's, or Ember's) while the bar shows a combat. */
 const HIDE_CALENDAR = `${CSS}-hide-calendar`;
 
@@ -134,6 +137,8 @@ export class CombatBar {
   #resizeObserver = null;
   /** @type {TurnNotice} */
   #notice;
+  /** Whether the bound combat had started when last looked at, to catch the moment it does. */
+  #started = false;
 
   constructor() {
     this.#scheduler = new RenderScheduler(batch => this.#flush(batch));
@@ -176,6 +181,7 @@ export class CombatBar {
     if ( !combat ) return;
 
     this.combat = combat;
+    this.#started = combat.started;
     this.#mount();
     const life = this.#bound = new Lifecycle();
     life.hook("updateCombat", (doc, changes) => this.#onUpdateCombat(doc, changes));
@@ -274,6 +280,15 @@ export class CombatBar {
       || ("combatants" in changes) ) {
       this.#scheduler.markOrder();
     }
+    if ( combat.started && !this.#started ) this.#intro();
+    this.#started = combat.started;
+  }
+
+  /** The fight begins: the bar drops in from the top edge. */
+  #intro() {
+    if ( !this.root.isConnected || globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ) return;
+    this.root.animate([{ transform: "translateY(-100%)", opacity: 0 }, { transform: "none", opacity: 1 }],
+      { duration: INTRO_MS, easing: "cubic-bezier(0.22, 1, 0.36, 1)" });
   }
 
   #onUpdateCombatant(combatant, changes, options) {
