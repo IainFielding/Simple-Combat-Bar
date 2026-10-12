@@ -5,8 +5,9 @@
  * to `document.documentElement.style` (spec R10).
  */
 
-import { DEFAULTS, MODULE_ID, invalidateSettings } from "./config.mjs";
+import { DEFAULTS, MODULE_ID, SETTING_GROUPS, invalidateSettings, settingGroupOf } from "./config.mjs";
 import { portraitStyleChoices } from "./ui/portrait-styles.mjs";
+import { settingsGroupApp } from "./ui/settings-group.mjs";
 import { TrackersConfig } from "./ui/trackers-config.mjs";
 import { adapterFor } from "./systems/adapter.mjs";
 
@@ -21,12 +22,13 @@ export function registerSettings(getBar) {
     getBar()?.refresh();
   };
 
+  // A setting in one of the SETTING_GROUPS is edited in that group's window, not in the list.
   const register = (key, { scope = "world", type, choices, range, requiresReload = false, onChange = refresh } = {}) => {
     game.settings.register(MODULE_ID, key, {
       name: `${k(key)}.name`,
       hint: `${k(key)}.hint`,
       scope,
-      config: true,
+      config: !settingGroupOf(key),
       type,
       choices,
       range,
@@ -66,6 +68,17 @@ export function registerSettings(getBar) {
   register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["chat", "leave"]) });
   register("xpSummary", { type: Boolean, onChange: invalidateSettings });
   register("debug", { scope: "user", type: Boolean });
+
+  for ( const [id, group] of Object.entries(SETTING_GROUPS) ) {
+    game.settings.registerMenu(MODULE_ID, id, {
+      name: `${k("groups")}.${id}.name`,
+      label: `${k("groups")}.${id}.label`,
+      hint: `${k("groups")}.${id}.hint`,
+      icon: group.icon,
+      type: settingsGroupApp(id),
+      restricted: group.restricted
+    });
+  }
 
   // Edited in the Configure Trackers window rather than the settings list.
   game.settings.registerMenu(MODULE_ID, "trackers", {

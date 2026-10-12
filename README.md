@@ -106,10 +106,17 @@ or hides the bar for you alone; it has no key until you give it one in Configure
 
 ## Settings
 
-Everything is under **Game Settings → Configure Settings → Simple Combat Bar**, including who sees
-names, hit points, effect descriptions and initiative, the portrait style and size, whether the
-sidebar switches to Chat when combat starts, and the action pips, legendary badges
-and effect icons.
+Everything is under **Game Settings → Configure Settings → Simple Combat Bar**. The list holds what's
+yours alone: showing the bar, the portrait size, and what happens when the bar is full. What the GM
+sets for the table is in the windows opened from the buttons above it:
+
+- **Look**: the portrait style and image, the damage fill and HP bar, effect icons and legendary
+  badges.
+- **What Players See**: names, hit points, enemy initiative, effect descriptions, and whether
+  enemies are revealed as they act or removed when defeated.
+- **Turns & Initiative**: the initiative roll window, group turns and the action pips.
+- **Combat Start & End**: the sidebar switching to Chat, and the XP summary.
+- **Configure Trackers**: the second bar and the tooltip's values.
 
 Turn on **XP Summary When Combat Ends** and ending a combat whispers the GM a card listing the
 defeated enemies and their total XP, with dnd5e's Award button to hand it out (the same as typing

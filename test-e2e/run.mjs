@@ -453,14 +453,26 @@ const SUITES = {
     await page.locator('#reload-world-confirm button[data-action="no"]').click().catch(() => {});
     await page.waitForTimeout(400);
 
-    // Now change the portrait style and save: that must not ask for a reload.
+    // The list keeps the personal settings; the table's are in the submenus.
     await open();
     await form.waitFor({ timeout: 10_000 });
-    const select = form.locator(`select[name="${MODULE_ID}.portraitStyle"]`);
+    check(await form.locator(`[name="${MODULE_ID}.enabled"]`).count() === 1, "Show the Combat Bar isn't in the settings list");
+    check(await form.locator(`[name="${MODULE_ID}.portraitStyle"]`).count() === 0, "Portrait Style is still in the settings list");
+    for ( const id of ["look", "players", "turns", "combat", "trackers"] ) {
+      check(await form.locator(`button[data-key="${MODULE_ID}.${id}"]`).count() === 1, `no ${id} submenu button`);
+    }
+
+    // Now change the portrait style in its submenu and save: that must not ask for a reload.
+    await form.locator(`button[data-key="${MODULE_ID}.look"]`).click();
+    const look = page.locator("#scb-settings-look");
+    await look.waitFor({ timeout: 10_000 });
+    const select = look.locator('select[name="portraitStyle"]');
     const current = await select.inputValue();
     await select.selectOption(current === "card" ? "medallion" : "card");
-    await form.locator('button[type="submit"]').click();
+    await look.locator('button[type="submit"]').click();
     await page.waitForTimeout(1200);
+    check(await look.count() === 0, "the Look window stayed open after saving");
+    await gm.eval(() => foundry.applications.instances.get("settings-config")?.close());
     const prompt = await page.locator("#reload-world-confirm").count();
     check(prompt === 0, "saving the portrait style asked for a reload");
     if ( prompt ) await page.locator('#reload-world-confirm button[data-action="no"]').click().catch(() => {});

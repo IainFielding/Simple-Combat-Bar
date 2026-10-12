@@ -56,6 +56,47 @@ export const DEFAULTS = Object.freeze({
   debug: false
 });
 
+/**
+ * The settings submenus, in the order their buttons are listed, and the settings each one holds.
+ * A setting named here is edited in its group's window (ui/settings-group.mjs) instead of the
+ * settings list; any other stays in the list. `requires` names the setting a row depends on: the
+ * row is disabled while that one is off.
+ */
+export const SETTING_GROUPS = Object.freeze({
+  look: {
+    icon: "fa-solid fa-palette",
+    restricted: true,
+    keys: ["portraitStyle", "portraitImage", "damageFill", "hpBar", "showEffects", "legendaryBadges"]
+  },
+  players: {
+    icon: "fa-solid fa-eye",
+    restricted: true,
+    keys: ["nameVisibility", "hpVisibility", "hideEnemyInitiative", "hideUnseenFirstRound", "hideDefeated",
+      "effectDescriptions"]
+  },
+  turns: {
+    icon: "fa-solid fa-dice-d20",
+    restricted: true,
+    keys: ["initiativeDialog", "groupTeams", "trackEconomy", "autoSpendEconomy"],
+    requires: { autoSpendEconomy: "trackEconomy" }
+  },
+  combat: {
+    icon: "fa-solid fa-flag-checkered",
+    restricted: true,
+    keys: ["sidebarOnCombat", "xpSummary"]
+  }
+});
+
+/**
+ * The submenu a setting is edited in, or null if it sits in the settings list.
+ * @param {string} key
+ * @returns {string|null}
+ */
+export function settingGroupOf(key) {
+  for ( const [id, group] of Object.entries(SETTING_GROUPS) ) if ( group.keys.includes(key) ) return id;
+  return null;
+}
+
 let snapshot = null;
 
 /**

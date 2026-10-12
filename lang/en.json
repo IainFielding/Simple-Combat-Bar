@@ -35,6 +35,32 @@
       "toggleBar": "Toggle Combat Bar"
     },
     "settings": {
+      "groups": {
+        "look": {
+          "name": "Look",
+          "label": "Configure Look",
+          "title": "Combat Bar: Look",
+          "hint": "The portrait style and image, and what each card shows: damage, hit points, status effects and legendary badges."
+        },
+        "players": {
+          "name": "What Players See",
+          "label": "Configure What Players See",
+          "title": "Combat Bar: What Players See",
+          "hint": "How much players see of other combatants: names, hit points, initiative, effect descriptions, and enemies who haven't acted or have been defeated."
+        },
+        "turns": {
+          "name": "Turns & Initiative",
+          "label": "Configure Turns & Initiative",
+          "title": "Combat Bar: Turns & Initiative",
+          "hint": "The initiative roll window, group turns and the action pips."
+        },
+        "combat": {
+          "name": "Combat Start & End",
+          "label": "Configure Combat Start & End",
+          "title": "Combat Bar: Combat Start & End",
+          "hint": "What happens when a combat starts and when it ends: the sidebar and the XP summary."
+        }
+      },
       "enabled": {
         "name": "Show the Combat Bar",
         "hint": "Show the turn-order bar across the top of the screen during combat. Only affects you."

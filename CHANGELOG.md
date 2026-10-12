@@ -11,6 +11,13 @@ All notable changes to Simple Combat Bar.
 - **Put the tooltip's values in your own order.** Each row in Configure Trackers has up and down
   arrows, and the hover tooltip lists its values in that order. The starting order is unchanged.
 
+### Changed
+
+- **The settings are sorted into groups.** The settings list now holds only what's yours alone
+  (showing the bar, portrait size, what happens when it's full). What the GM sets for the table has
+  moved into four windows, opened from buttons at the top of the list: **Look**, **What Players
+  See**, **Turns & Initiative** and **Combat Start & End**. Nothing you've set has changed.
+
 ## 0.7.2
 
 ### New
