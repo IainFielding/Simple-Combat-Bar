@@ -80,11 +80,13 @@ const GM_CONTROLS_START = [
 
 /**
  * Top to bottom. The tabs stack from the bottom, so Next Turn mirrors Previous Turn in the opposite
- * corner; Start Combat takes End Combat's place until the combat has started.
+ * corner; Start Combat takes End Combat's place until the combat has started, with Cancel Combat
+ * above it to call the encounter off before it begins.
  */
 const GM_CONTROLS_END = [
   ["configure", "fa-solid fa-gear", "sogrom-simple-combat-bar.controls.configure"],
   ["addEvent", "fa-solid fa-hourglass-half", "sogrom-simple-combat-bar.events.title"],
+  ["cancelCombat", "fa-solid fa-xmark", "sogrom-simple-combat-bar.controls.cancel"],
   ["startCombat", "fa-solid fa-play", "COMBAT.Begin"],
   ["endCombat", "fa-solid fa-flag-checkered", "COMBAT.End"],
   ["nextRound", "fa-solid fa-angles-right", "COMBAT.RoundNext"],
@@ -771,6 +773,8 @@ export class CombatBar {
       case "nextTurn": return this.endTurn();
       case "nextRound": return combat.nextRound();
       case "startCombat": return combat.startCombat();
+      // Both ask for confirmation, then delete the combat.
+      case "cancelCombat":
       case "endCombat": return combat.endCombat();
       case "addEvent": return openEventDialog(this);
     }

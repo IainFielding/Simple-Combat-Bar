@@ -32,6 +32,22 @@ let gm;
 let player;
 try {
   gm = await Session.open({ viewport, deviceScaleFactor: 2 });
+  if ( !group ) {
+    // Before the fight: combatants added, a couple of heroes rolled, the rest still to roll.
+    await gm.eval(async ({ id, style }) => {
+      const f = await import(`/modules/${id}/test-e2e/in-world/fixtures.mjs`);
+      if ( game.paused ) game.togglePause(false, { broadcast: true });
+      if ( style ) await game.settings.set(id, "portraitStyle", style);
+      await game.settings.set(id, "groupTeams", "off");
+      const combat = await f.freshCombat({ allies: 4, enemies: 5, enemyNames: ["Goblin", "Orc", "Adult Red Dragon"],
+        initiative: false, start: false });
+      const pcs = combat.combatants.filter(c => c.actor?.type === "character");
+      await combat.updateEmbeddedDocuments("Combatant", [{ _id: pcs[0].id, initiative: 18 }, { _id: pcs[1].id, initiative: 11 }]);
+      await f.settle(400);
+    }, { id: MODULE_ID, style });
+    await gm.page.waitForTimeout(800);
+    await gm.page.screenshot({ path: shot("initiative"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
+  }
   await gm.eval(async ({ id, style, group }) => {
     const f = await import(`/modules/${id}/test-e2e/in-world/fixtures.mjs`);
     if ( game.paused ) game.togglePause(false, { broadcast: true });

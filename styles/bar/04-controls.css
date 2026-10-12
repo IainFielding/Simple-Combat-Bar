@@ -78,10 +78,10 @@
   outline: none;
 }
 
-/* Start shows before combat; the turn and round controls during it. */
+/* Start and Cancel show before combat; the turn and round controls during it. */
 .scb-root .scb-tab.startCombat { color: var(--scb-open-bright); }
 .scb-root .scb-tab.startCombat:hover { background: var(--scb-open); color: #0b1413; }
-.scb-root.is-started .scb-tab.startCombat,
+.scb-root.is-started .scb-tab:is(.startCombat, .cancelCombat),
 .scb-root:not(.is-started) .scb-tab:is(.previousTurn, .nextTurn, .previousRound, .nextRound, .endCombat) {
   display: none;
 }
