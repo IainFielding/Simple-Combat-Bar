@@ -70,8 +70,8 @@ export function expiredEvents(events, round) {
 
 /**
  * The recent-events list with `event` at the front, one entry per name, at most
- * {@link RECENT_LIMIT} long. (The reference module's filter used `&&` where it meant `||`, so its
- * list filled with near-duplicates.)
+ * {@link RECENT_LIMIT} long. Names are matched without regard to case, so the list doesn't fill
+ * with near-duplicates.
  * @param {EventData[]} recent
  * @param {EventData} event
  * @returns {EventData[]}

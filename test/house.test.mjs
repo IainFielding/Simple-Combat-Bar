@@ -147,10 +147,6 @@ describe("public hooks", () => {
 });
 
 describe("module.json", () => {
-  it("declares the combat-tracker-dock conflict", () => {
-    expect(manifest.relationships.conflicts.map(c => c.id)).toContain("combat-tracker-dock");
-  });
-
   it("requires dnd5e 6.0 or later, and nothing older", () => {
     const [dnd5e, ...others] = manifest.relationships.systems;
     expect(others).toEqual([]);

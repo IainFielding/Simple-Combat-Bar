@@ -4,7 +4,7 @@
  */
 
 import { MODULE_ID, invalidateSettings, t } from "../config.mjs";
-import { normaliseAttributes, safeColor } from "../model/trackers.mjs";
+import { moveRow, normaliseAttributes, safeColor } from "../model/trackers.mjs";
 import { adapterFor } from "../systems/adapter.mjs";
 
 const { ApplicationV2 } = foundry.applications.api;
@@ -24,7 +24,9 @@ export class TrackersConfig extends ApplicationV2 {
     form: { handler: TrackersConfig.#onSubmit, closeOnSubmit: true },
     actions: {
       addRow: TrackersConfig.#onAddRow,
-      removeRow: TrackersConfig.#onRemoveRow
+      removeRow: TrackersConfig.#onRemoveRow,
+      moveRowUp: TrackersConfig.#onMoveRowUp,
+      moveRowDown: TrackersConfig.#onMoveRowDown
     }
   };
 
@@ -65,8 +67,13 @@ export class TrackersConfig extends ApplicationV2 {
       ...context.barChoices.map(c => `<option value="${esc(c.value)}"${c.value === context.secondary ? " selected" : ""}>${
         esc(c.label)}</option>`)].join("");
     const datalist = context.allChoices.map(c => `<option value="${esc(c.value)}">${esc(c.label)}</option>`).join("");
+    const last = context.rows.length - 1;
     const rows = context.rows.map((r, i) => `
       <li class="scb-tracker-row" data-index="${i}">
+        <button type="button" class="icon fa-solid fa-chevron-up" data-action="moveRowUp" data-index="${i}"${
+          i === 0 ? " disabled" : ""} data-tooltip="${esc(t("trackers.moveUp"))}" aria-label="${esc(t("trackers.moveUp"))}"></button>
+        <button type="button" class="icon fa-solid fa-chevron-down" data-action="moveRowDown" data-index="${i}"${
+          i === last ? " disabled" : ""} data-tooltip="${esc(t("trackers.moveDown"))}" aria-label="${esc(t("trackers.moveDown"))}"></button>
         <input type="text" name="rows.${i}.attr" value="${esc(r.attr)}" list="scb-tracker-paths"
           placeholder="${esc(t("trackers.attr"))}" aria-label="${esc(t("trackers.attr"))}">
         <input type="text" name="rows.${i}.label" value="${esc(game.i18n.localize(r.label ?? ""))}"
@@ -129,6 +136,21 @@ export class TrackersConfig extends ApplicationV2 {
 
   static #onRemoveRow(_event, target) {
     this.#readForm().rows.splice(Number(target.dataset.index), 1);
+    this.render();
+  }
+
+  static #onMoveRowUp(_event, target) {
+    this.#move(Number(target.dataset.index), -1);
+  }
+
+  static #onMoveRowDown(_event, target) {
+    this.#move(Number(target.dataset.index), 1);
+  }
+
+  /** Move a row one place; the tooltip lists its values in this order. */
+  #move(index, delta) {
+    const draft = this.#readForm();
+    draft.rows = moveRow(draft.rows, index, delta);
     this.render();
   }
 

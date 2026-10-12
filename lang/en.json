@@ -221,10 +221,12 @@
       "color": "Colour",
       "add": "Add a Value",
       "remove": "Remove",
+      "moveUp": "Move Up",
+      "moveDown": "Move Down",
       "secondary": "Second Bar",
       "secondaryHint": "A second bar under each portrait's hit points, for a resource with a maximum: legendary actions, spell slots, a class resource. Like hit points, it's shown only to those who can see the creature's sheet.",
       "tooltip": "Tooltip Values",
-      "tooltipHint": "Shown when hovering a portrait, to the GM and to those who can see the creature's sheet. Pick an attribute from the list or type its path; leave the label blank to show the path."
+      "tooltipHint": "Shown when hovering a portrait, to the GM and to those who can see the creature's sheet. Pick an attribute from the list or type its path; leave the label blank to show the path. Use the arrows to change the order they're listed in."
     },
     "economy": {
       "action": "Action",

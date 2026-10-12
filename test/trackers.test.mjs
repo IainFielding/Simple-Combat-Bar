@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normaliseAttributes, readAttributes, safeColor, secondaryBar } from "../scripts/model/trackers.mjs";
+import { moveRow, normaliseAttributes, readAttributes, safeColor, secondaryBar } from "../scripts/model/trackers.mjs";
 import { DEFAULTS } from "../scripts/config.mjs";
 import { dnd5eAdapter } from "../scripts/systems/dnd5e.mjs";
 
@@ -79,5 +79,26 @@ describe("defaults", () => {
   it("dnd5e's default tooltip values all resolve against a real-shaped actor", () => {
     const rows = readAttributes(system, dnd5eAdapter.defaultAttributes());
     expect(rows.map(r => r.text)).toEqual(["17", "30", "15", "14"]);
+  });
+});
+
+describe("moveRow", () => {
+  const rows = ["ac", "speed", "dc"];
+
+  it("moves a row up or down one place", () => {
+    expect(moveRow(rows, 1, -1)).toEqual(["speed", "ac", "dc"]);
+    expect(moveRow(rows, 1, 1)).toEqual(["ac", "dc", "speed"]);
+  });
+
+  it("leaves the order alone at either end, and for an index that isn't a row", () => {
+    expect(moveRow(rows, 0, -1)).toEqual(rows);
+    expect(moveRow(rows, 2, 1)).toEqual(rows);
+    expect(moveRow(rows, 7, -1)).toEqual(rows);
+    expect(moveRow(null, 0, 1)).toEqual([]);
+  });
+
+  it("returns a new array", () => {
+    expect(moveRow(rows, 0, 1)).not.toBe(rows);
+    expect(rows).toEqual(["ac", "speed", "dc"]);
   });
 });

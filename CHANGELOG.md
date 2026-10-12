@@ -2,6 +2,44 @@
 
 All notable changes to Simple Combat Bar.
 
+## 0.8.0
+
+### New
+
+- **Cancel Combat.** Before the fight starts, a **✕** tab above Start Combat calls the encounter
+  off, after asking you to confirm. Once combat has started, End Combat takes its place as before.
+- **Put the tooltip's values in your own order.** Each row in Configure Trackers has up and down
+  arrows, and the hover tooltip lists its values in that order. The starting order is unchanged.
+
+## 0.7.2
+
+### New
+
+- **Waits for Dice So Nice.** When Dice So Nice holds a roll's result back until its dice stop, the
+  bar does too: the card shows "…" in place of the initiative and nobody changes place until the
+  roll lands, so the new order doesn't give the result away early.
+
+## 0.7.1
+
+### Fixed
+
+- **Ember's calendar steps aside** while the bar shows a combat, as D&D 5e's own calendar does.
+
+## 0.7.0
+
+### Fixed
+
+- **Reset Initiative before combat starts brings the d20s back.** The cards kept their old
+  initiative until something else redrew them.
+
+## 0.6.0
+
+### Changed
+
+- **Hidden enemy initiative stays hidden in chat.** With *Hide Enemy Initiative* on, NPC initiative
+  rolled from the bar (a card's d20, Roll NPCs or Roll All) goes to the GM only, so the chat log
+  doesn't show what the bar masks. A roll mode picked in the initiative roll window still wins.
+
 ## 0.5.0
 
 ### Changed
@@ -16,6 +54,11 @@ All notable changes to Simple Combat Bar.
 - **No more "Badly Wounded".** Players never saw it for enemies (D&D 5e has no condition for it), so
   the health states are now healthy, bloodied and down, and the *Hit Points* setting says so. The HP
   bar turns red only at 0 HP. A system adapter's `healthState` should no longer return `"critical"`.
+
+### Fixed
+
+- **Add Event's fields are spaced apart** like any other Foundry form, instead of sitting flush
+  against each other.
 
 ## 0.4.0
 
@@ -137,4 +180,3 @@ All notable changes to Simple Combat Bar.
 ### Requirements
 
 - Foundry VTT v14 and D&D 5e 6.0 or later. Verified on Foundry 14.368 and D&D 5e 6.0.5.
-- Can't be used alongside Carousel Combat Tracker, which draws the same bar in the same place.

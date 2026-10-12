@@ -127,7 +127,7 @@ async function resetEconomy(combat, combatantId) {
 
 /**
  * Remove events whose duration has run out, and tell the GMs. Only the active GM does this, so a
- * table of five players doesn't try it five times (the reference module ran it on every client).
+ * table of five players doesn't try it five times.
  * @param {Combat} combat
  */
 async function expireEvents(combat) {

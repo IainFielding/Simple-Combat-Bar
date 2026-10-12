@@ -3,7 +3,8 @@
  *
  * Render code never calls `game.settings.get` (spec R9): it reads the frozen snapshot returned by
  * {@link settings}, which is rebuilt only when one of our settings changes. With 15 settings and a
- * dozen portraits, the reference module made ~180 settings reads per render; this makes zero.
+ * dozen portraits, reading each where it's used would be ~180 settings reads per render; this makes
+ * zero.
  */
 
 export const MODULE_ID = "sogrom-simple-combat-bar";

@@ -67,6 +67,23 @@ export function normaliseAttributes(rows) {
     .filter(r => r.attr);
 }
 
+/**
+ * The rows with the one at `index` moved one place up (`delta` -1) or down (+1). The tooltip lists
+ * its values in row order. A move off either end returns the rows unchanged.
+ * @template T
+ * @param {T[]} rows
+ * @param {number} index
+ * @param {-1|1} delta
+ * @returns {T[]}  A new array.
+ */
+export function moveRow(rows, index, delta) {
+  const next = [...(rows ?? [])];
+  const to = index + delta;
+  if ( !Number.isInteger(index) || (index < 0) || (index >= next.length) || (to < 0) || (to >= next.length) ) return next;
+  [next[index], next[to]] = [next[to], next[index]];
+  return next;
+}
+
 /** A colour setting value, or the fallback when it isn't a #rgb/#rrggbb hex. */
 export function safeColor(value, fallback) {
   return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(value ?? "").trim()) ? String(value).trim() : fallback;
