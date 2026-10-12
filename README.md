@@ -131,7 +131,8 @@ sets for the table is in the windows opened from the buttons above it:
 - **What Players See**: names, hit points, enemy initiative, effect descriptions, and whether
   enemies are revealed as they act or removed when defeated.
 - **Turns & Initiative**: the initiative roll window, group turns and the action pips.
-- **Combat Start & End**: the sidebar switching to Chat, and the XP summary.
+- **Combat Start & End**: the sidebar switching to Chat, a playlist to play while the fight runs
+  (what was playing before comes back afterwards), and the XP summary.
 - **My Turn**: open to every player, for their own turn banner.
 - **Configure Trackers**: the second bar and the tooltip's values.
 

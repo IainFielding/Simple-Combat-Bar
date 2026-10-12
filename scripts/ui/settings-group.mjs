@@ -4,9 +4,17 @@
  * between the list and a window by changing the table alone.
  */
 
-import { MODULE_ID, SETTING_GROUPS } from "../config.mjs";
+import { MODULE_ID, SETTING_GROUPS, t } from "../config.mjs";
 
 const { ApplicationV2 } = foundry.applications.api;
+
+/** Choices that can only be listed once the world has loaded, by setting. */
+const LIVE_CHOICES = {
+  combatPlaylist: () => [
+    { value: "", label: t("settings.combatPlaylist.none") },
+    ...game.playlists.contents.sort((a, b) => a.name.localeCompare(b.name)).map(p => ({ value: p.id, label: p.name }))
+  ]
+};
 
 /**
  * The window for one group. `registerMenu` takes a class, so each group gets its own.
@@ -46,8 +54,8 @@ export function settingsGroupApp(groupId) {
           hint: game.i18n.localize(s.hint),
           type: s.type,
           range: s.range ?? null,
-          choices: s.choices ? Object.entries(s.choices).map(([value, label]) =>
-            ({ value, label: game.i18n.localize(label) })) : null,
+          choices: LIVE_CHOICES[s.key]?.() ?? (s.choices ? Object.entries(s.choices).map(([value, label]) =>
+            ({ value, label: game.i18n.localize(label) })) : null),
           value: game.settings.get(MODULE_ID, s.key)
         }))
       };

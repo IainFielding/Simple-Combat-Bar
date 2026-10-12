@@ -20,6 +20,7 @@ import { tallyDefeated } from "./model/xp-award.mjs";
 import { DISPOSITIONS } from "./model/visibility.mjs";
 import { forgetTurnWatch, onTurnChange, watchTurn } from "./ui/turn-watch.mjs";
 import { forgetTurnHabits, turnHabits } from "./ui/turn-habits.mjs";
+import { endCombatMusic, startCombatMusic } from "./ui/combat-music.mjs";
 
 /** The session's bar. Null until `ready`, and stays null if the bar mustn't mount. */
 let bar = null;
@@ -51,6 +52,7 @@ Hooks.once("ready", () => {
   Hooks.on("createCombat", sync);
   Hooks.on("deleteCombat", sync);
   Hooks.on("deleteCombat", postXPSummary);
+  Hooks.on("deleteCombat", endCombatMusic);
   // Late arrivals: move a turn change past anyone not here yet, before it's sent.
   Hooks.on("combatStart", (combat, updateData) => skipBeforeUpdate(combat, updateData));
   Hooks.on("combatRound", skipBeforeUpdate);
@@ -58,6 +60,7 @@ Hooks.once("ready", () => {
   Hooks.on("updateCombat", (combat, changes, options) => {
     if ( ("active" in changes) || ("scene" in changes) || ("started" in changes) || ("round" in changes) ) sync();
     if ( "round" in changes ) expireEvents(combat);
+    if ( ("round" in changes) || ("turn" in changes) ) startCombatMusic(combat);
     afterTurnChange(combat, changes, options);
   });
   Hooks.on("canvasReady", sync);

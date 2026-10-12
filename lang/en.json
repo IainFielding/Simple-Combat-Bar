@@ -70,7 +70,7 @@
           "name": "Combat Start & End",
           "label": "Configure Combat Start & End",
           "title": "Combat Bar: Combat Start & End",
-          "hint": "What happens when a combat starts and when it ends: the sidebar and the XP summary."
+          "hint": "What happens when a combat starts and when it ends: the sidebar, the combat playlist and the XP summary."
         }
       },
       "enabled": {
@@ -190,6 +190,11 @@
           "chat": "Switch to Chat",
           "leave": "Leave it as it is"
         }
+      },
+      "combatPlaylist": {
+        "name": "Combat Playlist",
+        "hint": "A playlist to play while a combat runs. Starting a combat stops what's playing and starts this; ending the combat stops it and brings back what was playing before.",
+        "none": "None"
       },
       "xpSummary": {
         "name": "XP Summary When Combat Ends",

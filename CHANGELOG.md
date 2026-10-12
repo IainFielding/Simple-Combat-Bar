@@ -22,6 +22,8 @@ All notable changes to Simple Combat Bar.
   your turn begins, and clear your targets when your turn ends, with the option of having them back
   on your next turn. The GM can also have the acting creature's token selected as each turn begins.
   All are off until you turn them on.
+- **Combat playlist.** Pick a playlist in **Combat Start & End** and starting a combat stops what's
+  playing and starts it; ending the combat stops it and brings back what was playing before.
 - **The bar drops in when the fight starts.** Pressing Start Combat slides the bar down from the top
   of the screen for everyone, unless their system asks for reduced motion.
 

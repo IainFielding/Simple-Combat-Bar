@@ -66,6 +66,8 @@ export function registerSettings(getBar) {
   register("effectDescriptions", { type: String, choices: choices("effectDescriptions", ["none", "owner", "all"]) });
   register("groupTeams", { type: String, choices: choices("groupTeams", ["off", "visual", "bg3"]) });
   register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["chat", "leave"]) });
+  // Its choices are the world's playlists, which don't exist yet: ui/settings-group.mjs lists them.
+  register("combatPlaylist", { type: String, onChange: invalidateSettings });
   register("xpSummary", { type: Boolean, onChange: invalidateSettings });
   register("turnNotice", { scope: "user", type: String, choices: choices("turnNotice", ["off", "subtle", "large"]),
     onChange: invalidateSettings });

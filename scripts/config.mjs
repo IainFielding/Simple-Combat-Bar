@@ -52,6 +52,7 @@ export const DEFAULTS = Object.freeze({
   showEffects: true,
   effectDescriptions: "owner",
   sidebarOnCombat: "chat",
+  combatPlaylist: "",
   xpSummary: false,
   turnNotice: "subtle",
   upNextNotice: true,
@@ -88,7 +89,7 @@ export const SETTING_GROUPS = Object.freeze({
   combat: {
     icon: "fa-solid fa-flag-checkered",
     restricted: true,
-    keys: ["sidebarOnCombat", "xpSummary"]
+    keys: ["sidebarOnCombat", "combatPlaylist", "xpSummary"]
   },
   // Each player's own: the one window that isn't the GM's alone.
   myTurn: {
