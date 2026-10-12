@@ -203,6 +203,9 @@ export class CombatBar {
     life.hook("deleteItem", item => this.#onItem(item));
     life.hook("hoverToken", (token, hovered) => this.#toggleTokenClass(token, "is-hovered", hovered));
     life.hook("controlToken", (token, controlled) => this.#toggleTokenClass(token, "is-controlled", controlled));
+    // This user's own targets only: everyone's would say who the GM is about to attack.
+    life.hook("targetToken", (user, token, targeted) => user.isSelf
+      && this.#toggleTokenClass(token, "is-targeted", targeted));
     life.add(() => this.#scheduler.cancel());
     // The calendar (dnd5e's, or Ember's) shares #ui-top with the bar; step it aside from the
     // initiative roll on.
@@ -418,6 +421,8 @@ export class CombatBar {
       if ( fresh ) {
         view = new PortraitView(item.id, style);
         this.#portraits.set(item.id, view);
+        // Targets outlast a portrait: one drawn afresh picks its mark up again.
+        view.element.classList.toggle("is-targeted", !!combatant.token?.object?.isTargeted);
         this.stats.creates++;
       }
       if ( fresh || everything || ids.has(item.id) ) {
@@ -907,6 +912,20 @@ export class CombatBar {
         }
       },
       {
+        label: "sogrom-simple-combat-bar.context.target",
+        icon: '<i class="fa-solid fa-crosshairs"></i>',
+        visible: li => canTarget(combatantOf(li)) && !combatantOf(li).token.object.isTargeted,
+        // Shift adds to the targets already chosen, as with core's Target key.
+        onClick: (event, li) => canTarget(combatantOf(li))
+          && combatantOf(li).token.object.setTarget(true, { releaseOthers: !event.shiftKey })
+      },
+      {
+        label: "sogrom-simple-combat-bar.context.untarget",
+        icon: '<i class="fa-solid fa-crosshairs"></i>',
+        visible: li => canTarget(combatantOf(li)) && combatantOf(li).token.object.isTargeted,
+        onClick: (_event, li) => canTarget(combatantOf(li)) && combatantOf(li).token.object.setTarget(false)
+      },
+      {
         label: "COMBATANT.ACTIONS.Reroll",
         icon: '<i class="fa-solid fa-dice-d20"></i>',
         visible: li => gm() || !!combatantOf(li)?.isOwner,
@@ -1025,6 +1044,11 @@ export function runPosition(items, index) {
 /** Whether this user may select and pan to a combatant's token: it's on the canvas, and they observe it. */
 function canPanTo(combatant) {
   return !!combatant?.token?.object && !!combatant.actor?.testUserPermission(game.user, "OBSERVER");
+}
+
+/** Whether this user may target a combatant's token from the bar: it's on the canvas, and they can see it. */
+function canTarget(combatant) {
+  return canvas.ready && !!combatant?.token?.object?.visible;
 }
 
 /** Core's own defeat toggle, re-implemented on public API (spec R12). */

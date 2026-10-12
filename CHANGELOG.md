@@ -15,6 +15,9 @@ All notable changes to Simple Combat Bar.
   player sets it in the new **My Turn** window: a small banner, a large one, or none, with or without
   the early warning. The GM gets one only for a character assigned to them. For a sound as well,
   choose a Combat Theme in the Combat Tracker's own settings.
+- **Target from the bar.** Right-click a portrait and choose **Target** (hold Shift to add to the
+  targets you already have), or hover the portrait and press Foundry's Target key, T. Your targets
+  carry a reticle on their portraits. Only creatures you can see on the map can be targeted.
 - **The bar drops in when the fight starts.** Pressing Start Combat slides the bar down from the top
   of the screen for everyone, unless their system asks for reduced motion.
 

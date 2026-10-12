@@ -56,6 +56,11 @@ act. Each player chooses a small banner, a large one or none, in **My Turn** in 
 settings. The GM gets one only for a character assigned to them. The bar adds no sound of its own:
 for that, choose a Combat Theme in the Combat Tracker's settings.
 
+### Targeting
+Right-click a portrait and choose **Target**, or hover it and press Foundry's Target key (**T**).
+Hold Shift to add to the targets you already have. Your targets carry a reticle on their portraits,
+and you can only target a creature you can see on the map.
+
 ### Group Turns
 Optional, and off by default. With **Group Turns** set to *Shared frame (group turns)*, allies (or
 enemies) next to each other in the initiative order share one turn, as in Baldur's Gate 3:

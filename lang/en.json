@@ -12,6 +12,8 @@
     },
     "context": {
       "setCurrent": "Make Current Turn",
+      "target": "Target",
+      "untarget": "Untarget",
       "arrivesLater": "Arrives in Round…",
       "arriveNow": "Arrive Now"
     },
