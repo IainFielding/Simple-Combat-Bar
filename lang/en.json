@@ -93,6 +93,10 @@
           "scroll": "Scroll sideways"
         }
       },
+      "compactControls": {
+        "name": "Fewer Buttons",
+        "hint": "For the GM: leave Reset Initiative, Previous Round, Next Round and the settings cog off the bar's side tabs. Only affects you."
+      },
       "portraitImage": {
         "name": "Portrait Image",
         "hint": "Use the actor's portrait art or the token's image.",

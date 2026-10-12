@@ -123,8 +123,9 @@ or hides the bar for you alone; it has no key until you give it one in Configure
 ## Settings
 
 Everything is under **Game Settings → Configure Settings → Simple Combat Bar**. The list holds what's
-yours alone: showing the bar, the portrait size, and what happens when the bar is full. What the GM
-sets for the table is in the windows opened from the buttons above it:
+yours alone: showing the bar, the portrait size, what happens when the bar is full, and (for the GM)
+**Fewer Buttons** on the side tabs. What the GM sets for the table is in the windows opened from the
+buttons above it:
 
 - **Look**: the portrait style and image, the damage fill and HP bar, effect icons and legendary
   badges.

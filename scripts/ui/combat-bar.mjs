@@ -526,6 +526,7 @@ export class CombatBar {
     const root = this.root;
     root.classList.toggle("is-started", combat.started);
     root.classList.toggle("is-gm", game.user.isGM);
+    root.classList.toggle("is-fewer-controls", settings().compactControls);
     root.querySelector(".scb-endturn").hidden = !this.canEndTurn;
     root.querySelector(".scb-round-value").textContent = combat.started ? combat.round : "–";
   }

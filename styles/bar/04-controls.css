@@ -86,6 +86,11 @@
   display: none;
 }
 
+/* "Fewer Buttons": the ones a GM rarely presses mid-fight step aside. */
+.scb-root.is-fewer-controls .scb-tab:is(.resetAll, .previousRound, .nextRound, .configure) {
+  display: none;
+}
+
 /* ---------------------------------------------------------------- round / End Turn hanger
    A small tab hanging from the middle of the bar's bottom edge: the round always, and End Turn
    beside it when this user may end the current turn. */

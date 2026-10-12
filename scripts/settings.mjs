@@ -50,6 +50,7 @@ export function registerSettings(getBar) {
   register("portraitStyle", { type: String, choices: portraitStyleChoices() });
   register("portraitSize", { scope: "user", type: Number, range: { min: 40, max: 128, step: 4 } });
   register("overflow", { scope: "user", type: String, choices: choices("overflow", ["autofit", "scroll"]) });
+  register("compactControls", { scope: "user", type: Boolean });
   register("portraitImage", { type: String, choices: choices("portraitImage", ["actor", "token"]) });
   register("nameVisibility", { type: String, choices: choices("nameVisibility", ["always", "token", "owner"]) });
   register("hpVisibility", { type: String, choices: choices("hpVisibility", ["all", "owner", "ownerOnly"]) });

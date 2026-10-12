@@ -24,6 +24,8 @@ All notable changes to Simple Combat Bar.
   All are off until you turn them on.
 - **Combat playlist.** Pick a playlist in **Combat Start & End** and starting a combat stops what's
   playing and starts it; ending the combat stops it and brings back what was playing before.
+- **Fewer Buttons.** A GM who wants a quieter bar can leave Reset Initiative, Previous Round, Next
+  Round and the settings cog off its side tabs. It's in the settings list, and only affects you.
 - **The bar drops in when the fight starts.** Pressing Start Combat slides the bar down from the top
   of the screen for everyone, unless their system asks for reduced motion.
 

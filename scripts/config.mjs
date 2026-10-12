@@ -32,6 +32,7 @@ export const DEFAULTS = Object.freeze({
   enabled: true,
   portraitSize: 100,
   overflow: "scroll",
+  compactControls: false,
   portraitStyle: "card",
   portraitImage: "actor",
   nameVisibility: "always",
