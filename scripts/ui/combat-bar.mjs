@@ -30,6 +30,7 @@ import { openEventDialog } from "./event-dialog.mjs";
 import { rememberEvent } from "../model/events.mjs";
 import { readAttributes, safeColor } from "../model/trackers.mjs";
 import { toggleSlot } from "../systems/economy.mjs";
+import { TurnNotice } from "./turn-notice.mjs";
 
 /** Combatant fields whose change can move a combatant or change who is shown. */
 const ORDER_FIELDS = ["initiative", "hidden", "defeated", "tokenId", "actorId", "group"];
@@ -131,6 +132,8 @@ export class CombatBar {
   #contextMenu = null;
   /** @type {ResizeObserver|null} */
   #resizeObserver = null;
+  /** @type {TurnNotice} */
+  #notice;
 
   constructor() {
     this.#scheduler = new RenderScheduler(batch => this.#flush(batch));
@@ -215,6 +218,7 @@ export class CombatBar {
     this.#hold = null;
     this.#turnIds = [];
     this.#closeTooltip();
+    this.#notice.clear();
     for ( const view of this.#portraits.values() ) view.destroy();
     this.#portraits.clear();
     this.#divider.remove();
@@ -231,6 +235,17 @@ export class CombatBar {
     this.#contextMenu?.close?.();
     this.#session.dispose();
     this.root.remove();
+  }
+
+  /**
+   * Drop the turn banner below the bar for a moment, or take it down.
+   * @param {"yourTurn"|"upNext"|null} kind  Null takes down a banner still showing.
+   * @param {string[]} [names]
+   * @param {"subtle"|"large"} [size]
+   */
+  announce(kind, names = [], size = "subtle") {
+    if ( !kind || !this.combat ) return this.#notice.clear();
+    this.#notice.show(kind, names, size);
   }
 
   /** Force a full re-derive (settings changes). */
@@ -576,6 +591,8 @@ export class CombatBar {
       </div>`;
     this.root = root;
     this.track = root.querySelector(`.${CSS}-track`);
+    this.#notice = new TurnNotice(this.#session);
+    root.append(this.#notice.element);
 
     const divider = document.createElement("li");
     divider.className = `${CSS}-divider`;

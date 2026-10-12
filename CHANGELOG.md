@@ -10,6 +10,11 @@ All notable changes to Simple Combat Bar.
   off, after asking you to confirm. Once combat has started, End Combat takes its place as before.
 - **Put the tooltip's values in your own order.** Each row in Configure Trackers has up and down
   arrows, and the hover tooltip lists its values in that order. The starting order is unchanged.
+- **Your Turn and Up Next.** A banner drops under the bar when your turn begins, and one turn
+  earlier when you're the next to act. In a group turn, everyone in the group is told at once. Each
+  player sets it in the new **My Turn** window: a small banner, a large one, or none, with or without
+  the early warning. The GM gets one only for a character assigned to them. For a sound as well,
+  choose a Combat Theme in the Combat Tracker's own settings.
 
 ### Changed
 

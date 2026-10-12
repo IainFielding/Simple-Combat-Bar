@@ -18,6 +18,7 @@ import { afterTurnChange, skipBeforeUpdate } from "./ui/arrival-service.mjs";
 import { restoresEconomy } from "./model/group-turns.mjs";
 import { tallyDefeated } from "./model/xp-award.mjs";
 import { DISPOSITIONS } from "./model/visibility.mjs";
+import { forgetTurnWatch, onTurnChange, watchTurn } from "./ui/turn-watch.mjs";
 
 /** The session's bar. Null until `ready`, and stays null if the bar mustn't mount. */
 let bar = null;
@@ -70,6 +71,10 @@ Hooks.once("ready", () => {
   // combatTurnChange for the first turn too, once the start has been saved.
   Hooks.on("dnd5e.postUseActivity", activity => spendForActivity(activity));
   Hooks.on("combatTurnChange", (combat, _previous, current) => resetEconomy(combat, current?.combatantId));
+  // What a turn change means for this user: their turn, or theirs next.
+  Hooks.on("combatTurnChange", combat => watchTurn(combat));
+  Hooks.on("deleteCombat", forgetTurnWatch);
+  onTurnChange(announceTurn);
 
   // Worlds saved before 0.5.0 may still hold "collapse", the choice this replaced.
   Hooks.on("combatStart", () => {
@@ -79,6 +84,21 @@ Hooks.once("ready", () => {
   sync();
   Hooks.callAll(HOOKS.ready, api);
 });
+
+/**
+ * Show the turn banner, for the combat on the bar and as far as this user's settings ask for one.
+ * A turn change with nothing to say takes down a banner still showing: it was about a turn that
+ * has moved on.
+ * @param {import("./ui/turn-watch.mjs").TurnChange} event
+ */
+function announceTurn({ combat, notice }) {
+  if ( combat !== bar.combat ) return;
+  const cfg = settings();
+  const wanted = !!notice && (cfg.turnNotice !== "off") && ((notice.kind !== "upNext") || cfg.upNextNotice);
+  if ( !wanted ) return bar.announce(null);
+  const names = notice.ids.map(id => combat.combatants.get(id)?.name).filter(Boolean);
+  bar.announce(notice.kind, names, cfg.turnNotice);
+}
 
 /**
  * Spend the slot a used activity costs, for its actor's combatant in the bar's combat.

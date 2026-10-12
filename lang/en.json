@@ -20,6 +20,10 @@
       "roundsLeft": "{rounds} rounds left",
       "secondary": "Tracked"
     },
+    "notice": {
+      "yourTurn": "Your Turn",
+      "upNext": "Up Next"
+    },
     "health": {
       "healthy": "Healthy",
       "bloodied": "Bloodied",
@@ -53,6 +57,12 @@
           "label": "Configure Turns & Initiative",
           "title": "Combat Bar: Turns & Initiative",
           "hint": "The initiative roll window, group turns and the action pips."
+        },
+        "myTurn": {
+          "name": "My Turn",
+          "label": "Configure My Turn",
+          "title": "Combat Bar: My Turn",
+          "hint": "What the bar does for you when your turn comes. Only affects you."
         },
         "combat": {
           "name": "Combat Start & End",
@@ -182,6 +192,19 @@
       "xpSummary": {
         "name": "XP Summary When Combat Ends",
         "hint": "When the GM ends a combat, whisper them a card listing the defeated enemies and their total XP, with an Award button."
+      },
+      "turnNotice": {
+        "name": "Turn Notice",
+        "hint": "Show a banner under the bar when your turn begins. For a sound as well, choose a Combat Theme in the Combat Tracker's settings.",
+        "choices": {
+          "off": "Off",
+          "subtle": "Small banner",
+          "large": "Large banner"
+        }
+      },
+      "upNextNotice": {
+        "name": "Up Next Notice",
+        "hint": "Show the banner one turn early too, when you're the next to act. Needs Turn Notice."
       },
       "trackers": {
         "name": "Trackers",

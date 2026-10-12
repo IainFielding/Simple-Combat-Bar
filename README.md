@@ -50,6 +50,12 @@ Owners get a d20 on their card until they've rolled. You choose who gets D&D 5e'
 With **Dice So Nice** holding results back until its dice stop, the bar waits too: the card shows
 "…" and keeps its place until the roll lands.
 
+### Your Turn and Up Next
+A banner drops under the bar when your turn begins, and one turn earlier when you're the next to
+act. Each player chooses a small banner, a large one or none, in **My Turn** in the module's
+settings. The GM gets one only for a character assigned to them. The bar adds no sound of its own:
+for that, choose a Combat Theme in the Combat Tracker's settings.
+
 ### Group Turns
 Optional, and off by default. With **Group Turns** set to *Shared frame (group turns)*, allies (or
 enemies) next to each other in the initiative order share one turn, as in Baldur's Gate 3:
@@ -116,6 +122,7 @@ sets for the table is in the windows opened from the buttons above it:
   enemies are revealed as they act or removed when defeated.
 - **Turns & Initiative**: the initiative roll window, group turns and the action pips.
 - **Combat Start & End**: the sidebar switching to Chat, and the XP summary.
+- **My Turn**: open to every player, for their own turn banner.
 - **Configure Trackers**: the second bar and the tooltip's values.
 
 Turn on **XP Summary When Combat Ends** and ending a combat whispers the GM a card listing the

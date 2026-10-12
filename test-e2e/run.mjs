@@ -7,7 +7,7 @@
  *   node run.mjs --iterations=20                      # longer churn for the lifecycle suite
  *
  * Suites: lifecycle, budget, ordering, permissions, events, arrivals, trackers, settingsUi, responsive,
- * economy, legendary, groupTurns, effects. The CTD world runs lifecycle and budget only — the others
+ * economy, legendary, groupTurns, effects, notices. The CTD world runs lifecycle and budget only — the others
  * test behaviour that is ours.
  *
  * The canvas stays off (`core.noCanvas`, set by lib/session.mjs): the bar lives in #ui-top and
@@ -27,11 +27,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,arrivals,trackers,settingsUi,responsive,economy,legendary,groupTurns,effects").split(",");
+const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,arrivals,trackers,settingsUi,responsive,economy,legendary,groupTurns,effects,notices").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions", "events", "arrivals", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns", "effects"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events", "arrivals", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns", "effects", "notices"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -599,6 +599,56 @@ const SUITES = {
   },
 
   /** The GM builds the combat; a second browser, logged in as the player, checks what it sees. */
+  /** The turn banner: a player is told when they're up next and when their turn begins; the GM isn't. */
+  async notices(gm) {
+    const failures = [];
+    const check = (ok, message) => ok || failures.push(message);
+    const setup = await gm.eval(() => __scb.noticesSetup());
+    const player = await Session.open({ user: PLAYER_USER });
+    try {
+      await loadSuites(player);
+      await gm.eval(id => __scb.setTurn(id), setup.goblins[0]);
+      let seen = await player.eval(() => __scb.noticeView());
+      check(seen === null, `a banner showed with another goblin still to act: ${JSON.stringify(seen)}`);
+
+      await gm.eval(id => __scb.setTurn(id), setup.goblins[1]);
+      seen = await player.eval(() => __scb.noticeView());
+      check(seen?.kind === "upNext", `no Up Next banner before the hero's turn: ${JSON.stringify(seen)}`);
+      check(seen?.size === "subtle", `the banner should be the small one by default: ${seen?.size}`);
+
+      await gm.eval(() => __scb.gmEndTurn());
+      seen = await player.eval(() => __scb.noticeView());
+      check(seen?.kind === "yourTurn" && !!seen.names, `no Your Turn banner on the hero's turn: ${JSON.stringify(seen)}`);
+      const gmSeen = await gm.eval(() => __scb.noticeView());
+      check(gmSeen === null, `the GM got a banner for a player's turn: ${JSON.stringify(gmSeen)}`);
+
+      // Up Next off: nothing a turn early, but the turn itself is still announced.
+      await player.eval(() => __scb.setOwnSetting("upNextNotice", false));
+      await gm.eval(id => __scb.setTurn(id), setup.goblins[0]);
+      await gm.eval(id => __scb.setTurn(id), setup.goblins[1]);
+      seen = await player.eval(() => __scb.noticeView());
+      check(seen === null, `Up Next showed with its setting off: ${JSON.stringify(seen)}`);
+      await player.eval(() => __scb.setOwnSetting("turnNotice", "large"));
+      await gm.eval(() => __scb.gmEndTurn());
+      seen = await player.eval(() => __scb.noticeView());
+      check(seen?.kind === "yourTurn" && seen.size === "large", `no large Your Turn banner: ${JSON.stringify(seen)}`);
+
+      // Off altogether.
+      await player.eval(() => __scb.setOwnSetting("turnNotice", "off"));
+      await gm.eval(id => __scb.setTurn(id), setup.goblins[1]);
+      await gm.eval(() => __scb.gmEndTurn());
+      await player.page.waitForTimeout(3800);
+      seen = await player.eval(() => __scb.noticeView());
+      check(seen === null, `a banner showed with Turn Notice off: ${JSON.stringify(seen)}`);
+    } finally {
+      await player.eval(() => __scb.setOwnSetting("turnNotice", "subtle")).catch(() => {});
+      await player.eval(() => __scb.setOwnSetting("upNextNotice", true)).catch(() => {});
+      await player.close({ shutDownWorld: false });
+      await gm.eval(() => __scbFixtures.cleanup());
+    }
+    return { pass: !failures.length, failures, lines: failures };
+  },
+
   async permissions(gm) {
     // Before the combat starts: the player must see the bar, with a d20 on their own characters.
     await gm.eval(() => __scb.unstartedCombat());

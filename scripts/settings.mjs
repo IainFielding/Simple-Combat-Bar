@@ -67,6 +67,9 @@ export function registerSettings(getBar) {
   register("groupTeams", { type: String, choices: choices("groupTeams", ["off", "visual", "bg3"]) });
   register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["chat", "leave"]) });
   register("xpSummary", { type: Boolean, onChange: invalidateSettings });
+  register("turnNotice", { scope: "user", type: String, choices: choices("turnNotice", ["off", "subtle", "large"]),
+    onChange: invalidateSettings });
+  register("upNextNotice", { scope: "user", type: Boolean, onChange: invalidateSettings });
   register("debug", { scope: "user", type: Boolean });
 
   for ( const [id, group] of Object.entries(SETTING_GROUPS) ) {
