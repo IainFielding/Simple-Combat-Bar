@@ -148,7 +148,7 @@ defeated enemies and their total XP, with dnd5e's Award button to hand it out (t
 |------------|------------|
 | Foundry VTT | v14 |
 | D&D 5e System | 6.0+ |
-| Verified On | Foundry 14.368 / D&D 5e 6.0.5 |
+| Verified On | Foundry 14.369 / D&D 5e 6.0.6 |
 
 ### For Developers
 Other modules can add portrait styles and read the bar through its API: see

@@ -35,6 +35,7 @@ All notable changes to Simple Combat Bar.
   (showing the bar, portrait size, what happens when it's full). What the GM sets for the table has
   moved into four windows, opened from buttons at the top of the list: **Look**, **What Players
   See**, **Turns & Initiative** and **Combat Start & End**. Nothing you've set has changed.
+- Verified on Foundry 14.369 and D&D 5e 6.0.6.
 
 ## 0.7.2
 
