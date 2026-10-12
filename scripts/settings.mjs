@@ -5,8 +5,9 @@
  * to `document.documentElement.style` (spec R10).
  */
 
-import { DEFAULTS, MODULE_ID, invalidateSettings } from "./config.mjs";
+import { DEFAULTS, MODULE_ID, SETTING_GROUPS, invalidateSettings, settingGroupOf } from "./config.mjs";
 import { portraitStyleChoices } from "./ui/portrait-styles.mjs";
+import { settingsGroupApp } from "./ui/settings-group.mjs";
 import { TrackersConfig } from "./ui/trackers-config.mjs";
 import { adapterFor } from "./systems/adapter.mjs";
 
@@ -21,12 +22,13 @@ export function registerSettings(getBar) {
     getBar()?.refresh();
   };
 
+  // A setting in one of the SETTING_GROUPS is edited in that group's window, not in the list.
   const register = (key, { scope = "world", type, choices, range, requiresReload = false, onChange = refresh } = {}) => {
     game.settings.register(MODULE_ID, key, {
       name: `${k(key)}.name`,
       hint: `${k(key)}.hint`,
       scope,
-      config: true,
+      config: !settingGroupOf(key),
       type,
       choices,
       range,
@@ -48,6 +50,7 @@ export function registerSettings(getBar) {
   register("portraitStyle", { type: String, choices: portraitStyleChoices() });
   register("portraitSize", { scope: "user", type: Number, range: { min: 40, max: 128, step: 4 } });
   register("overflow", { scope: "user", type: String, choices: choices("overflow", ["autofit", "scroll"]) });
+  register("compactControls", { scope: "user", type: Boolean });
   register("portraitImage", { type: String, choices: choices("portraitImage", ["actor", "token"]) });
   register("nameVisibility", { type: String, choices: choices("nameVisibility", ["always", "token", "owner"]) });
   register("hpVisibility", { type: String, choices: choices("hpVisibility", ["all", "owner", "ownerOnly"]) });
@@ -64,8 +67,28 @@ export function registerSettings(getBar) {
   register("effectDescriptions", { type: String, choices: choices("effectDescriptions", ["none", "owner", "all"]) });
   register("groupTeams", { type: String, choices: choices("groupTeams", ["off", "visual", "bg3"]) });
   register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["chat", "leave"]) });
+  // Its choices are the world's playlists, which don't exist yet: ui/settings-group.mjs lists them.
+  register("combatPlaylist", { type: String, onChange: invalidateSettings });
   register("xpSummary", { type: Boolean, onChange: invalidateSettings });
+  register("turnNotice", { scope: "user", type: String, choices: choices("turnNotice", ["off", "subtle", "large"]),
+    onChange: invalidateSettings });
+  register("upNextNotice", { scope: "user", type: Boolean, onChange: invalidateSettings });
+  register("panOnMyTurn", { scope: "user", type: Boolean, onChange: invalidateSettings });
+  register("targetsOnTurnEnd", { scope: "user", type: String,
+    choices: choices("targetsOnTurnEnd", ["keep", "clear", "restore"]), onChange: invalidateSettings });
+  register("autoSelectCurrent", { scope: "user", type: Boolean, onChange: invalidateSettings });
   register("debug", { scope: "user", type: Boolean });
+
+  for ( const [id, group] of Object.entries(SETTING_GROUPS) ) {
+    game.settings.registerMenu(MODULE_ID, id, {
+      name: `${k("groups")}.${id}.name`,
+      label: `${k("groups")}.${id}.label`,
+      hint: `${k("groups")}.${id}.hint`,
+      icon: group.icon,
+      type: settingsGroupApp(id),
+      restricted: group.restricted
+    });
+  }
 
   // Edited in the Configure Trackers window rather than the settings list.
   game.settings.registerMenu(MODULE_ID, "trackers", {

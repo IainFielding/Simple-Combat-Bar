@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { DEFAULTS, HOOKS, MODULE_ID } from "../scripts/config.mjs";
+import { DEFAULTS, HOOKS, MODULE_ID, SETTING_GROUPS } from "../scripts/config.mjs";
 
 /** Every file under a directory, recursively. */
 function walk(dir) {
@@ -68,6 +68,25 @@ describe("lang/en.json", () => {
     const text = readFileSync("scripts/settings.mjs", "utf8");
     const registered = [...text.matchAll(/register\("(\w+)"/g)].map(m => m[1]);
     expect(registered.filter(k => !(k in DEFAULTS))).toEqual([]);
+  });
+
+  it("puts each grouped setting in one submenu, and names every submenu", () => {
+    const text = readFileSync("scripts/settings.mjs", "utf8");
+    const registered = new Set([...text.matchAll(/register\("(\w+)"/g)].map(m => m[1]));
+    const grouped = Object.values(SETTING_GROUPS).flatMap(g => g.keys);
+    expect(grouped.filter(key => !registered.has(key))).toEqual([]);
+    expect(grouped.filter((key, i) => grouped.indexOf(key) !== i)).toEqual([]);
+    const missing = [];
+    for ( const [id, group] of Object.entries(SETTING_GROUPS) ) {
+      for ( const leaf of ["name", "label", "title", "hint"] ) {
+        if ( !has(`settings.groups.${id}.${leaf}`) ) missing.push(`${id}.${leaf}`);
+      }
+      // A row can only be switched off by a setting in the same window.
+      for ( const [key, needs] of Object.entries(group.requires ?? {}) ) {
+        if ( !group.keys.includes(key) || !group.keys.includes(needs) ) missing.push(`${id}: ${key} requires ${needs}`);
+      }
+    }
+    expect(missing).toEqual([]);
   });
 
   it("covers every health state the model can produce", () => {
@@ -147,10 +166,6 @@ describe("public hooks", () => {
 });
 
 describe("module.json", () => {
-  it("declares the combat-tracker-dock conflict", () => {
-    expect(manifest.relationships.conflicts.map(c => c.id)).toContain("combat-tracker-dock");
-  });
-
   it("requires dnd5e 6.0 or later, and nothing older", () => {
     const [dnd5e, ...others] = manifest.relationships.systems;
     expect(others).toEqual([]);

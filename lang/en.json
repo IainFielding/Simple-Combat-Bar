@@ -7,10 +7,13 @@
       "ctd": "Simple Combat Bar is standing down because Carousel Combat Tracker (combat-tracker-dock) is also active. Both draw a turn-order bar across the top of the screen; disable one of them in Manage Modules."
     },
     "controls": {
-      "configure": "Combat Bar Settings"
+      "configure": "Combat Bar Settings",
+      "cancel": "Cancel Combat"
     },
     "context": {
       "setCurrent": "Make Current Turn",
+      "target": "Target",
+      "untarget": "Untarget",
       "arrivesLater": "Arrives in Round…",
       "arriveNow": "Arrive Now"
     },
@@ -18,6 +21,10 @@
       "hp": "HP",
       "roundsLeft": "{rounds} rounds left",
       "secondary": "Tracked"
+    },
+    "notice": {
+      "yourTurn": "Your Turn",
+      "upNext": "Up Next"
     },
     "health": {
       "healthy": "Healthy",
@@ -34,6 +41,38 @@
       "toggleBar": "Toggle Combat Bar"
     },
     "settings": {
+      "groups": {
+        "look": {
+          "name": "Look",
+          "label": "Configure Look",
+          "title": "Combat Bar: Look",
+          "hint": "The portrait style and image, and what each card shows: damage, hit points, status effects and legendary badges."
+        },
+        "players": {
+          "name": "What Players See",
+          "label": "Configure What Players See",
+          "title": "Combat Bar: What Players See",
+          "hint": "How much players see of other combatants: names, hit points, initiative, effect descriptions, and enemies who haven't acted or have been defeated."
+        },
+        "turns": {
+          "name": "Turns & Initiative",
+          "label": "Configure Turns & Initiative",
+          "title": "Combat Bar: Turns & Initiative",
+          "hint": "The initiative roll window, group turns and the action pips."
+        },
+        "myTurn": {
+          "name": "My Turn",
+          "label": "Configure My Turn",
+          "title": "Combat Bar: My Turn",
+          "hint": "What the bar does for you when your turn comes. Only affects you."
+        },
+        "combat": {
+          "name": "Combat Start & End",
+          "label": "Configure Combat Start & End",
+          "title": "Combat Bar: Combat Start & End",
+          "hint": "What happens when a combat starts and when it ends: the sidebar, the combat playlist and the XP summary."
+        }
+      },
       "enabled": {
         "name": "Show the Combat Bar",
         "hint": "Show the turn-order bar across the top of the screen during combat. Only affects you."
@@ -53,6 +92,10 @@
           "autofit": "Fit to width (shrink portraits)",
           "scroll": "Scroll sideways"
         }
+      },
+      "compactControls": {
+        "name": "Fewer Buttons",
+        "hint": "For the GM: leave Reset Initiative, Previous Round, Next Round and the settings cog off the bar's side tabs. Only affects you."
       },
       "portraitImage": {
         "name": "Portrait Image",
@@ -152,9 +195,44 @@
           "leave": "Leave it as it is"
         }
       },
+      "combatPlaylist": {
+        "name": "Combat Playlist",
+        "hint": "A playlist to play while a combat runs. Starting a combat stops what's playing and starts this; ending the combat stops it and brings back what was playing before.",
+        "none": "None"
+      },
       "xpSummary": {
         "name": "XP Summary When Combat Ends",
         "hint": "When the GM ends a combat, whisper them a card listing the defeated enemies and their total XP, with an Award button."
+      },
+      "turnNotice": {
+        "name": "Turn Notice",
+        "hint": "Show a banner under the bar when your turn begins. For a sound as well, choose a Combat Theme in the Combat Tracker's settings.",
+        "choices": {
+          "off": "Off",
+          "subtle": "Small banner",
+          "large": "Large banner"
+        }
+      },
+      "upNextNotice": {
+        "name": "Up Next Notice",
+        "hint": "Show the banner one turn early too, when you're the next to act. Needs Turn Notice."
+      },
+      "panOnMyTurn": {
+        "name": "Pan to Me on My Turn",
+        "hint": "When your turn begins, select your token and move the view to it."
+      },
+      "targetsOnTurnEnd": {
+        "name": "Targets When My Turn Ends",
+        "hint": "What happens to your targets when your turn ends. They can be brought back when your next turn begins; they're remembered until you reload. For the GM, this applies to every creature's turn.",
+        "choices": {
+          "keep": "Keep them",
+          "clear": "Clear them",
+          "restore": "Clear them, and bring them back on my next turn"
+        }
+      },
+      "autoSelectCurrent": {
+        "name": "Select the Acting Token",
+        "hint": "As each turn begins, select the token of the creature acting. For the GM."
       },
       "trackers": {
         "name": "Trackers",
@@ -220,10 +298,12 @@
       "color": "Colour",
       "add": "Add a Value",
       "remove": "Remove",
+      "moveUp": "Move Up",
+      "moveDown": "Move Down",
       "secondary": "Second Bar",
       "secondaryHint": "A second bar under each portrait's hit points, for a resource with a maximum: legendary actions, spell slots, a class resource. Like hit points, it's shown only to those who can see the creature's sheet.",
       "tooltip": "Tooltip Values",
-      "tooltipHint": "Shown when hovering a portrait, to the GM and to those who can see the creature's sheet. Pick an attribute from the list or type its path; leave the label blank to show the path."
+      "tooltipHint": "Shown when hovering a portrait, to the GM and to those who can see the creature's sheet. Pick an attribute from the list or type its path; leave the label blank to show the path. Use the arrows to change the order they're listed in."
     },
     "economy": {
       "action": "Action",

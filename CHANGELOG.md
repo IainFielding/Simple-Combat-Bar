@@ -2,6 +2,70 @@
 
 All notable changes to Simple Combat Bar.
 
+## 0.8.0
+
+### New
+
+- **Cancel Combat.** Before the fight starts, a **✕** tab above Start Combat calls the encounter
+  off, after asking you to confirm. Once combat has started, End Combat takes its place as before.
+- **Put the tooltip's values in your own order.** Each row in Configure Trackers has up and down
+  arrows, and the hover tooltip lists its values in that order. The starting order is unchanged.
+- **Your Turn and Up Next.** A banner drops under the bar when your turn begins, and one turn
+  earlier when you're the next to act. In a group turn, everyone in the group is told at once. Each
+  player sets it in the new **My Turn** window: a small banner, a large one, or none, with or without
+  the early warning. The GM gets one only for a character assigned to them. For a sound as well,
+  choose a Combat Theme in the Combat Tracker's own settings.
+- **Target from the bar.** Right-click a portrait and choose **Target** (hold Shift to add to the
+  targets you already have), or hover the portrait and press Foundry's Target key, T. Your targets
+  carry a reticle on their portraits. Only creatures you can see on the map can be targeted.
+- **Turn conveniences, each player's own choice.** In **My Turn**: move the view to your token when
+  your turn begins, and clear your targets when your turn ends, with the option of having them back
+  on your next turn. The GM can also have the acting creature's token selected as each turn begins.
+  All are off until you turn them on.
+- **Combat playlist.** Pick a playlist in **Combat Start & End** and starting a combat stops what's
+  playing and starts it; ending the combat stops it and brings back what was playing before.
+- **Fewer Buttons.** A GM who wants a quieter bar can leave Reset Initiative, Previous Round, Next
+  Round and the settings cog off its side tabs. It's in the settings list, and only affects you.
+- **The bar drops in when the fight starts.** Pressing Start Combat slides the bar down from the top
+  of the screen for everyone, unless their system asks for reduced motion.
+
+### Changed
+
+- **The settings are sorted into groups.** The settings list now holds only what's yours alone
+  (showing the bar, portrait size, what happens when it's full). What the GM sets for the table has
+  moved into four windows, opened from buttons at the top of the list: **Look**, **What Players
+  See**, **Turns & Initiative** and **Combat Start & End**. Nothing you've set has changed.
+- Verified on Foundry 14.369 and D&D 5e 6.0.6.
+
+## 0.7.2
+
+### New
+
+- **Waits for Dice So Nice.** When Dice So Nice holds a roll's result back until its dice stop, the
+  bar does too: the card shows "…" in place of the initiative and nobody changes place until the
+  roll lands, so the new order doesn't give the result away early.
+
+## 0.7.1
+
+### Fixed
+
+- **Ember's calendar steps aside** while the bar shows a combat, as D&D 5e's own calendar does.
+
+## 0.7.0
+
+### Fixed
+
+- **Reset Initiative before combat starts brings the d20s back.** The cards kept their old
+  initiative until something else redrew them.
+
+## 0.6.0
+
+### Changed
+
+- **Hidden enemy initiative stays hidden in chat.** With *Hide Enemy Initiative* on, NPC initiative
+  rolled from the bar (a card's d20, Roll NPCs or Roll All) goes to the GM only, so the chat log
+  doesn't show what the bar masks. A roll mode picked in the initiative roll window still wins.
+
 ## 0.5.0
 
 ### Changed
@@ -16,6 +80,11 @@ All notable changes to Simple Combat Bar.
 - **No more "Badly Wounded".** Players never saw it for enemies (D&D 5e has no condition for it), so
   the health states are now healthy, bloodied and down, and the *Hit Points* setting says so. The HP
   bar turns red only at 0 HP. A system adapter's `healthState` should no longer return `"critical"`.
+
+### Fixed
+
+- **Add Event's fields are spaced apart** like any other Foundry form, instead of sitting flush
+  against each other.
 
 ## 0.4.0
 
@@ -137,4 +206,3 @@ All notable changes to Simple Combat Bar.
 ### Requirements
 
 - Foundry VTT v14 and D&D 5e 6.0 or later. Verified on Foundry 14.368 and D&D 5e 6.0.5.
-- Can't be used alongside Carousel Combat Tracker, which draws the same bar in the same place.

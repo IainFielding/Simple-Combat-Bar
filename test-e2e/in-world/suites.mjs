@@ -240,6 +240,36 @@ export async function playerEndTurn() {
 }
 
 /* -------------------------------------------- */
+/*  Turn banner                                 */
+/* -------------------------------------------- */
+
+/** GM: two heroes of the player's, then two goblins, in that order whatever order they were made in. */
+export async function noticesSetup() {
+  const combat = await freshCombat({ allies: 2, enemies: 2, enemyNames: ["Goblin"] });
+  const heroes = combat.combatants.filter(c => c.actor?.type === "character").map(c => c.id);
+  const goblins = combat.combatants.filter(c => c.actor?.type === "npc").map(c => c.id);
+  await combat.updateEmbeddedDocuments("Combatant",
+    [...heroes, ...goblins].map((id, i) => ({ _id: id, initiative: 20 - i })));
+  await combat.update({ turn: 0 });
+  await settle(150);
+  return { heroes, goblins };
+}
+
+/** The turn banner showing now, if any. */
+export async function noticeView() {
+  await settle(250);
+  const card = document.querySelector("#scb-root .scb-notice-card");
+  return card ? { kind: card.dataset.kind, size: card.dataset.size,
+    names: card.querySelector(".scb-notice-names").textContent } : null;
+}
+
+/** Set one of this user's own settings. */
+export async function setOwnSetting(key, value) {
+  await game.settings.set(MODULE_ID, key, value);
+  await settle(100);
+}
+
+/* -------------------------------------------- */
 /*  Events                                      */
 /* -------------------------------------------- */
 

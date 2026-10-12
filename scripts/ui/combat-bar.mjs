@@ -30,6 +30,7 @@ import { openEventDialog } from "./event-dialog.mjs";
 import { rememberEvent } from "../model/events.mjs";
 import { readAttributes, safeColor } from "../model/trackers.mjs";
 import { toggleSlot } from "../systems/economy.mjs";
+import { TurnNotice } from "./turn-notice.mjs";
 
 /** Combatant fields whose change can move a combatant or change who is shown. */
 const ORDER_FIELDS = ["initiative", "hidden", "defeated", "tokenId", "actorId", "group"];
@@ -64,6 +65,9 @@ const TAB_WIDTH = 38;
 /** Duration of the slide when portraits change places. */
 const MOVE_MS = 260;
 
+/** Duration of the bar's drop from the top edge as a combat starts. */
+const INTRO_MS = 480;
+
 /** Body class that hides the calendar HUD (dnd5e's, or Ember's) while the bar shows a combat. */
 const HIDE_CALENDAR = `${CSS}-hide-calendar`;
 
@@ -80,11 +84,13 @@ const GM_CONTROLS_START = [
 
 /**
  * Top to bottom. The tabs stack from the bottom, so Next Turn mirrors Previous Turn in the opposite
- * corner; Start Combat takes End Combat's place until the combat has started.
+ * corner; Start Combat takes End Combat's place until the combat has started, with Cancel Combat
+ * above it to call the encounter off before it begins.
  */
 const GM_CONTROLS_END = [
   ["configure", "fa-solid fa-gear", "sogrom-simple-combat-bar.controls.configure"],
   ["addEvent", "fa-solid fa-hourglass-half", "sogrom-simple-combat-bar.events.title"],
+  ["cancelCombat", "fa-solid fa-xmark", "sogrom-simple-combat-bar.controls.cancel"],
   ["startCombat", "fa-solid fa-play", "COMBAT.Begin"],
   ["endCombat", "fa-solid fa-flag-checkered", "COMBAT.End"],
   ["nextRound", "fa-solid fa-angles-right", "COMBAT.RoundNext"],
@@ -129,6 +135,10 @@ export class CombatBar {
   #contextMenu = null;
   /** @type {ResizeObserver|null} */
   #resizeObserver = null;
+  /** @type {TurnNotice} */
+  #notice;
+  /** Whether the bound combat had started when last looked at, to catch the moment it does. */
+  #started = false;
 
   constructor() {
     this.#scheduler = new RenderScheduler(batch => this.#flush(batch));
@@ -171,6 +181,7 @@ export class CombatBar {
     if ( !combat ) return;
 
     this.combat = combat;
+    this.#started = combat.started;
     this.#mount();
     const life = this.#bound = new Lifecycle();
     life.hook("updateCombat", (doc, changes) => this.#onUpdateCombat(doc, changes));
@@ -192,6 +203,9 @@ export class CombatBar {
     life.hook("deleteItem", item => this.#onItem(item));
     life.hook("hoverToken", (token, hovered) => this.#toggleTokenClass(token, "is-hovered", hovered));
     life.hook("controlToken", (token, controlled) => this.#toggleTokenClass(token, "is-controlled", controlled));
+    // This user's own targets only: everyone's would say who the GM is about to attack.
+    life.hook("targetToken", (user, token, targeted) => user.isSelf
+      && this.#toggleTokenClass(token, "is-targeted", targeted));
     life.add(() => this.#scheduler.cancel());
     // The calendar (dnd5e's, or Ember's) shares #ui-top with the bar; step it aside from the
     // initiative roll on.
@@ -213,6 +227,7 @@ export class CombatBar {
     this.#hold = null;
     this.#turnIds = [];
     this.#closeTooltip();
+    this.#notice.clear();
     for ( const view of this.#portraits.values() ) view.destroy();
     this.#portraits.clear();
     this.#divider.remove();
@@ -229,6 +244,17 @@ export class CombatBar {
     this.#contextMenu?.close?.();
     this.#session.dispose();
     this.root.remove();
+  }
+
+  /**
+   * Drop the turn banner below the bar for a moment, or take it down.
+   * @param {"yourTurn"|"upNext"|null} kind  Null takes down a banner still showing.
+   * @param {string[]} [names]
+   * @param {"subtle"|"large"} [size]
+   */
+  announce(kind, names = [], size = "subtle") {
+    if ( !kind || !this.combat ) return this.#notice.clear();
+    this.#notice.show(kind, names, size);
   }
 
   /** Force a full re-derive (settings changes). */
@@ -257,6 +283,15 @@ export class CombatBar {
       || ("combatants" in changes) ) {
       this.#scheduler.markOrder();
     }
+    if ( combat.started && !this.#started ) this.#intro();
+    this.#started = combat.started;
+  }
+
+  /** The fight begins: the bar drops in from the top edge. */
+  #intro() {
+    if ( !this.root.isConnected || globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ) return;
+    this.root.animate([{ transform: "translateY(-100%)", opacity: 0 }, { transform: "none", opacity: 1 }],
+      { duration: INTRO_MS, easing: "cubic-bezier(0.22, 1, 0.36, 1)" });
   }
 
   #onUpdateCombatant(combatant, changes, options) {
@@ -386,6 +421,8 @@ export class CombatBar {
       if ( fresh ) {
         view = new PortraitView(item.id, style);
         this.#portraits.set(item.id, view);
+        // Targets outlast a portrait: one drawn afresh picks its mark up again.
+        view.element.classList.toggle("is-targeted", !!combatant.token?.object?.isTargeted);
         this.stats.creates++;
       }
       if ( fresh || everything || ids.has(item.id) ) {
@@ -489,6 +526,7 @@ export class CombatBar {
     const root = this.root;
     root.classList.toggle("is-started", combat.started);
     root.classList.toggle("is-gm", game.user.isGM);
+    root.classList.toggle("is-fewer-controls", settings().compactControls);
     root.querySelector(".scb-endturn").hidden = !this.canEndTurn;
     root.querySelector(".scb-round-value").textContent = combat.started ? combat.round : "–";
   }
@@ -574,6 +612,8 @@ export class CombatBar {
       </div>`;
     this.root = root;
     this.track = root.querySelector(`.${CSS}-track`);
+    this.#notice = new TurnNotice(this.#session);
+    root.append(this.#notice.element);
 
     const divider = document.createElement("li");
     divider.className = `${CSS}-divider`;
@@ -771,6 +811,8 @@ export class CombatBar {
       case "nextTurn": return this.endTurn();
       case "nextRound": return combat.nextRound();
       case "startCombat": return combat.startCombat();
+      // Both ask for confirmation, then delete the combat.
+      case "cancelCombat":
       case "endCombat": return combat.endCombat();
       case "addEvent": return openEventDialog(this);
     }
@@ -869,6 +911,20 @@ export class CombatBar {
           const token = combatantOf(li)?.token?.object;
           if ( token?.visible ) canvas.ping(token.center);
         }
+      },
+      {
+        label: "sogrom-simple-combat-bar.context.target",
+        icon: '<i class="fa-solid fa-crosshairs"></i>',
+        visible: li => canTarget(combatantOf(li)) && !combatantOf(li).token.object.isTargeted,
+        // Shift adds to the targets already chosen, as with core's Target key.
+        onClick: (event, li) => canTarget(combatantOf(li))
+          && combatantOf(li).token.object.setTarget(true, { releaseOthers: !event.shiftKey })
+      },
+      {
+        label: "sogrom-simple-combat-bar.context.untarget",
+        icon: '<i class="fa-solid fa-crosshairs"></i>',
+        visible: li => canTarget(combatantOf(li)) && combatantOf(li).token.object.isTargeted,
+        onClick: (_event, li) => canTarget(combatantOf(li)) && combatantOf(li).token.object.setTarget(false)
       },
       {
         label: "COMBATANT.ACTIONS.Reroll",
@@ -989,6 +1045,11 @@ export function runPosition(items, index) {
 /** Whether this user may select and pan to a combatant's token: it's on the canvas, and they observe it. */
 function canPanTo(combatant) {
   return !!combatant?.token?.object && !!combatant.actor?.testUserPermission(game.user, "OBSERVER");
+}
+
+/** Whether this user may target a combatant's token from the bar: it's on the canvas, and they can see it. */
+function canTarget(combatant) {
+  return canvas.ready && !!combatant?.token?.object?.visible;
 }
 
 /** Core's own defeat toggle, re-implemented on public API (spec R12). */

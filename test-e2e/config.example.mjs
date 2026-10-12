@@ -31,8 +31,8 @@ export const MODULE_SOURCE = "C:/path/to/Simple-Combat-Bar";
 
 /** The system the test worlds run, and the versions this harness was written against. */
 export const SYSTEM = "dnd5e";
-export const SYSTEM_VERSION = "6.0.5";
-export const CORE_VERSION = "14.368";
+export const SYSTEM_VERSION = "6.0.6";
+export const CORE_VERSION = "14.369";
 
 /**
  * The test worlds. `id` doubles as the directory name under `Data/worlds`. Both use only the

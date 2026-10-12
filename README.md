@@ -50,6 +50,26 @@ Owners get a d20 on their card until they've rolled. You choose who gets D&D 5e'
 With **Dice So Nice** holding results back until its dice stop, the bar waits too: the card shows
 "…" and keeps its place until the roll lands.
 
+### Your Turn and Up Next
+A banner drops under the bar when your turn begins, and one turn earlier when you're the next to
+act. Each player chooses a small banner, a large one or none, in **My Turn** in the module's
+settings. The GM gets one only for a character assigned to them. The bar adds no sound of its own:
+for that, choose a Combat Theme in the Combat Tracker's settings.
+
+![The Your Turn banner](docs/screenshots/your-turn.png)
+
+### On Your Turn
+Also in **My Turn**, and off until you turn them on: move the view to your token when your turn
+begins, and clear your targets when your turn ends (they can come back on your next turn). The GM
+can have the acting creature's token selected as each turn begins.
+
+### Targeting
+Right-click a portrait and choose **Target**, or hover it and press Foundry's Target key (**T**).
+Hold Shift to add to the targets you already have. Your targets carry a reticle on their portraits,
+and you can only target a creature you can see on the map.
+
+![Two enemies targeted from the bar](docs/screenshots/targeting.png)
+
 ### Group Turns
 Optional, and off by default. With **Group Turns** set to *Shared frame (group turns)*, allies (or
 enemies) next to each other in the initiative order share one turn, as in Baldur's Gate 3:
@@ -97,15 +117,33 @@ roll for everyone or for NPCs, reset initiative, step back a turn or a round, st
 combat, add an event, and open the settings. Right-click a portrait to make it the current turn,
 ping or pan to its token, re-roll or clear its initiative, hide it, mark it defeated, or remove it.
 
+Before the fight starts, the **✕** above Start Combat cancels the combat instead.
+
+![Rolling initiative, before the fight starts](docs/screenshots/initiative.png)
+
 Keyboard: **Shift+M** ends the turn and **Shift+N** goes back one (GM). **Toggle Combat Bar** shows
 or hides the bar for you alone; it has no key until you give it one in Configure Controls.
 
 ## Settings
 
-Everything is under **Game Settings → Configure Settings → Simple Combat Bar**, including who sees
-names, hit points, effect descriptions and initiative, the portrait style and size, whether the
-sidebar switches to Chat when combat starts, and the action pips, legendary badges
-and effect icons.
+Everything is under **Game Settings → Configure Settings → Simple Combat Bar**. The list holds what's
+yours alone: showing the bar, the portrait size, what happens when the bar is full, and (for the GM)
+**Fewer Buttons** on the side tabs. What the GM sets for the table is in the windows opened from the
+buttons above it:
+
+- **Look**: the portrait style and image, the damage fill and HP bar, effect icons and legendary
+  badges.
+- **What Players See**: names, hit points, enemy initiative, effect descriptions, and whether
+  enemies are revealed as they act or removed when defeated.
+- **Turns & Initiative**: the initiative roll window, group turns and the action pips.
+- **Combat Start & End**: the sidebar switching to Chat, a playlist to play while the fight runs
+  (what was playing before comes back afterwards), and the XP summary.
+- **My Turn**: open to every player, for their own turn banner.
+
+![The settings list and its submenus](docs/screenshots/settings.png)
+
+![The My Turn window](docs/screenshots/my-turn.png)
+- **Configure Trackers**: the second bar and the tooltip's values.
 
 Turn on **XP Summary When Combat Ends** and ending a combat whispers the GM a card listing the
 defeated enemies and their total XP, with dnd5e's Award button to hand it out (the same as typing
@@ -118,7 +156,7 @@ defeated enemies and their total XP, with dnd5e's Award button to hand it out (t
 |------------|------------|
 | Foundry VTT | v14 |
 | D&D 5e System | 6.0+ |
-| Verified On | Foundry 14.368 / D&D 5e 6.0.5 |
+| Verified On | Foundry 14.369 / D&D 5e 6.0.6 |
 
 ### For Developers
 Other modules can add portrait styles and read the bar through its API: see

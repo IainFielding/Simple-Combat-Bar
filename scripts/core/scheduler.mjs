@@ -4,7 +4,7 @@
  * Every trigger — a combatant update, an actor's HP change, a new effect, a turn change — only
  * marks what went stale. The flush then sees the whole batch at once, so rolling initiative for
  * twelve NPCs (twelve `updateCombatant` hooks in one tick) costs one render, not twelve full
- * rebuilds as it did in the reference module.
+ * rebuilds.
  */
 export class RenderScheduler {
 

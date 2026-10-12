@@ -27,11 +27,34 @@ const group = process.argv.includes("--group");
 const shot = name => path.join(out, `${group ? "group-turn-" : ""}${name}.png`);
 const viewport = { width: 1680, height: 960 };
 
+/** Take core's notices off the screen before a shot: the "Canvas is disabled" one lands across the bar. */
+const tidy = session => session.eval(() => ui.notifications.clear());
+
 const server = await startFoundry("playwright-combat");
 let gm;
 let player;
 try {
   gm = await Session.open({ viewport, deviceScaleFactor: 2 });
+  // The sidebar sits open on Chat beside the bar: start from an empty log, not whatever the suites
+  // last whispered. The world is the harness's own, and disposable.
+  await gm.eval(() => ChatMessage.deleteDocuments([], { deleteAll: true }));
+  if ( !group ) {
+    // Before the fight: combatants added, a couple of heroes rolled, the rest still to roll.
+    await gm.eval(async ({ id, style }) => {
+      const f = await import(`/modules/${id}/test-e2e/in-world/fixtures.mjs`);
+      if ( game.paused ) game.togglePause(false, { broadcast: true });
+      if ( style ) await game.settings.set(id, "portraitStyle", style);
+      await game.settings.set(id, "groupTeams", "off");
+      const combat = await f.freshCombat({ allies: 4, enemies: 5, enemyNames: ["Goblin", "Orc", "Adult Red Dragon"],
+        initiative: false, start: false });
+      const pcs = combat.combatants.filter(c => c.actor?.type === "character");
+      await combat.updateEmbeddedDocuments("Combatant", [{ _id: pcs[0].id, initiative: 18 }, { _id: pcs[1].id, initiative: 11 }]);
+      await f.settle(400);
+    }, { id: MODULE_ID, style });
+    await gm.page.waitForTimeout(800);
+    await tidy(gm);
+    await gm.page.screenshot({ path: shot("initiative"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
+  }
   await gm.eval(async ({ id, style, group }) => {
     const f = await import(`/modules/${id}/test-e2e/in-world/fixtures.mjs`);
     if ( game.paused ) game.togglePause(false, { broadcast: true });
@@ -75,6 +98,7 @@ try {
     }
   }, { id: MODULE_ID, style, group });
   await gm.page.waitForTimeout(800);
+  await tidy(gm);
   await gm.page.screenshot({ path: shot("gm"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
 
   // The group-turn set is only the bar itself; the tooltip and windows look the same either way.
@@ -82,6 +106,7 @@ try {
   // Hover tooltip on the first hero (the current combatant).
   await gm.page.hover("#scb-root .scb-portrait.is-current");
   await gm.page.waitForTimeout(900);
+  await tidy(gm);
   await gm.page.screenshot({ path: shot("tooltip"), clip: { x: 300, y: 0, width: 1100, height: 520 } });
   await gm.page.mouse.move(5, 700);
 
@@ -102,11 +127,65 @@ try {
   await gm.page.waitForTimeout(400);
   await dialog.screenshot({ path: shot("event-dialog") });
   await dialog.locator('button[data-action="close"], .header-control[data-action="close"]').first().click().catch(() => {});
+
+  // The settings list with its submenu buttons, then one of the submenus.
+  await gm.eval(id => new foundry.applications.settings.SettingsConfig({ initialCategory: id }).render({ force: true }),
+    MODULE_ID);
+  const config = gm.page.locator("#settings-config");
+  await config.waitFor();
+  // Off the window, so no button is lit and no tooltip is up.
+  await gm.page.mouse.move(5, 700);
+  await gm.eval(() => game.tooltip.deactivate());
+  await gm.page.waitForTimeout(600);
+  await config.screenshot({ path: shot("settings") });
+  await config.locator(`button[data-key="${MODULE_ID}.myTurn"]`).click();
+  const myTurn = gm.page.locator("#scb-settings-myTurn");
+  await myTurn.waitFor();
+  await gm.page.waitForTimeout(400);
+  await myTurn.screenshot({ path: shot("my-turn") });
+  await gm.eval(() => {
+    for ( const id of ["scb-settings-myTurn", "settings-config"] ) foundry.applications.instances.get(id)?.close();
+  });
   }
 
   player = await Session.open({ viewport, deviceScaleFactor: 2, user: PLAYER_USER });
   await player.page.waitForTimeout(1200);
+  await tidy(player);
   await player.page.screenshot({ path: shot("player"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
+
+  if ( !group ) {
+    // The player's targets, and their turn banner. Targeting needs the map, so a session with the canvas on.
+    await player.close({ shutDownWorld: false });
+    player = await Session.open({ viewport, deviceScaleFactor: 2, user: PLAYER_USER, canvas: true });
+    await player.page.waitForTimeout(2500);
+    // The map has to be there for a token to be targeted, but not to be seen: the tokens crowd the
+    // corner of the shot, and the other images have none.
+    await player.eval(() => { document.getElementById("board").style.visibility = "hidden"; });
+    const targeted = await player.eval(() => {
+      const enemies = game.combat.turns.filter(c => !c.isOwner && !c.isDefeated && c.token?.object?.visible);
+      for ( const c of enemies.slice(0, 2) ) c.token.object.setTarget(true, { releaseOthers: false });
+      return game.user.targets.size;
+    });
+    if ( targeted < 2 ) console.warn(`Only ${targeted} target(s) set for the targeting shot.`);
+    await player.page.mouse.move(5, 700);
+    await player.page.waitForTimeout(600);
+    await tidy(player);
+    await player.page.screenshot({ path: shot("targeting"), clip: { x: 0, y: 0, width: viewport.width, height: 300 } });
+    // The banner is on screen for a few seconds, and a software-rendered canvas can take that long
+    // to capture: stop the clock that takes it down, and hold its animation where it's fully shown.
+    await player.page.clock.install();
+    await player.eval(id => {
+      game.user.targets.forEach(t => t.setTarget(false));
+      const bar = game.modules.get(id).api.bar;
+      bar.announce("yourTurn", [bar.combat.combatant.name], "large");
+      for ( const animation of bar.root.querySelector(".scb-notice-card").getAnimations() ) {
+        animation.currentTime = 1000;
+        animation.pause();
+      }
+    }, MODULE_ID);
+    await tidy(player);
+    await player.page.screenshot({ path: shot("your-turn"), clip: { x: 0, y: 0, width: viewport.width, height: 420 } });
+  }
   console.log(`Saved to ${path.relative(process.cwd(), out)}`);
 } finally {
   if ( player ) await player.close({ shutDownWorld: false });

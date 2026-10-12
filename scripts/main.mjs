@@ -18,6 +18,9 @@ import { afterTurnChange, skipBeforeUpdate } from "./ui/arrival-service.mjs";
 import { restoresEconomy } from "./model/group-turns.mjs";
 import { tallyDefeated } from "./model/xp-award.mjs";
 import { DISPOSITIONS } from "./model/visibility.mjs";
+import { forgetTurnWatch, onTurnChange, watchTurn } from "./ui/turn-watch.mjs";
+import { forgetTurnHabits, turnHabits } from "./ui/turn-habits.mjs";
+import { endCombatMusic, startCombatMusic } from "./ui/combat-music.mjs";
 
 /** The session's bar. Null until `ready`, and stays null if the bar mustn't mount. */
 let bar = null;
@@ -49,6 +52,7 @@ Hooks.once("ready", () => {
   Hooks.on("createCombat", sync);
   Hooks.on("deleteCombat", sync);
   Hooks.on("deleteCombat", postXPSummary);
+  Hooks.on("deleteCombat", endCombatMusic);
   // Late arrivals: move a turn change past anyone not here yet, before it's sent.
   Hooks.on("combatStart", (combat, updateData) => skipBeforeUpdate(combat, updateData));
   Hooks.on("combatRound", skipBeforeUpdate);
@@ -56,6 +60,7 @@ Hooks.once("ready", () => {
   Hooks.on("updateCombat", (combat, changes, options) => {
     if ( ("active" in changes) || ("scene" in changes) || ("started" in changes) || ("round" in changes) ) sync();
     if ( "round" in changes ) expireEvents(combat);
+    if ( ("round" in changes) || ("turn" in changes) ) startCombatMusic(combat);
     afterTurnChange(combat, changes, options);
   });
   Hooks.on("canvasReady", sync);
@@ -70,6 +75,12 @@ Hooks.once("ready", () => {
   // combatTurnChange for the first turn too, once the start has been saved.
   Hooks.on("dnd5e.postUseActivity", activity => spendForActivity(activity));
   Hooks.on("combatTurnChange", (combat, _previous, current) => resetEconomy(combat, current?.combatantId));
+  // What a turn change means for this user: their turn, or theirs next.
+  Hooks.on("combatTurnChange", combat => watchTurn(combat));
+  Hooks.on("deleteCombat", forgetTurnWatch);
+  Hooks.on("deleteCombat", forgetTurnHabits);
+  onTurnChange(announceTurn);
+  onTurnChange(turnHabits);
 
   // Worlds saved before 0.5.0 may still hold "collapse", the choice this replaced.
   Hooks.on("combatStart", () => {
@@ -79,6 +90,21 @@ Hooks.once("ready", () => {
   sync();
   Hooks.callAll(HOOKS.ready, api);
 });
+
+/**
+ * Show the turn banner, for the combat on the bar and as far as this user's settings ask for one.
+ * A turn change with nothing to say takes down a banner still showing: it was about a turn that
+ * has moved on.
+ * @param {import("./ui/turn-watch.mjs").TurnChange} event
+ */
+function announceTurn({ combat, notice }) {
+  if ( combat !== bar.combat ) return;
+  const cfg = settings();
+  const wanted = !!notice && (cfg.turnNotice !== "off") && ((notice.kind !== "upNext") || cfg.upNextNotice);
+  if ( !wanted ) return bar.announce(null);
+  const names = notice.ids.map(id => combat.combatants.get(id)?.name).filter(Boolean);
+  bar.announce(notice.kind, names, cfg.turnNotice);
+}
 
 /**
  * Spend the slot a used activity costs, for its actor's combatant in the bar's combat.
@@ -127,7 +153,7 @@ async function resetEconomy(combat, combatantId) {
 
 /**
  * Remove events whose duration has run out, and tell the GMs. Only the active GM does this, so a
- * table of five players doesn't try it five times (the reference module ran it on every client).
+ * table of five players doesn't try it five times.
  * @param {Combat} combat
  */
 async function expireEvents(combat) {

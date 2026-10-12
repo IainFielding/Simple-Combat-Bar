@@ -1,9 +1,9 @@
 /**
  * One owner for everything that has to be undone (spec R2).
  *
- * The reference module leaked because each resource was registered ad hoc and released ad hoc:
- * a `resize` listener removed with a fresh `.bind()` that never matched, `Hooks.once` callbacks
- * that could outlive the dock, timers that fired into a closed app. Here every hook, DOM
+ * A long-lived UI leaks when each resource is registered ad hoc and released ad hoc: a `resize`
+ * listener removed with a fresh `.bind()` that never matches, `Hooks.once` callbacks that outlive
+ * the bar, timers that fire into a closed app. Here every hook, DOM
  * listener, timer, animation frame and observer goes through a Lifecycle, and `dispose()`
  * releases all of them. A disposed Lifecycle refuses new registrations, so a late async callback
  * can't re-attach something after teardown.

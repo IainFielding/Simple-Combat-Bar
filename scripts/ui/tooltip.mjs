@@ -1,9 +1,8 @@
 /**
  * Portrait tooltip, built on demand (spec R7).
  *
- * The reference module rendered a full tooltip template into a `data-tooltip` attribute on every
- * portrait render, whether or not anyone ever hovered. Here the tooltip is built from the
- * portrait's current model at the moment it opens, and thrown away when it closes.
+ * Nothing is rendered ahead of time for a hover that may never happen: the tooltip is built from
+ * the portrait's current model at the moment it opens, and thrown away when it closes.
  */
 
 import { t } from "../config.mjs";
