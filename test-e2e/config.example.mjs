@@ -39,8 +39,10 @@ export const CORE_VERSION = "14.369";
  * dnd5e system's own SRD compendia, so they need no content modules.
  *
  * `playwright-combat`  the primary world: this module on, everything else off.
- * `playwright-ctd`     combat-tracker-dock on and this module off. The lifecycle and render-budget
- *                      suites run the same scenario here, so every report says how we compare.
+ * `playwright-ctd`     combat-tracker-dock on and this module off. The lifecycle, render-budget and
+ *                      timing suites run the same scenario here, so every report says how we compare.
+ * `playwright-none`    the control: neither module. Only the timing suite runs here, measuring what
+ *                      Foundry and dnd5e cost on their own so the comparison can subtract it.
  */
 export const WORLDS = {
   "playwright-combat": {
@@ -56,6 +58,13 @@ export const WORLDS = {
     description: "<p>Baseline world: combat-tracker-dock, for comparison with the Simple Combat Bar.</p>",
     modules: ["combat-tracker-dock"],
     subject: "ctd"
+  },
+  "playwright-none": {
+    id: "playwright-none",
+    title: "Playwright-None",
+    description: "<p>Control world: no combat UI module, for timing what Foundry and dnd5e cost alone.</p>",
+    modules: [],
+    subject: "none"
   }
 };
 

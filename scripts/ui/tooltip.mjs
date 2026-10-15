@@ -1,5 +1,5 @@
 /**
- * Portrait tooltip, built on demand (spec R7).
+ * Portrait tooltip, built on demand.
  *
  * Nothing is rendered ahead of time for a hover that may never happen: the tooltip is built from
  * the portrait's current model at the moment it opens, and thrown away when it closes.

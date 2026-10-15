@@ -1,14 +1,14 @@
 /**
- * The combat bar controller (spec §4).
+ * The combat bar controller.
  *
- * Exactly one instance exists per session (R1). It owns a root element that is built once and
+ * Exactly one instance exists per session. It owns a root element that is built once and
  * kept, and it *binds* to whichever combat is being viewed. Everything tied to a particular combat
  * (document hooks, pending renders) lives in a per-bind {@link Lifecycle} that `unbind()` disposes.
  * Everything tied to the bar itself (delegated DOM listeners, the context menu, the resize
  * observer) lives in the session Lifecycle and is released only by `destroy()`.
  */
 
-import { CSS, HOOKS, MODULE_ID, log, settings, t } from "../config.mjs";
+import { CSS, DEFAULTS, HOOKS, MODULE_ID, log, settings, t } from "../config.mjs";
 import { Lifecycle } from "../core/lifecycle.mjs";
 import { RenderScheduler } from "../core/scheduler.mjs";
 import { applyOrder } from "../core/reconcile.mjs";
@@ -22,8 +22,8 @@ import { showsDescriptions } from "../model/effects.mjs";
 import { effectDescriptions } from "./effect-text.mjs";
 import { groupContext, requestGroupTurn } from "./group-service.mjs";
 import { InitiativeHold, diceHoldInitiative } from "./initiative-hold.mjs";
-import { arrive, isWaiting, openArrivalDialog } from "./arrival-service.mjs";
 import { PortraitView } from "./portrait-view.mjs";
+import { canPanTo, portraitMenuOptions } from "./portrait-menu.mjs";
 import { portraitStyle } from "./portrait-styles.mjs";
 import { buildTooltip } from "./tooltip.mjs";
 import { openEventDialog } from "./event-dialog.mjs";
@@ -125,6 +125,10 @@ export class CombatBar {
   /** @type {Map<string, PortraitView>} */
   #portraits = new Map();
   #divider;
+  /** Elements the flush writes to every time, found once in #buildRoot. */
+  #dividerRound;
+  #endTurnButton;
+  #roundValue;
   #session = new Lifecycle();
   /** @type {Lifecycle|null} */
   #bound = null;
@@ -340,9 +344,8 @@ export class CombatBar {
     const ids = this.#combatantIdsFor(c => c.actor === actor);
     if ( !ids.length ) return;
     const watched = adapterFor(game.system.id).watchedPaths?.(actor);
-    // "flags": midi-qol keeps its action economy in actor flags.
-    const relevant = ("name" in changes) || ("img" in changes) || ("ownership" in changes) || ("flags" in changes)
-      || !watched || Object.keys(changes.system ?? {}).some(k => watched.has(k));
+    const relevant = ("name" in changes) || ("img" in changes) || ("ownership" in changes)
+      || midiEconomyChanged(changes) || !watched || Object.keys(changes.system ?? {}).some(k => watched.has(k));
     if ( relevant ) for ( const id of ids ) this.#scheduler.markDirty(id);
   }
 
@@ -404,8 +407,11 @@ export class CombatBar {
 
     if ( order || all ) this.#items = this.#computeOrder(combat, cfg);
     const everything = order || all;
-    // Where everything is now, before any class change or move, for the slide afterwards.
+    // Layout reads come first, while the last frame's layout is still clean: where everything is
+    // now (for the slide afterwards) and the space the bar has. Read after the patches below, each
+    // would force the browser to lay the page out again mid-flush.
     const before = everything ? this.#positions() : null;
+    const available = everything ? this.#availableWidth() : null;
 
     const decimals = combat.turns.some(c => (c.initiative !== null) && !Number.isInteger(c.initiative))
       ? (CONFIG.Combat.initiative.decimals ?? 0) : 0;
@@ -415,7 +421,7 @@ export class CombatBar {
     const seen = new Set();
     this.#items.forEach((item, index) => {
       if ( item.type === "divider" ) {
-        this.#divider.querySelector(".scb-divider-round").textContent = item.round;
+        this.#dividerRound.textContent = item.round;
         nodes.push(this.#divider);
         return;
       }
@@ -457,7 +463,10 @@ export class CombatBar {
     if ( everything ) this.stats.moves += applyOrder(this.track, nodes);
 
     this.#updateControls(combat);
-    this.#autosize(cfg, style);
+    // Sizes depend only on who is on the bar and the settings, both of which mark the order. A
+    // patch alone (HP, effects) leaves them as they are; window and sidebar changes go through
+    // refreshSize.
+    if ( everything ) this.#autosize(cfg, style, available);
     if ( before ) this.#slide(before);
   }
 
@@ -480,13 +489,15 @@ export class CombatBar {
     const half = this.track.clientWidth / 2;
     const easing = "cubic-bezier(0.22, 1, 0.36, 1)";
     const fade = [{ opacity: 0 }, { opacity: 1 }];
-    for ( const el of this.track.children ) {
-      const was = before.get(el);
+    // Every position is read before any animation starts: starting one invalidates style, so
+    // reading between them forced a layout per portrait.
+    const moves = Array.from(this.track.children, el => [el, before.get(el), el.getBoundingClientRect().left]);
+    for ( const [el, was, now] of moves ) {
       if ( was === undefined ) {
         el.animate(fade, { duration: MOVE_MS, easing });
         continue;
       }
-      const dx = was - el.getBoundingClientRect().left;
+      const dx = was - now;
       if ( Math.abs(dx) < 1 ) continue;
       if ( Math.abs(dx) > half ) el.animate(fade, { duration: MOVE_MS, easing });
       else el.animate([{ transform: `translateX(${dx}px)` }, { transform: "none" }], { duration: MOVE_MS, easing });
@@ -533,18 +544,23 @@ export class CombatBar {
     root.classList.toggle("is-started", combat.started);
     root.classList.toggle("is-gm", game.user.isGM);
     root.classList.toggle("is-fewer-controls", settings().compactControls);
-    root.querySelector(".scb-endturn").hidden = !this.canEndTurn;
-    root.querySelector(".scb-round-value").textContent = combat.started ? combat.round : "–";
+    this.#endTurnButton.hidden = !this.canEndTurn;
+    this.#roundValue.textContent = combat.started ? combat.round : "–";
   }
 
-  /** Shrink portraits to fit the bar's width (overflow "autofit"), else use the set size. */
-  #autosize(cfg, style) {
-    const max = Number(cfg.portraitSize) || 72;
+  /**
+   * Shrink portraits to fit the bar's width (overflow "autofit"), else use the set size.
+   * @param {object} cfg
+   * @param {object} style
+   * @param {number} [width]  {@link #availableWidth}, if the caller has already measured it.
+   */
+  #autosize(cfg, style, width = this.#availableWidth()) {
+    const max = Number(cfg.portraitSize) || DEFAULTS.portraitSize;
     let size = max;
     let overflow = cfg.overflow;
     // The bar's widest: clear of the scene pill and the sidebar, with room for the GM tabs. A
     // scrolling bar stops here too, rather than growing to the whole middle column.
-    const available = this.#availableWidth() - (game.user.isGM ? TAB_WIDTH * 2 : 0);
+    const available = width - (game.user.isGM ? TAB_WIDTH * 2 : 0);
     this.root.style.setProperty("--scb-bar-max", `${Math.max(0, available)}px`);
     if ( cfg.overflow === "autofit" ) {
       // Exactly the size at which the bar fits that space.
@@ -598,13 +614,15 @@ export class CombatBar {
       + ` data-action="${action}" data-tooltip="${label}" data-tooltip-direction="${direction}"`
       + ` aria-label="${game.i18n.localize(label)}"><i class="${icon}"></i></button>`;
     // The GM controls are side tabs sticking out of the bar's ends, drawn like the dnd5e sheet's
-    // vertical tabs; the round and End Turn hang from the bar's bottom edge.
+    // vertical tabs; the round and End Turn hang from the bar's bottom edge. The track is not a live
+    // region: it changes with every HP tick, effect and reorder, which a screen reader would read
+    // out one by one. The turn notice is the live region for what's worth announcing.
     const tabs = (side, list) => `<nav class="${CSS}-tabs ${CSS}-tabs-${side}">${
       list.map(button(side === "start" ? "LEFT" : "RIGHT")).join("")}</nav>`;
     root.innerHTML = `
       <div class="${CSS}-bar">
         ${tabs("start", GM_CONTROLS_START)}
-        <ol class="${CSS}-track" aria-live="polite"></ol>
+        <ol class="${CSS}-track"></ol>
         ${tabs("end", GM_CONTROLS_END)}
       </div>
       <div class="${CSS}-hanger">
@@ -618,6 +636,8 @@ export class CombatBar {
       </div>`;
     this.root = root;
     this.track = root.querySelector(`.${CSS}-track`);
+    this.#endTurnButton = root.querySelector(`.${CSS}-endturn`);
+    this.#roundValue = root.querySelector(`.${CSS}-round-value`);
     this.#notice = new TurnNotice(this.#session);
     root.append(this.#notice.element);
 
@@ -627,6 +647,7 @@ export class CombatBar {
     divider.innerHTML = `<span class="${CSS}-divider-label">${t("round")}</span>`
       + `<span class="${CSS}-divider-round"></span>`;
     this.#divider = divider;
+    this.#dividerRound = divider.querySelector(`.${CSS}-divider-round`);
   }
 
   #mount() {
@@ -642,7 +663,10 @@ export class CombatBar {
     }
   }
 
-  /** Delegated listeners on the root, registered once per session (R3). */
+  /**
+   * Delegated listeners on the root, registered once per session: portraits come and go without
+   * adding or removing a single listener.
+   */
   #listen() {
     const life = this.#session;
     const root = this.root;
@@ -661,7 +685,11 @@ export class CombatBar {
       life.add(() => observer.disconnect());
     }
 
-    this.#contextMenu = new foundry.applications.ux.ContextMenu(root, `.${CSS}-portrait`, this.#contextOptions(),
+    const menu = portraitMenuOptions(this, {
+      selectAndPan: combatant => this.#selectAndPan(combatant),
+      rollInitiative: (combatant, event) => this.#rollInitiative(combatant, event)
+    });
+    this.#contextMenu = new foundry.applications.ux.ContextMenu(root, `.${CSS}-portrait`, menu,
       { jQuery: false, fixed: true });
   }
 
@@ -886,115 +914,6 @@ export class CombatBar {
     if ( groupContext(combat) ) return requestGroupTurn("end", combat.combatant);
     return combat.nextTurn();
   }
-
-  #contextOptions() {
-    const combatantOf = li => this.combat?.combatants.get(li.dataset.combatantId);
-    const gm = () => game.user.isGM;
-    return [
-      {
-        label: "sogrom-simple-combat-bar.context.setCurrent",
-        icon: '<i class="fa-solid fa-hourglass-start"></i>',
-        // One that hasn't arrived would only be stepped straight past: bring it in first.
-        visible: li => gm() && this.combat?.started && (combatantOf(li) !== this.combat.combatant)
-          && !isWaiting(combatantOf(li)),
-        onClick: (_event, li) => {
-          const index = this.combat.turns.findIndex(c => c.id === li.dataset.combatantId);
-          if ( index >= 0 ) this.combat.update({ turn: index });
-        }
-      },
-      {
-        label: "COMBATANT.PanTo",
-        icon: '<i class="fa-solid fa-location-crosshairs"></i>',
-        visible: li => canPanTo(combatantOf(li)),
-        onClick: (_event, li) => this.#selectAndPan(combatantOf(li))
-      },
-      {
-        label: "COMBATANT.Ping",
-        icon: '<i class="fa-solid fa-bullseye-arrow"></i>',
-        visible: li => canvas.ready && (combatantOf(li)?.sceneId === canvas.scene?.id)
-          && game.user.hasPermission("PING_CANVAS"),
-        onClick: (_event, li) => {
-          const token = combatantOf(li)?.token?.object;
-          if ( token?.visible ) canvas.ping(token.center);
-        }
-      },
-      {
-        label: "sogrom-simple-combat-bar.context.target",
-        icon: '<i class="fa-solid fa-crosshairs"></i>',
-        visible: li => canTarget(combatantOf(li)) && !combatantOf(li).token.object.isTargeted,
-        // Shift adds to the targets already chosen, as with core's Target key.
-        onClick: (event, li) => canTarget(combatantOf(li))
-          && combatantOf(li).token.object.setTarget(true, { releaseOthers: !event.shiftKey })
-      },
-      {
-        label: "sogrom-simple-combat-bar.context.untarget",
-        icon: '<i class="fa-solid fa-crosshairs"></i>',
-        visible: li => canTarget(combatantOf(li)) && combatantOf(li).token.object.isTargeted,
-        onClick: (_event, li) => canTarget(combatantOf(li)) && combatantOf(li).token.object.setTarget(false)
-      },
-      {
-        label: "COMBATANT.ACTIONS.Reroll",
-        icon: '<i class="fa-solid fa-dice-d20"></i>',
-        visible: li => gm() || !!combatantOf(li)?.isOwner,
-        // The click event carries Shift / Ctrl, which skip the roll window as on the d20.
-        onClick: (event, li) => combatantOf(li) && this.#rollInitiative(combatantOf(li), event)
-      },
-      {
-        label: "COMBATANT.ACTIONS.Clear",
-        icon: '<i class="fa-solid fa-eraser"></i>',
-        visible: li => gm() && (combatantOf(li)?.initiative !== null),
-        onClick: (_event, li) => combatantOf(li)?.update({ initiative: null })
-      },
-      {
-        label: "sogrom-simple-combat-bar.context.arrivesLater",
-        icon: '<i class="fa-solid fa-door-open"></i>',
-        visible: li => gm() && !!combatantOf(li) && (combatantOf(li) !== this.combat?.combatant),
-        onClick: (_event, li) => openArrivalDialog(combatantOf(li))
-      },
-      {
-        label: "sogrom-simple-combat-bar.context.arriveNow",
-        icon: '<i class="fa-solid fa-person-walking-arrow-right"></i>',
-        visible: li => gm() && isWaiting(combatantOf(li)),
-        onClick: (_event, li) => arrive(combatantOf(li))
-      },
-      {
-        label: "COMBATANT.Hide",
-        icon: '<i class="fa-solid fa-eye-slash"></i>',
-        visible: li => gm() && !combatantOf(li)?.hidden,
-        onClick: (_event, li) => combatantOf(li)?.update({ hidden: true })
-      },
-      {
-        label: "COMBATANT.Show",
-        icon: '<i class="fa-solid fa-eye"></i>',
-        visible: li => gm() && !!combatantOf(li)?.hidden,
-        onClick: (_event, li) => combatantOf(li)?.update({ hidden: false })
-      },
-      {
-        label: "COMBATANT.MarkDefeated",
-        icon: '<i class="fa-solid fa-skull"></i>',
-        visible: li => gm() && !combatantOf(li)?.isDefeated,
-        onClick: (_event, li) => toggleDefeated(combatantOf(li))
-      },
-      {
-        label: "COMBATANT.UnmarkDefeated",
-        icon: '<i class="fa-solid fa-heart-pulse"></i>',
-        visible: li => gm() && !!combatantOf(li)?.isDefeated,
-        onClick: (_event, li) => toggleDefeated(combatantOf(li))
-      },
-      {
-        label: "COMBATANT.ACTIONS.Update",
-        icon: '<i class="fa-solid fa-pen-to-square"></i>',
-        visible: gm,
-        onClick: (_event, li) => combatantOf(li)?.sheet.render(true)
-      },
-      {
-        label: "COMBATANT.ACTIONS.Remove",
-        icon: '<i class="fa-solid fa-trash"></i>',
-        visible: gm,
-        onClick: (_event, li) => combatantOf(li)?.delete()
-      }
-    ];
-  }
 }
 
 /**
@@ -1048,22 +967,18 @@ export function runPosition(items, index) {
   return null;
 }
 
-/** Whether this user may select and pan to a combatant's token: it's on the canvas, and they observe it. */
-function canPanTo(combatant) {
-  return !!combatant?.token?.object && !!combatant.actor?.testUserPermission(game.user, "OBSERVER");
-}
-
-/** Whether this user may target a combatant's token from the bar: it's on the canvas, and they can see it. */
-function canTarget(combatant) {
-  return canvas.ready && !!combatant?.token?.object?.visible;
-}
-
-/** Core's own defeat toggle, re-implemented on public API (spec R12). */
-async function toggleDefeated(combatant) {
-  if ( !combatant ) return;
-  const defeated = !combatant.isDefeated;
-  await combatant.update({ defeated });
-  await combatant.actor?.toggleStatusEffect(CONFIG.specialStatusEffects.DEFEATED, { overlay: true, active: defeated });
+/**
+ * Whether an actor update touches midi-qol's flags, where it keeps the action economy the pips show.
+ * Other modules write actor flags all through a fight and nothing on a card reads them, so those
+ * updates are ignored. Without midi-qol active (installed but disabled included), its flags are
+ * never looked at: the bar keeps the economy on the combatant instead.
+ * @param {object} changes  The actor update's diff.
+ * @returns {boolean}
+ */
+function midiEconomyChanged(changes) {
+  if ( !changes.flags || !game.modules.get("midi-qol")?.active ) return false;
+  // "-=midi-qol": the whole namespace removed.
+  return ("midi-qol" in changes.flags) || ("-=midi-qol" in changes.flags);
 }
 
 /** Open core settings on this module's tab. */

@@ -1,12 +1,13 @@
 /**
- * Portrait style registry (spec §5.2).
+ * Portrait style registry.
  *
  * A style decides markup and CSS only. The model is style-agnostic, and every style exposes the
  * same named slots, so {@link PortraitView} patches any of them the same way. A style's CSS
  * lives in `styles/portrait/<id>.css`, scoped under `.scb-root[data-style="<id>"]`.
  *
- * Slots a style must contain (each marked with `data-slot`):
- *   img, initiative, hp, bar2, name, damage (and, from the shared flags, rounds and arrives)
+ * Slots a style must contain (each marked with `data-slot`): img, initiative, hp, name, damage.
+ * Slots it may contain, skipped where missing: bar2, rounds, arrives, pips, legendary, effects (the
+ * built-in styles take these from the shared fragments below).
  * Buttons it may contain (each marked with `data-action`): rollInitiative.
  */
 

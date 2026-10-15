@@ -5,7 +5,7 @@
    by one file per portrait style under styles/portrait/.
 
    Everything is scoped under .scb-root, and the bar's variables are set *on that root*, never on
-   :root — changing a size or colour restyles the bar and nothing else (spec R10).
+   :root — changing a size or colour restyles the bar and nothing else.
 
    Theme: the Character Creator's "Arcane Midnight", so the two modules read as one family.
    Colour carries one meaning each:

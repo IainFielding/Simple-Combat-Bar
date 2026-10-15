@@ -15,8 +15,8 @@ function manualFrames() {
   };
 }
 
-describe("RenderScheduler (spec R5)", () => {
-  it("coalesces many marks in one frame into one flush (P1: twelve initiative rolls)", () => {
+describe("RenderScheduler", () => {
+  it("coalesces many marks in one frame into one flush (twelve initiative rolls)", () => {
     const clock = manualFrames();
     const flush = vi.fn();
     const scheduler = new RenderScheduler(flush, clock);

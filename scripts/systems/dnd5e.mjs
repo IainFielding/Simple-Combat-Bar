@@ -70,7 +70,8 @@ export const dnd5eAdapter = {
    * dnd5e's own initiative dialog, as `Actor5e#rollInitiativeDialog` builds it. That method then
    * rolls through the actor's *canvas tokens*; the bar rolls through the combat instead, so it only
    * borrows the dialog half. dnd5e's `Combatant5e#getInitiativeRoll` asks the actor, which returns
-   * the roll cached here (spec R12 exception: `Actor5e#_cachedInitiativeRoll`).
+   * the roll cached here. `Actor5e#_cachedInitiativeRoll` is private to dnd5e, and the one exception
+   * to the bar using public API only: it's the hook dnd5e's own dialog relies on.
    * The dialog's roll mode is written into the message config; it's handed back so the roll's chat
    * message uses it, as `rollInitiativeDialog` does.
    */

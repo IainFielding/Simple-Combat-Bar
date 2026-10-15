@@ -126,15 +126,18 @@
 }
 
 /* ---------------------------------------------------------------- damage overlay
-   Blood rising from the bottom as hit points are lost, with a bright edge at the waterline. */
+   Blood rising from the bottom as hit points are lost, with a bright edge at the waterline.
+   Full height and slid down out of the frame, which clips it, rather than sized: a transform
+   animates without a layout per frame. The gradient is sized to the visible part, so it reads
+   as before. */
 .scb-root .scb-damage {
   position: absolute;
-  inset: auto 0 0 0;
-  height: var(--scb-damage-pct, 0%);
-  background: linear-gradient(180deg, var(--scb-damage-top), var(--scb-damage));
+  inset: 0;
+  background: linear-gradient(180deg, var(--scb-damage-top), var(--scb-damage)) top / 100% var(--scb-damage-pct, 0%) no-repeat;
   box-shadow: inset 0 2px 0 rgba(255, 80, 80, 0.8), 0 -1px 6px rgba(255, 40, 40, 0.35);
   pointer-events: none;
-  transition: height 400ms ease-out;
+  transform: translateY(calc(100% - var(--scb-damage-pct, 0%)));
+  transition: transform 400ms ease-out;
 }
 
 .scb-root .scb-damage[hidden] {
@@ -157,10 +160,11 @@
 
 .scb-root .scb-hp-fill {
   position: absolute;
-  inset: 0 auto 0 0;
-  width: var(--scb-hp-pct, 100%);
+  inset: 0;
   background: var(--scb-hp);
-  transition: width 400ms ease-out, background-color 400ms;
+  /* Slid left out of the clipping bar rather than sized: no layout per frame of the animation. */
+  transform: translateX(calc(var(--scb-hp-pct, 100%) - 100%));
+  transition: transform 400ms ease-out, background-color 400ms;
 }
 
 .scb-root .scb-hp-temp {
@@ -196,10 +200,10 @@
 
 .scb-root .scb-bar2-fill {
   position: absolute;
-  inset: 0 auto 0 0;
-  width: var(--scb-bar2-pct, 0%);
+  inset: 0;
   background: var(--scb-bar2, #5aa9e6);
-  transition: width 400ms ease-out;
+  transform: translateX(calc(var(--scb-bar2-pct, 0%) - 100%));
+  transition: transform 400ms ease-out;
 }
 
 /* ---------------------------------------------------------------- action pips

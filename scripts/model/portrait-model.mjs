@@ -6,8 +6,8 @@
  *     returns a flat object of primitives that a portrait style can render.
  *   - `combatantFacts` (in ui/facts.mjs) is the only place that reads live Foundry documents.
  *
- * Models are flat and made of primitives so {@link sameModel} can compare them field by field;
- * the flush skips any portrait whose model didn't change.
+ * Models are flat and made of primitives so {@link changedFields} can compare them field by field;
+ * a portrait's patch touches only the fields that changed, and nothing at all if none did.
  */
 
 import { displayName, healthState, hpDetail, showsInitiative } from "./visibility.mjs";
@@ -34,6 +34,8 @@ import { effectIcons } from "./effects.mjs";
  *           Coarse health from statuses, for viewers who don't receive HP numbers.
  * @property {{value: number, max: number, pct: number}|null} [secondary]  The second bar, if any.
  * @property {boolean} [trusted]  This viewer receives the actor's data (GM, owner, observer).
+ * @property {import("./effects.mjs").EffectInfo[]|null} [effects]  The card's effect icons.
+ * @property {{actions: {value: number, max: number}|null, resistances: {value: number, max: number}|null}|null} [legendary]
  * @property {{action: boolean, bonus: boolean, reaction: boolean}|null} [economy]  Spent slots.
  * @property {string|null} description
  * @property {boolean} isEvent          An "Add Event" pseudo-combatant.

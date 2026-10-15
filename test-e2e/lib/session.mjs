@@ -212,6 +212,26 @@ export class Session {
   }
 
   /**
+   * Cumulative main-thread time the renderer has spent, from the DevTools protocol's Performance
+   * domain. Diff two readings around an operation to get what it cost in script, style and layout,
+   * however it was spread across tasks and frames.
+   * @returns {Promise<{script: number, style: number, layout: number, task: number,
+   *   styleCount: number, layoutCount: number}>}  Durations in milliseconds.
+   */
+  async cpu() {
+    this.cdp ??= await this.page.context().newCDPSession(this.page);
+    if ( !this.performanceEnabled ) {
+      await this.cdp.send("Performance.enable", { timeDomain: "threadTicks" });
+      this.performanceEnabled = true;
+    }
+    const { metrics } = await this.cdp.send("Performance.getMetrics");
+    const m = Object.fromEntries(metrics.map(({ name, value }) => [name, value]));
+    return { script: m.ScriptDuration * 1000, style: m.RecalcStyleDuration * 1000,
+      layout: m.LayoutDuration * 1000, task: m.TaskDuration * 1000,
+      styleCount: m.RecalcStyleCount, layoutCount: m.LayoutCount };
+  }
+
+  /**
    * Count the event listeners attached to one target through the DevTools protocol — the page
    * itself has no API for this.
    * @param {string} expression  JS expression evaluating to the target, e.g. `window`.

@@ -26,7 +26,7 @@ describe("stableIndices", () => {
   });
 });
 
-describe("applyOrder (spec R4: move nodes, never rebuild them)", () => {
+describe("applyOrder (moves nodes, never rebuilds them)", () => {
   const make = keys => {
     const ol = document.createElement("ol");
     const nodes = Object.fromEntries(keys.map(k => {

@@ -1,5 +1,5 @@
 /**
- * Keyed list reconciliation (spec R4).
+ * Keyed list reconciliation.
  *
  * The bar keeps one DOM node per combatant for as long as that combatant is on the bar. When the
  * order changes, nodes are *moved*, never rebuilt, so a turn change costs a handful of

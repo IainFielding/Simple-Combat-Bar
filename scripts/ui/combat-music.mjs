@@ -16,9 +16,12 @@ const existing = () => new Set(game.playlists.map(p => p.id));
  * @param {Combat} combat
  */
 export async function startCombatMusic(combat) {
-  if ( !game.users.activeGM?.isSelf || !combat.started || combat.getFlag(MODULE_ID, "music") ) return;
+  // Runs on every turn change, so the cheap checks go first: with no combat playlist chosen there
+  // is nothing to gather.
+  const playlist = settings().combatPlaylist;
+  if ( !playlist || !game.users.activeGM?.isSelf || !combat.started || combat.getFlag(MODULE_ID, "music") ) return;
   const plan = musicOnStart({
-    playlist: settings().combatPlaylist,
+    playlist,
     existing: existing(),
     playing: game.playlists.playing.map(p => ({ playlist: p.id, sounds: p.sounds.filter(s => s.playing).map(s => s.id) }))
   });

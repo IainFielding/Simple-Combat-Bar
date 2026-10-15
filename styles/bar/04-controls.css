@@ -67,7 +67,8 @@
   color: var(--scb-tab-gold);
   font-size: 13px;
   box-shadow: none;
-  transition: all 250ms ease;
+  /* Only what the hover changes: `all` would also animate any size or layout change. */
+  transition: background-color 250ms ease, color 250ms ease;
 }
 
 .scb-root .scb-tab:hover,

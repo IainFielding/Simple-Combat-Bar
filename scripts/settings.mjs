@@ -2,7 +2,7 @@
  * Setting registration. Defaults live in config.mjs so tests can import them without Foundry.
  *
  * Every onChange drops the settings snapshot and asks the bar to re-derive; nothing here writes
- * to `document.documentElement.style` (spec R10).
+ * to `document.documentElement.style`, so a setting change restyles the bar and nothing else.
  */
 
 import { DEFAULTS, MODULE_ID, SETTING_GROUPS, invalidateSettings, settingGroupOf } from "./config.mjs";

@@ -19,8 +19,9 @@
  * @property {(actor: Actor, kind: "actions"|"resistances", delta: number) => Promise<void>} [adjustLegendary]
  * @property {() => Array<{attr: string, label: string, icon?: string}>} [defaultAttributes]
  *           Tooltip values a new world starts with.
- * @property {(actor: Actor) => Set<string>} [watchedPaths]  Top-level `system` keys whose change
- *           should refresh a portrait. Anything else in an actor update is ignored.
+ * @property {(actor: Actor) => Set<string>|null} [watchedPaths]  Top-level `system` keys whose
+ *           change should refresh a portrait; other `system` changes are ignored. Null refreshes on
+ *           every actor update. Changes to the name, image, ownership or flags always refresh.
  * @property {(actor: Actor) => number|null} [xp]  XP for defeating this actor, or null if it gives none.
  * @property {(xp: number) => string} [awardCommand]  Chat text that lets the GM award this much XP.
  */

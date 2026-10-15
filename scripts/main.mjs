@@ -1,8 +1,9 @@
 /**
  * Simple Combat Bar — entry point.
  *
- * Wires Foundry's lifecycle to one long-lived {@link CombatBar} (spec R1). The session-level hooks
- * registered here only ever call `bar.sync()`, which decides what the bar should be bound to.
+ * Wires Foundry's lifecycle to one long-lived {@link CombatBar}, built once and rebound as combats
+ * come and go rather than rebuilt for each. The session-level hooks registered here only ever call
+ * `bar.sync()`, which decides what the bar should be bound to.
  */
 
 import { HOOKS, MODULE_ID, invalidateSettings, settings, t } from "./config.mjs";

@@ -6,9 +6,10 @@
  *   node run.mjs playwright-combat --suites=lifecycle,budget
  *   node run.mjs --iterations=20                      # longer churn for the lifecycle suite
  *
- * Suites: lifecycle, budget, ordering, permissions, events, arrivals, trackers, settingsUi, responsive,
- * economy, legendary, groupTurns, effects, notices. The CTD world runs lifecycle and budget only — the others
- * test behaviour that is ours.
+ * Suites: lifecycle, budget, timing, ordering, permissions, events, arrivals, trackers, settingsUi, responsive,
+ * economy, legendary, groupTurns, effects, notices. The CTD world runs lifecycle, budget and timing only — the
+ * others test behaviour that is ours. The control world (no combat UI module) runs timing only, so the
+ * comparison can say what each module adds on top of Foundry and dnd5e themselves.
  *
  * The canvas stays off (`core.noCanvas`, set by lib/session.mjs): the bar lives in #ui-top and
  * none of these suites look at the board, and a software-rendered canvas is what made the
@@ -27,7 +28,7 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,ordering,permissions,events,arrivals,trackers,settingsUi,responsive,economy,legendary,groupTurns,effects,notices").split(",");
+const wanted = option("suites", "lifecycle,budget,timing,ordering,permissions,events,arrivals,trackers,settingsUi,responsive,economy,legendary,groupTurns,effects,notices").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
@@ -40,6 +41,18 @@ const SCB_ONLY = new Set(["ordering", "permissions", "events", "arrivals", "trac
  */
 const LEAK_LIMITS = { hooks: 0, windowListeners: 0, documentListeners: 0, uiTopListeners: 0, portraits: 0,
   barInstances: 1, portraitInstances: 0 };
+
+/**
+ * The timing suite's plan: combat sizes, then each step and how many measured repetitions it gets.
+ * Each step also runs once unmeasured first, so first-use costs (template compiles, font loads, JIT)
+ * don't land in the samples. A combat starts only once, so each `start` sample gets a fresh combat,
+ * with initiative rolled, made before the measurement begins.
+ */
+const TIMING_SIZES = [
+  { label: "12 combatants", allies: 4, enemies: 8 },
+  { label: "30 combatants", allies: 4, enemies: 26 }
+];
+const TIMING_STEPS = [["rollBatch", 6], ["rollOne", 10], ["start", 5], ["damage", 10], ["nextTurn", 20], ["reactivate", 6]];
 
 /** Where each subject's own classes live, for live-instance counts after GC. */
 const CLASSES = {
@@ -147,6 +160,46 @@ const SUITES = {
         ...failures.map(f => `FAILED: ${f}`)
       ]
     };
+  },
+
+  /**
+   * Main-thread time per operation, from the renderer's own CPU counters (script, style recalc,
+   * layout, and all tasks together), read around each step. Reported as the median of the
+   * repetitions. Foundry's and dnd5e's own work is in every number; the control world measures it
+   * alone, so the comparison can subtract it.
+   */
+  async timing(session) {
+    const out = {};
+    const lines = [];
+    for ( const size of TIMING_SIZES ) {
+      const count = await session.eval(s => __scb.timingSetup(s), size);
+      const steps = out[size.label] = {};
+      try {
+        for ( const [step, reps] of TIMING_STEPS ) {
+          const fresh = () => session.eval(s => __scb.timingSetup(s), { ...size, initiative: true });
+          if ( step === "start" ) await fresh();
+          await session.eval(n => __scb.timingStep(n), step);
+          const samples = [];
+          for ( let i = 0; i < reps; i++ ) {
+            if ( step === "start" ) await fresh();
+            const a = await session.cpu();
+            await session.eval(n => __scb.timingStep(n), step);
+            const b = await session.cpu();
+            samples.push(Object.fromEntries(Object.keys(a).map(k => [k, b[k] - a[k]])));
+          }
+          steps[step] = { reps, median: Object.fromEntries(Object.keys(samples[0])
+            .map(k => [k, median(samples.map(x => x[k]))])), samples };
+        }
+      } finally {
+        await session.eval(() => __scb.timingTeardown());
+      }
+      lines.push(`${size.label} (${count} made):`);
+      for ( const [step, { median: m, reps }] of Object.entries(steps) ) {
+        lines.push(`  ${step.padEnd(10)} ${ms(m.task).padStart(8)} total  script ${ms(m.script)}  style ${ms(m.style)}`
+          + `  layout ${ms(m.layout)}  (${m.styleCount} recalcs, ${m.layoutCount} layouts; median of ${reps})`);
+      }
+    }
+    return { pass: true, sizes: out, lines };
   },
 
   async ordering(session) {
@@ -667,8 +720,13 @@ const SUITES = {
       check(view.visible, "player doesn't see the bar");
       check(view.gmControls === false, "player sees GM controls");
       check(view.endTurnShown === false, "player sees End Turn on a goblin's turn");
+      // Names show by default; "owner" keeps those of creatures the player doesn't observe from them.
       const goblin = view.portraits.find(p => p.id === setup.goblins[0]);
-      check(goblin?.name === view.unknownName, `goblin name shown to player: "${goblin?.name}"`);
+      check(goblin?.name === "Goblin", `goblin name hidden from player by default: "${goblin?.name}"`);
+      await gm.eval(() => __scb.setOwnSetting("nameVisibility", "owner"));
+      const masked = (await player.eval(() => __scb.playerView())).portraits.find(p => p.id === setup.goblins[0]);
+      check(masked?.name === view.unknownName, `goblin name shown to player with names for owners only: "${masked?.name}"`);
+      await gm.eval(() => __scb.setOwnSetting("nameVisibility", "always"));
       // Players never receive an unlinked token's HP; the state comes from dnd5e's Bloodied status,
       // so a 2/7 goblin reads "bloodied" with a half fill rather than an exact 71%.
       check(goblin?.damage === "50%", `goblin damage fill should be the bloodied band: ${goblin?.damage}`);
@@ -684,14 +742,15 @@ const SUITES = {
       check(after.current !== setup.heroes[0], "player's End Turn didn't advance the turn");
       return { pass: !failures.length, failures, lines: failures };
     } finally {
+      await gm.eval(() => __scb.setOwnSetting("nameVisibility", "always")).catch(() => {});
       await player.close({ shutDownWorld: false });
       await gm.eval(() => __scbFixtures.cleanup());
     }
   }
 };
 
-/** Side-by-side lifecycle and budget numbers for the two subjects. */
-function compare(scb, ctd) {
+/** Side-by-side lifecycle, budget and timing numbers for the subjects. */
+function compare(scb, ctd, none) {
   console.log("\n=== Simple Combat Bar vs combat-tracker-dock ===");
   const row = (label, a, b, fmt = sign) => console.log(`  ${label.padEnd(34)} ${fmt(a).padStart(12)} ${fmt(b).padStart(12)}`);
   console.log(`  ${"".padEnd(34)} ${"ours".padStart(12)} ${"CTD".padStart(12)}`);
@@ -711,6 +770,31 @@ function compare(scb, ctd) {
       row(`elements created: ${k}`, scb.budget[k].created, ctd.budget[k].created, String);
     }
   }
+  if ( scb.timing?.sizes && ctd.timing?.sizes ) {
+    const base = none?.timing?.sizes;
+    console.log("\n  Main-thread time per operation, median ms (script + style + layout + other tasks)");
+    console.log(`  ${"".padEnd(26)} ${"ours".padStart(9)} ${"CTD".padStart(9)}`
+      + (base ? ` ${"neither".padStart(9)} ${"ours adds".padStart(10)} ${"CTD adds".padStart(10)}` : ""));
+    for ( const size of Object.keys(scb.timing.sizes) ) {
+      console.log(`  ${size}`);
+      for ( const step of Object.keys(scb.timing.sizes[size]) ) {
+        const t = s => s?.timing?.sizes?.[size]?.[step]?.median.task;
+        const [a, b, c] = [t(scb), t(ctd), t(none)];
+        console.log(`    ${step.padEnd(24)} ${ms(a).padStart(9)} ${ms(b).padStart(9)}`
+          + (base ? ` ${ms(c).padStart(9)} ${ms(a - c).padStart(10)} ${ms(b - c).padStart(10)}` : ""));
+      }
+    }
+  }
+}
+
+function median(values) {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = sorted.length >> 1;
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function ms(n) {
+  return Number.isFinite(n) ? n.toFixed(1) : "-";
 }
 
 function sign(n) {
@@ -739,6 +823,7 @@ for ( const worldId of worlds ) {
     const report = results[worldId] = { subject: spec.subject };
     for ( const suite of wanted ) {
       if ( SCB_ONLY.has(suite) && (spec.subject !== "scb") ) continue;
+      if ( (spec.subject === "none") && (suite !== "timing") ) continue;
       const started = Date.now();
       try {
         const outcome = await SUITES[suite](gm, spec.subject);
@@ -765,7 +850,9 @@ for ( const worldId of worlds ) {
   }
 }
 
-if ( results["playwright-combat"] && results["playwright-ctd"] ) compare(results["playwright-combat"], results["playwright-ctd"]);
+if ( results["playwright-combat"] && results["playwright-ctd"] ) {
+  compare(results["playwright-combat"], results["playwright-ctd"], results["playwright-none"]);
+}
 
 fs.mkdirSync(path.join(here, "results"), { recursive: true });
 const out = path.join(here, "results", `run-${new Date().toISOString().replace(/[:.]/g, "-")}.json`);
