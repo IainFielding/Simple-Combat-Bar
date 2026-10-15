@@ -165,7 +165,9 @@ export async function timingStep(name) {
       break;
     default: throw new Error(`Unknown timing step "${name}"`);
   }
-  await settle(200);
+  // Longer than the bar's 260ms slide: a step that starts while the last one's slides still run
+  // can't put its own on the compositor, which real turns, seconds apart, never see.
+  await settle(400);
 }
 
 export async function timingTeardown() {
