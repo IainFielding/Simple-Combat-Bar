@@ -115,6 +115,64 @@ export async function budget(subject) {
   return results;
 }
 
+/**
+ * The timing suite's combat, unstarted, and without initiative unless asked. `run.mjs` reads the renderer's
+ * CPU counters around each {@link timingStep}, so the steps themselves only act and settle.
+ * @param {{allies: number, enemies: number}} size
+ */
+export async function timingSetup({ allies, enemies, initiative = false }) {
+  const combat = await freshCombat({ allies, enemies, initiative, start: false });
+  globalThis.__scbTiming = { combatId: combat.id, rep: 0 };
+  return combat.combatants.size;
+}
+
+/** One measured operation on the timing combat. Every step ends settled, renders included. */
+export async function timingStep(name) {
+  const state = globalThis.__scbTiming;
+  const combat = game.combats.get(state.combatId);
+  const rep = state.rep++;
+  const n = combat.combatants.size;
+  switch ( name ) {
+    // "Roll NPCs": every value arrives in one batch, in an order that differs each time.
+    case "rollBatch":
+      await combat.updateEmbeddedDocuments("Combatant", combat.combatants.contents
+        .map((c, i) => ({ _id: c.id, initiative: ((i * 7) + (rep * 5)) % (n * 2) })));
+      break;
+    // One player rolls.
+    case "rollOne": {
+      const c = combat.combatants.contents[rep % n];
+      await c.update({ initiative: ((rep * 11) % 30) + 0.25 });
+      break;
+    }
+    case "start":
+      await combat.startCombat();
+      break;
+    case "damage": {
+      const npcs = combat.combatants.filter(c => c.actor?.type === "npc");
+      const actor = npcs[rep % npcs.length].actor;
+      const hp = actor.system.attributes.hp;
+      await actor.update({ "system.attributes.hp.value": hp.value > 1 ? hp.value - 1 : hp.max });
+      break;
+    }
+    case "nextTurn":
+      await combat.nextTurn();
+      break;
+    // Deactivate and reactivate: what made combat-tracker-dock build a new dock each time.
+    case "reactivate":
+      await combat.update({ active: false });
+      await settle(60);
+      await combat.update({ active: true });
+      break;
+    default: throw new Error(`Unknown timing step "${name}"`);
+  }
+  await settle(200);
+}
+
+export async function timingTeardown() {
+  delete globalThis.__scbTiming;
+  await cleanup();
+}
+
 /** The bar's DOM order after each turn, against what the model says it should be. */
 export async function ordering() {
   const failures = [];

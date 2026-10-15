@@ -8,7 +8,8 @@
     "provision": "node provision.mjs",
     "test": "node run.mjs playwright-combat",
     "test:ctd": "node run.mjs playwright-ctd",
-    "compare": "node run.mjs playwright-combat playwright-ctd --suites=lifecycle,budget"
+    "compare": "node run.mjs playwright-combat playwright-ctd playwright-none --suites=lifecycle,budget,timing",
+    "perf": "node run.mjs playwright-combat playwright-ctd playwright-none --suites=timing"
   },
   "devDependencies": {
     "playwright": "^1.64.0"
