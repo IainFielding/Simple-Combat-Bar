@@ -344,9 +344,8 @@ export class CombatBar {
     const ids = this.#combatantIdsFor(c => c.actor === actor);
     if ( !ids.length ) return;
     const watched = adapterFor(game.system.id).watchedPaths?.(actor);
-    // "flags": midi-qol keeps its action economy in actor flags.
-    const relevant = ("name" in changes) || ("img" in changes) || ("ownership" in changes) || ("flags" in changes)
-      || !watched || Object.keys(changes.system ?? {}).some(k => watched.has(k));
+    const relevant = ("name" in changes) || ("img" in changes) || ("ownership" in changes)
+      || midiEconomyChanged(changes) || !watched || Object.keys(changes.system ?? {}).some(k => watched.has(k));
     if ( relevant ) for ( const id of ids ) this.#scheduler.markDirty(id);
   }
 
@@ -1064,6 +1063,20 @@ export function runPosition(items, index) {
   if ( next ) return "first";
   if ( prev ) return "last";
   return null;
+}
+
+/**
+ * Whether an actor update touches midi-qol's flags, where it keeps the action economy the pips show.
+ * Other modules write actor flags all through a fight and nothing on a card reads them, so those
+ * updates are ignored. Without midi-qol active (installed but disabled included), its flags are
+ * never looked at: the bar keeps the economy on the combatant instead.
+ * @param {object} changes  The actor update's diff.
+ * @returns {boolean}
+ */
+function midiEconomyChanged(changes) {
+  if ( !changes.flags || !game.modules.get("midi-qol")?.active ) return false;
+  // "-=midi-qol": the whole namespace removed.
+  return ("midi-qol" in changes.flags) || ("-=midi-qol" in changes.flags);
 }
 
 /** Whether this user may select and pan to a combatant's token: it's on the canvas, and they observe it. */
