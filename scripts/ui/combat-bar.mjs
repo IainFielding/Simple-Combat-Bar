@@ -612,13 +612,15 @@ export class CombatBar {
       + ` data-action="${action}" data-tooltip="${label}" data-tooltip-direction="${direction}"`
       + ` aria-label="${game.i18n.localize(label)}"><i class="${icon}"></i></button>`;
     // The GM controls are side tabs sticking out of the bar's ends, drawn like the dnd5e sheet's
-    // vertical tabs; the round and End Turn hang from the bar's bottom edge.
+    // vertical tabs; the round and End Turn hang from the bar's bottom edge. The track is not a live
+    // region: it changes with every HP tick, effect and reorder, which a screen reader would read
+    // out one by one. The turn notice is the live region for what's worth announcing.
     const tabs = (side, list) => `<nav class="${CSS}-tabs ${CSS}-tabs-${side}">${
       list.map(button(side === "start" ? "LEFT" : "RIGHT")).join("")}</nav>`;
     root.innerHTML = `
       <div class="${CSS}-bar">
         ${tabs("start", GM_CONTROLS_START)}
-        <ol class="${CSS}-track" aria-live="polite"></ol>
+        <ol class="${CSS}-track"></ol>
         ${tabs("end", GM_CONTROLS_END)}
       </div>
       <div class="${CSS}-hanger">

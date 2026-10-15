@@ -83,6 +83,10 @@ describe("CombatBar", () => {
     expect(bar.root.style.getPropertyValue("--scb-size")).toBe("100px");
   });
 
+  it("keeps the track out of screen readers' live announcements", () => {
+    expect(bar.track.closest("[aria-live]")).toBeNull();
+  });
+
   it("re-derives a portrait without measuring the page when only its HP changes", () => {
     const measure = vi.spyOn(host, "getBoundingClientRect");
     const flushes = bar.stats.flushes;
