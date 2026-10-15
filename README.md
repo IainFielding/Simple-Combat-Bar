@@ -22,7 +22,8 @@ your card, and players only ever see as much of an enemy as you allow.
 
 Players see a combat as soon as it exists, so they can roll initiative before it starts.
 
-- **Names** follow each token's own name setting, or you can show or hide them all.
+- **Names** are shown by default. You can have them follow each token's own name setting instead,
+  or show players only the names of combatants they own or observe.
 - **Hit points.** Players see exact hit points for their own characters. For enemies, the default is
   just how wounded they are (healthy, bloodied, down), taken from D&D 5e's own Bloodied and
   Dead conditions, and the red fill moves in steps rather than showing an exact number.

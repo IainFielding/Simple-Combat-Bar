@@ -667,8 +667,13 @@ const SUITES = {
       check(view.visible, "player doesn't see the bar");
       check(view.gmControls === false, "player sees GM controls");
       check(view.endTurnShown === false, "player sees End Turn on a goblin's turn");
+      // Names show by default; "owner" keeps those of creatures the player doesn't observe from them.
       const goblin = view.portraits.find(p => p.id === setup.goblins[0]);
-      check(goblin?.name === view.unknownName, `goblin name shown to player: "${goblin?.name}"`);
+      check(goblin?.name === "Goblin", `goblin name hidden from player by default: "${goblin?.name}"`);
+      await gm.eval(() => __scb.setOwnSetting("nameVisibility", "owner"));
+      const masked = (await player.eval(() => __scb.playerView())).portraits.find(p => p.id === setup.goblins[0]);
+      check(masked?.name === view.unknownName, `goblin name shown to player with names for owners only: "${masked?.name}"`);
+      await gm.eval(() => __scb.setOwnSetting("nameVisibility", "always"));
       // Players never receive an unlinked token's HP; the state comes from dnd5e's Bloodied status,
       // so a 2/7 goblin reads "bloodied" with a half fill rather than an exact 71%.
       check(goblin?.damage === "50%", `goblin damage fill should be the bloodied band: ${goblin?.damage}`);
@@ -684,6 +689,7 @@ const SUITES = {
       check(after.current !== setup.heroes[0], "player's End Turn didn't advance the turn");
       return { pass: !failures.length, failures, lines: failures };
     } finally {
+      await gm.eval(() => __scb.setOwnSetting("nameVisibility", "always")).catch(() => {});
       await player.close({ shutDownWorld: false });
       await gm.eval(() => __scbFixtures.cleanup());
     }
