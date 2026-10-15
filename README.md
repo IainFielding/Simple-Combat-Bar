@@ -139,12 +139,13 @@ buttons above it:
 - **Turns & Initiative**: the initiative roll window, group turns and the action pips.
 - **Combat Start & End**: the sidebar switching to Chat, a playlist to play while the fight runs
   (what was playing before comes back afterwards), and the XP summary.
-- **My Turn**: open to every player, for their own turn banner.
+- **My Turn**: open to every player, for their own turn banner and the on-your-turn conveniences
+  (moving the view, clearing targets; selecting the acting token for the GM).
+- **Configure Trackers**: the second bar and the tooltip's values.
 
 ![The settings list and its submenus](docs/screenshots/settings.png)
 
 ![The My Turn window](docs/screenshots/my-turn.png)
-- **Configure Trackers**: the second bar and the tooltip's values.
 
 Turn on **XP Summary When Combat Ends** and ending a combat whispers the GM a card listing the
 defeated enemies and their total XP, with dnd5e's Award button to hand it out (the same as typing

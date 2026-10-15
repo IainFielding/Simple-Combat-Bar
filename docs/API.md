@@ -55,7 +55,15 @@ Hooks.once("simpleCombatBar.init", api => {
     // to options for Combat#rollInitiative (e.g. the dialog's { messageMode }), or false if the
     // user cancels. clearInitiative drops the prepared roll afterwards.
     configureInitiative: async (actor, event) => ({}),
-    clearInitiative: actor => {}
+    clearInitiative: actor => {},
+    // Optional: legendary counters for the card's badges, and spending (+1) or giving back (-1)
+    // one when a badge is clicked. Return null for a kind the creature doesn't have.
+    legendary: actor => ({ actions: { value: 2, max: 3 }, resistances: null }),
+    adjustLegendary: async (actor, kind, delta) => {},
+    // Optional: the XP summary. xp returns what defeating this actor is worth (null for none);
+    // awardCommand returns chat text the GM can use to hand out the total.
+    xp: actor => actor.system.xp ?? null,
+    awardCommand: total => `/award ${total}`
   });
 });
 ```
@@ -63,10 +71,20 @@ Hooks.once("simpleCombatBar.init", api => {
 ## Portrait styles
 
 A style supplies markup and CSS; the bar supplies the data. The markup must contain elements marked
-`data-slot="img"`, `"initiative"`, `"hp"`, `"name"` and `"damage"`. It may also contain `"bar2"` (the
-second tracker bar), `"rounds"` (an event's rounds left), `"arrives"` (the round a late arrival comes
-in, shown to the GM; the portrait also gets `is-waiting`) and a `data-action="rollInitiative"` button;
-the bar skips any it doesn't find. Scope your stylesheet under `.scb-root[data-style="<id>"]`.
+`data-slot="img"`, `"initiative"`, `"hp"`, `"name"` and `"damage"`. It may also contain:
+
+- `"bar2"`: the second tracker bar.
+- `"rounds"`: an event's rounds left.
+- `"arrives"`: the round a late arrival comes in, shown to the GM; the portrait also gets `is-waiting`.
+- `"effects"`: an empty list the bar fills with status effect icons.
+- `"pips"`: holding `.scb-pip` buttons with `data-action="togglePip"` and `data-pip="action"`,
+  `"bonus"` or `"reaction"`.
+- `"legendary"`: holding `.scb-leg` buttons with `data-action="legendary"`, `data-kind="actions"` or
+  `"resistances"`, and a `<span>` for the count.
+- A `data-action="rollInitiative"` button.
+
+The bar skips any it doesn't find. The built-in styles' markup in `scripts/ui/portrait-styles.mjs` is
+the reference for all of them. Scope your stylesheet under `.scb-root[data-style="<id>"]`.
 
 ```js
 Hooks.once("simpleCombatBar.init", api => {

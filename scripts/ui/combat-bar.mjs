@@ -8,7 +8,7 @@
  * observer) lives in the session Lifecycle and is released only by `destroy()`.
  */
 
-import { CSS, HOOKS, MODULE_ID, log, settings, t } from "../config.mjs";
+import { CSS, DEFAULTS, HOOKS, MODULE_ID, log, settings, t } from "../config.mjs";
 import { Lifecycle } from "../core/lifecycle.mjs";
 import { RenderScheduler } from "../core/scheduler.mjs";
 import { applyOrder } from "../core/reconcile.mjs";
@@ -125,6 +125,10 @@ export class CombatBar {
   /** @type {Map<string, PortraitView>} */
   #portraits = new Map();
   #divider;
+  /** Elements the flush writes to every time, found once in #buildRoot. */
+  #dividerRound;
+  #endTurnButton;
+  #roundValue;
   #session = new Lifecycle();
   /** @type {Lifecycle|null} */
   #bound = null;
@@ -404,8 +408,11 @@ export class CombatBar {
 
     if ( order || all ) this.#items = this.#computeOrder(combat, cfg);
     const everything = order || all;
-    // Where everything is now, before any class change or move, for the slide afterwards.
+    // Layout reads come first, while the last frame's layout is still clean: where everything is
+    // now (for the slide afterwards) and the space the bar has. Read after the patches below, each
+    // would force the browser to lay the page out again mid-flush.
     const before = everything ? this.#positions() : null;
+    const available = everything ? this.#availableWidth() : null;
 
     const decimals = combat.turns.some(c => (c.initiative !== null) && !Number.isInteger(c.initiative))
       ? (CONFIG.Combat.initiative.decimals ?? 0) : 0;
@@ -415,7 +422,7 @@ export class CombatBar {
     const seen = new Set();
     this.#items.forEach((item, index) => {
       if ( item.type === "divider" ) {
-        this.#divider.querySelector(".scb-divider-round").textContent = item.round;
+        this.#dividerRound.textContent = item.round;
         nodes.push(this.#divider);
         return;
       }
@@ -457,7 +464,10 @@ export class CombatBar {
     if ( everything ) this.stats.moves += applyOrder(this.track, nodes);
 
     this.#updateControls(combat);
-    this.#autosize(cfg, style);
+    // Sizes depend only on who is on the bar and the settings, both of which mark the order. A
+    // patch alone (HP, effects) leaves them as they are; window and sidebar changes go through
+    // refreshSize.
+    if ( everything ) this.#autosize(cfg, style, available);
     if ( before ) this.#slide(before);
   }
 
@@ -533,18 +543,23 @@ export class CombatBar {
     root.classList.toggle("is-started", combat.started);
     root.classList.toggle("is-gm", game.user.isGM);
     root.classList.toggle("is-fewer-controls", settings().compactControls);
-    root.querySelector(".scb-endturn").hidden = !this.canEndTurn;
-    root.querySelector(".scb-round-value").textContent = combat.started ? combat.round : "–";
+    this.#endTurnButton.hidden = !this.canEndTurn;
+    this.#roundValue.textContent = combat.started ? combat.round : "–";
   }
 
-  /** Shrink portraits to fit the bar's width (overflow "autofit"), else use the set size. */
-  #autosize(cfg, style) {
-    const max = Number(cfg.portraitSize) || 72;
+  /**
+   * Shrink portraits to fit the bar's width (overflow "autofit"), else use the set size.
+   * @param {object} cfg
+   * @param {object} style
+   * @param {number} [width]  {@link #availableWidth}, if the caller has already measured it.
+   */
+  #autosize(cfg, style, width = this.#availableWidth()) {
+    const max = Number(cfg.portraitSize) || DEFAULTS.portraitSize;
     let size = max;
     let overflow = cfg.overflow;
     // The bar's widest: clear of the scene pill and the sidebar, with room for the GM tabs. A
     // scrolling bar stops here too, rather than growing to the whole middle column.
-    const available = this.#availableWidth() - (game.user.isGM ? TAB_WIDTH * 2 : 0);
+    const available = width - (game.user.isGM ? TAB_WIDTH * 2 : 0);
     this.root.style.setProperty("--scb-bar-max", `${Math.max(0, available)}px`);
     if ( cfg.overflow === "autofit" ) {
       // Exactly the size at which the bar fits that space.
@@ -618,6 +633,8 @@ export class CombatBar {
       </div>`;
     this.root = root;
     this.track = root.querySelector(`.${CSS}-track`);
+    this.#endTurnButton = root.querySelector(`.${CSS}-endturn`);
+    this.#roundValue = root.querySelector(`.${CSS}-round-value`);
     this.#notice = new TurnNotice(this.#session);
     root.append(this.#notice.element);
 
@@ -627,6 +644,7 @@ export class CombatBar {
     divider.innerHTML = `<span class="${CSS}-divider-label">${t("round")}</span>`
       + `<span class="${CSS}-divider-round"></span>`;
     this.#divider = divider;
+    this.#dividerRound = divider.querySelector(`.${CSS}-divider-round`);
   }
 
   #mount() {
