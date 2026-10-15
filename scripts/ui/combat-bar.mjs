@@ -489,13 +489,15 @@ export class CombatBar {
     const half = this.track.clientWidth / 2;
     const easing = "cubic-bezier(0.22, 1, 0.36, 1)";
     const fade = [{ opacity: 0 }, { opacity: 1 }];
-    for ( const el of this.track.children ) {
-      const was = before.get(el);
+    // Every position is read before any animation starts: starting one invalidates style, so
+    // reading between them forced a layout per portrait.
+    const moves = Array.from(this.track.children, el => [el, before.get(el), el.getBoundingClientRect().left]);
+    for ( const [el, was, now] of moves ) {
       if ( was === undefined ) {
         el.animate(fade, { duration: MOVE_MS, easing });
         continue;
       }
-      const dx = was - el.getBoundingClientRect().left;
+      const dx = was - now;
       if ( Math.abs(dx) < 1 ) continue;
       if ( Math.abs(dx) > half ) el.animate(fade, { duration: MOVE_MS, easing });
       else el.animate([{ transform: `translateX(${dx}px)` }, { transform: "none" }], { duration: MOVE_MS, easing });
