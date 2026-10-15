@@ -9,10 +9,13 @@
 
 import { plainText } from "../model/effects.mjs";
 
-/** Enriched texts by effect uuid and modified time. */
+/**
+ * Enriched texts by effect uuid and modified time, least recently used first: a Map keeps insertion
+ * order, so each hit is moved to the end.
+ */
 const cache = new Map();
 
-/** Entries kept before the oldest are dropped. */
+/** Entries kept before the least recently used is dropped. */
 const CACHE_LIMIT = 200;
 
 /**
@@ -26,11 +29,10 @@ export async function effectDescriptions(effects) {
     if ( !e.description ) return;
     const key = `${e.uuid}|${e.modified ?? ""}`;
     let text = cache.get(key);
-    if ( text === undefined ) {
-      text = await enrich(e);
-      cache.set(key, text);
-      if ( cache.size > CACHE_LIMIT ) cache.delete(cache.keys().next().value);
-    }
+    if ( text === undefined ) text = await enrich(e);
+    else cache.delete(key);
+    cache.set(key, text);
+    if ( cache.size > CACHE_LIMIT ) cache.delete(cache.keys().next().value);
     texts.set(e.uuid, text);
   }));
   return texts;
