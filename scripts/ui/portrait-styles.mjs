@@ -1,5 +1,5 @@
 /**
- * Portrait style registry (spec §5.2).
+ * Portrait style registry.
  *
  * A style decides markup and CSS only. The model is style-agnostic, and every style exposes the
  * same named slots, so {@link PortraitView} patches any of them the same way. A style's CSS

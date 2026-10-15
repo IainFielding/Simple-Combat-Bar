@@ -112,7 +112,7 @@ describe("module.json styles", () => {
     expect(listed.filter(f => f.startsWith("styles/portrait/")).sort()).toEqual(onDisk.sort());
   });
 
-  it("scopes every rule under .scb-root, the tooltip or the event dialog (spec R10)", () => {
+  it("scopes every rule under .scb-root, the tooltip or the event dialog", () => {
     const bad = [];
     for ( const file of listed.filter(f => f !== "styles/fonts.css") ) {
       const css = stripComments(readFileSync(file, "utf8"));
@@ -129,7 +129,7 @@ describe("module.json styles", () => {
     expect(bad).toEqual([]);
   });
 
-  it("never sets variables on :root (spec R10)", () => {
+  it("never sets variables on :root", () => {
     for ( const file of listed ) expect(stripComments(readFileSync(file, "utf8"))).not.toMatch(/:root\b/);
   });
 

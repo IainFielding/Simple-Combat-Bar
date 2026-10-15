@@ -1,7 +1,7 @@
 /**
  * Module identity, public hook names, setting defaults and the settings snapshot.
  *
- * Render code never calls `game.settings.get` (spec R9): it reads the frozen snapshot returned by
+ * Render code never calls `game.settings.get`: it reads the frozen snapshot returned by
  * {@link settings}, which is rebuilt only when one of our settings changes. Reading each setting
  * where it's used would cost dozens of settings reads per portrait per render; this makes zero.
  */

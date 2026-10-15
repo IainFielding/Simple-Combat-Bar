@@ -4,7 +4,7 @@
  * A description holds enricher syntax (`@Embed[...]`, `@UUID[...]{…}`, `[[/r 1d4]]`), so it goes
  * through core's enrichHTML, relative to the effect, before being reduced to plain text. That only
  * happens when a tooltip actually opens, for that combatant's effects, and the result is kept until
- * the effect changes (spec R7): hovering the same portrait twice enriches nothing the second time.
+ * the effect changes: hovering the same portrait twice enriches nothing the second time.
  */
 
 import { plainText } from "../model/effects.mjs";

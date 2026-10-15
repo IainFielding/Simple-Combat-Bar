@@ -1,5 +1,5 @@
 /**
- * One owner for everything that has to be undone (spec R2).
+ * One owner for everything that has to be undone.
  *
  * A long-lived UI leaks when each resource is registered ad hoc and released ad hoc: a `resize`
  * listener removed with a fresh `.bind()` that never matches, `Hooks.once` callbacks that outlive

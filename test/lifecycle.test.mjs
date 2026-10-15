@@ -3,8 +3,8 @@ import { Lifecycle } from "../scripts/core/lifecycle.mjs";
 import { installFoundryShims } from "./helpers/foundry-shims.mjs";
 
 /**
- * Spec R2: everything registered through a Lifecycle is released by one dispose(). These are the
- * exact failure modes of the reference module (L1–L5), each pinned.
+ * Everything registered through a Lifecycle is released by one dispose(). Each test pins a way
+ * long-lived Foundry UIs commonly leak.
  */
 describe("Lifecycle", () => {
   beforeEach(() => {
@@ -23,7 +23,7 @@ describe("Lifecycle", () => {
     expect(Hooks.events.updateCombat[0].id).toBe(outsider);
   });
 
-  it("detaches DOM listeners on dispose (L1: the resize listener that never came off)", () => {
+  it("detaches DOM listeners on dispose (a resize listener that never comes off)", () => {
     const target = new EventTarget();
     const fn = vi.fn();
     const life = new Lifecycle();
@@ -34,7 +34,7 @@ describe("Lifecycle", () => {
     expect(fn).toHaveBeenCalledTimes(1);
   });
 
-  it("clears pending timers (L5: timeouts firing into a closed dock)", () => {
+  it("clears pending timers (timeouts firing into a closed app)", () => {
     const fn = vi.fn();
     const life = new Lifecycle();
     life.timeout(fn, 200);

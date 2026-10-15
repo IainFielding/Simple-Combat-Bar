@@ -1,7 +1,7 @@
 /**
- * The combat bar controller (spec §4).
+ * The combat bar controller.
  *
- * Exactly one instance exists per session (R1). It owns a root element that is built once and
+ * Exactly one instance exists per session. It owns a root element that is built once and
  * kept, and it *binds* to whichever combat is being viewed. Everything tied to a particular combat
  * (document hooks, pending renders) lives in a per-bind {@link Lifecycle} that `unbind()` disposes.
  * Everything tied to the bar itself (delegated DOM listeners, the context menu, the resize
@@ -659,7 +659,10 @@ export class CombatBar {
     }
   }
 
-  /** Delegated listeners on the root, registered once per session (R3). */
+  /**
+   * Delegated listeners on the root, registered once per session: portraits come and go without
+   * adding or removing a single listener.
+   */
   #listen() {
     const life = this.#session;
     const root = this.root;
@@ -1089,7 +1092,10 @@ function canTarget(combatant) {
   return canvas.ready && !!combatant?.token?.object?.visible;
 }
 
-/** Core's own defeat toggle, re-implemented on public API (spec R12). */
+/**
+ * Core's own defeat toggle, re-implemented on public API so it doesn't depend on the combat
+ * tracker's private methods.
+ */
 async function toggleDefeated(combatant) {
   if ( !combatant ) return;
   const defeated = !combatant.isDefeated;

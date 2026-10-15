@@ -1,7 +1,7 @@
 /**
  * One portrait's DOM. Created once per combatant per style, then patched.
  *
- * No listeners are attached here (spec R3): the bar delegates every event from its root. A patch
+ * No listeners are attached here: the bar delegates every event from its root. A patch
  * touches only the fields that changed since the last model, and never re-parses HTML.
  */
 

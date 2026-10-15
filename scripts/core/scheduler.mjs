@@ -1,5 +1,5 @@
 /**
- * Coalesces render requests into one flush per animation frame (spec R5).
+ * Coalesces render requests into one flush per animation frame.
  *
  * Every trigger — a combatant update, an actor's HP change, a new effect, a turn change — only
  * marks what went stale. The flush then sees the whole batch at once, so rolling initiative for

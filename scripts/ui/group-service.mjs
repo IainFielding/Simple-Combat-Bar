@@ -2,9 +2,9 @@
  * BG3 group turns in a live combat: who may step in, who ends, and where the pointer goes.
  *
  * The decisions are pure (model/group-turns.mjs). What this adds is the one writer: the combat's
- * turn and the group-turn flag are only ever changed by the active GM (spec R11). A player's click
- * becomes a query to that GM (core's User#query, which tells the handler who sent it), and the GM
- * checks the player owns the combatant before acting.
+ * turn and the group-turn flag are only ever changed by the active GM, so two clients can never
+ * race to move it. A player's click becomes a query to that GM (core's User#query, which tells the
+ * handler who sent it), and the GM checks the player owns the combatant before acting.
  */
 
 import { MODULE_ID, settings, t } from "../config.mjs";
