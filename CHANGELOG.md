@@ -2,6 +2,23 @@
 
 All notable changes to Simple Combat Bar.
 
+## Unreleased
+
+### Changed
+
+- **Lighter in a busy fight.** A change to hit points or an effect redraws just that card, without
+  re-measuring the screen. Other modules saving data on actors no longer make the bar redraw: it
+  only watches midi-qol's action economy, and only when midi-qol is active.
+- **The effect descriptions you keep checking stay quick.** In a long fight, the tooltip keeps the
+  descriptions you hover most often ready, rather than the first ones it saw.
+- **Screen readers no longer read out every change on the bar.** Hit points, effect icons and
+  portraits changing places are left quiet; the Your Turn and Up Next banners are still announced.
+
+### For developers
+
+- [docs/API.md](docs/API.md) now covers the `legendary`, `adjustLegendary`, `xp` and `awardCommand`
+  adapter members, and the `pips`, `legendary` and `effects` portrait slots.
+
 ## 0.8.1
 
 ### New
