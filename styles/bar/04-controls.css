@@ -311,7 +311,8 @@
    The calendar HUD (dnd5e.ui.calendar: dnd5e's own, or a module's replacement such as Ember or
    Simple D&D Calendar) sits in #ui-top with the bar, which marks it .scb-calendar. While the bar
    shows a combat, from rolling initiative until the combat ends, it puts this class on <body> and
-   the calendar steps aside. */
+   the calendar steps aside. A replacement styles itself by id (#sdc-calendar { display: grid }),
+   which outranks this class rule, hence !important. */
 body.scb-hide-calendar .scb-calendar {
-  display: none;
+  display: none !important;
 }
