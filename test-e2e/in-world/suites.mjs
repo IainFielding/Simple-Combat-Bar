@@ -490,7 +490,7 @@ export async function calendarSetup() {
 
 /** Whether the calendar HUD is in the page and visible. */
 export function calendarVisible() {
-  const el = document.getElementById("calendar-hud");
+  const el = dnd5e.ui.calendar?.element;
   return { present: !!el, visible: !!el && (getComputedStyle(el).display !== "none") };
 }
 

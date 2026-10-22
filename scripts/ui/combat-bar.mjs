@@ -68,8 +68,11 @@ const MOVE_MS = 260;
 /** Duration of the bar's drop from the top edge as a combat starts. */
 const INTRO_MS = 480;
 
-/** Body class that hides the calendar HUD (dnd5e's, or Ember's) while the bar shows a combat. */
+/** Body class that hides the calendar HUD while the bar shows a combat. */
 const HIDE_CALENDAR = `${CSS}-hide-calendar`;
+
+/** Class marking whichever calendar HUD dnd5e is showing, so HIDE_CALENDAR can find it. */
+const CALENDAR = `${CSS}-calendar`;
 
 /** Hover delay before a portrait tooltip opens, matching core's TooltipManager. */
 const TOOLTIP_DELAY = 500;
@@ -217,8 +220,12 @@ export class CombatBar {
     life.hook("targetToken", (user, token, targeted) => user.isSelf
       && this.#toggleTokenClass(token, "is-targeted", targeted));
     life.add(() => this.#scheduler.cancel());
-    // The calendar (dnd5e's, or Ember's) shares #ui-top with the bar; step it aside from the
-    // initiative roll on.
+    // The calendar shares #ui-top with the bar; step it aside from the initiative roll on. Whatever
+    // replaces dnd5e's HUD (Ember, Simple D&D Calendar, ...) is still dnd5e.ui.calendar, and a fresh
+    // render can swap in a new element, so mark it now and each time it renders.
+    const markCalendar = () => globalThis.dnd5e?.ui?.calendar?.element?.classList.add(CALENDAR);
+    markCalendar();
+    life.hook("renderApplicationV2", app => app === globalThis.dnd5e?.ui?.calendar && markCalendar());
     document.body.classList.add(HIDE_CALENDAR);
     life.add(() => document.body.classList.remove(HIDE_CALENDAR));
 
