@@ -6,6 +6,9 @@ All notable changes to Simple Combat Bar.
 
 ### Changed
 
+- **Any calendar steps aside.** The bar now hides whichever calendar D&D 5e is showing while it
+  shows a combat, so Simple D&D Calendar and other replacements for D&D 5e's calendar get out of
+  the way too, not just D&D 5e's own and Ember's.
 - **Lighter in a busy fight.** A change to hit points or an effect redraws just that card, without
   re-measuring the screen. Other modules saving data on actors no longer make the bar redraw: it
   only watches midi-qol's action economy, and only when midi-qol is active.
