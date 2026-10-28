@@ -544,6 +544,7 @@ const SUITES = {
     check(!cal.visible, "calendar still showing during combat");
     cal = await gm.eval(() => __scb.endTestCombat());
     check(cal.visible, "calendar didn't come back after combat");
+    await gm.eval(() => __scb.calendarTeardown());
     return { pass: !failures.length, failures, lines: failures };
   },
 

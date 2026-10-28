@@ -478,14 +478,38 @@ export async function setTrackerSettings(values) {
 /*  Settings window and the dnd5e calendar      */
 /* -------------------------------------------- */
 
+/** The calendar settings as they were before calendarSetup, for calendarTeardown. */
+let calendarBefore = null;
+
 /** Turn dnd5e's calendar HUD on, so there is something to hide. */
 export async function calendarSetup() {
   const config = game.settings.get("dnd5e", "calendarConfig");
-  await game.settings.set("dnd5e", "calendarConfig", { ...config, enabled: true });
   const prefs = game.settings.get("dnd5e", "calendarPreferences");
+  calendarBefore = { config, prefs };
+  await game.settings.set("dnd5e", "calendarConfig", { ...config, enabled: true });
   await game.settings.set("dnd5e", "calendarPreferences", { ...prefs, visible: true });
   await dnd5e.ui.calendar?.render({ force: true });
   await settle(300);
+}
+
+/** Put the calendar back as it was, so later suites don't wait on its handover with the bar. */
+export async function calendarTeardown() {
+  if ( !calendarBefore ) return;
+  await game.settings.set("dnd5e", "calendarConfig", calendarBefore.config);
+  await game.settings.set("dnd5e", "calendarPreferences", calendarBefore.prefs);
+  calendarBefore = null;
+  await dnd5e.ui.calendar?.render({ force: true });
+  await settle(100);
+}
+
+/** Wait out the calendar's slide and the bar's drop, so a check sees where they end up. */
+async function handoverDone() {
+  const els = [dnd5e.ui.calendar?.element, document.querySelector(".scb-root")].filter(Boolean);
+  // A second pass: the bar's drop only starts once the calendar's slide has finished.
+  for ( let i = 0; i < 2; i++ ) {
+    await Promise.all(els.flatMap(el => el.getAnimations()).map(a => a.finished.catch(() => {})));
+    await settle(0);
+  }
 }
 
 /** Whether the calendar HUD is in the page and visible. */
@@ -498,12 +522,14 @@ export function calendarVisible() {
 export async function startTestCombat(start = true) {
   await freshCombat({ allies: 2, enemies: 2, start });
   await settle(200);
+  await handoverDone();
   return calendarVisible();
 }
 
 export async function endTestCombat() {
   await cleanup();
   await settle(200);
+  await handoverDone();
   return calendarVisible();
 }
 
