@@ -65,8 +65,14 @@ const TAB_WIDTH = 38;
 /** Duration of the slide when portraits change places. */
 const MOVE_MS = 260;
 
-/** Duration of the bar's drop from the top edge as a combat starts. */
+/** Duration of the bar's drop from the top edge as a combat is created. */
 const INTRO_MS = 480;
+
+/** Duration of the calendar sliding up out of the bar's way, and back down after the combat. */
+const CALENDAR_MS = 260;
+
+/** Whether the user asked for less motion. */
+const reducedMotion = () => !!globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 /** Body class that hides the calendar HUD while the bar shows a combat. */
 const HIDE_CALENDAR = `${CSS}-hide-calendar`;
@@ -150,8 +156,6 @@ export class CombatBar {
   #resizeObserver = null;
   /** @type {TurnNotice} */
   #notice;
-  /** Whether the bound combat had started when last looked at, to catch the moment it does. */
-  #started = false;
 
   constructor() {
     this.#scheduler = new RenderScheduler(batch => this.#flush(batch));
@@ -194,7 +198,6 @@ export class CombatBar {
     if ( !combat ) return;
 
     this.combat = combat;
-    this.#started = combat.started;
     this.#mount();
     const life = this.#bound = new Lifecycle();
     life.hook("updateCombat", (doc, changes) => this.#onUpdateCombat(doc, changes));
@@ -226,10 +229,8 @@ export class CombatBar {
     const markCalendar = () => globalThis.dnd5e?.ui?.calendar?.element?.classList.add(CALENDAR);
     markCalendar();
     life.hook("renderApplicationV2", app => app === globalThis.dnd5e?.ui?.calendar && markCalendar());
-    document.body.classList.add(HIDE_CALENDAR);
-    life.add(() => document.body.classList.remove(HIDE_CALENDAR));
-
-    this.root.hidden = false;
+    life.add(() => this.#calendarBack());
+    this.#enter(life);
     this.#scheduler.markAll();
     log("bound", combat.id);
     Hooks.callAll(HOOKS.bind, this, combat);
@@ -300,15 +301,57 @@ export class CombatBar {
       || ("combatants" in changes) ) {
       this.#scheduler.markOrder();
     }
-    if ( combat.started && !this.#started ) this.#intro();
-    this.#started = combat.started;
   }
 
-  /** The fight begins: the bar drops in from the top edge. */
-  #intro() {
-    if ( !this.root.isConnected || globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ) return;
+  /* -------------------------------------------- */
+  /*  Entrance, and the calendar handover         */
+  /* -------------------------------------------- */
+
+  /**
+   * A combat is created: the calendar (which shares #ui-top with the bar) slides up out of the way,
+   * then the bar drops in from the top edge. The bar stays hidden until the calendar has gone, so
+   * it never pushes the calendar down on its way out.
+   * @param {Lifecycle} life  The bound combat's, so a quick unbind cancels the handover.
+   */
+  #enter(life) {
+    const show = () => {
+      document.body.classList.add(HIDE_CALENDAR);
+      this.root.hidden = false;
+      this.#dropIn();
+    };
+    const calendar = this.#shownCalendar();
+    if ( !calendar ) return show();
+    const exit = calendar.animate([{ transform: "none", opacity: 1 }, { transform: "translateY(-100%)", opacity: 0 }],
+      { duration: CALENDAR_MS, easing: "cubic-bezier(0.55, 0, 1, 0.45)", fill: "forwards" });
+    life.add(() => exit.cancel());
+    exit.finished.then(() => {
+      if ( this.#bound !== life ) return;
+      show();
+      exit.cancel();
+    }, () => {});
+  }
+
+  /** The bar drops in from the top edge. */
+  #dropIn() {
+    if ( !this.root.isConnected || reducedMotion() ) return;
     this.root.animate([{ transform: "translateY(-100%)", opacity: 0 }, { transform: "none", opacity: 1 }],
       { duration: INTRO_MS, easing: "cubic-bezier(0.22, 1, 0.36, 1)" });
+  }
+
+  /** The combat is over: the calendar comes back, sliding down into the space the bar leaves. */
+  #calendarBack() {
+    const wasHidden = document.body.classList.contains(HIDE_CALENDAR);
+    document.body.classList.remove(HIDE_CALENDAR);
+    const calendar = wasHidden ? this.#shownCalendar() : null;
+    calendar?.animate([{ transform: "translateY(-100%)", opacity: 0 }, { transform: "none", opacity: 1 }],
+      { duration: CALENDAR_MS, easing: "cubic-bezier(0.22, 1, 0.36, 1)" });
+  }
+
+  /** The calendar HUD, if it is on screen and motion is allowed; otherwise null. */
+  #shownCalendar() {
+    const el = globalThis.dnd5e?.ui?.calendar?.element;
+    if ( !el?.isConnected || !el.classList.contains(CALENDAR) || reducedMotion() ) return null;
+    return getComputedStyle(el).display === "none" ? null : el;
   }
 
   #onUpdateCombatant(combatant, changes, options) {

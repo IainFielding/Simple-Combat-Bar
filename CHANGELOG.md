@@ -6,6 +6,10 @@ All notable changes to Simple Combat Bar.
 
 ### Changed
 
+- **The bar slides in as soon as there's a combat.** When a combat is created, the calendar slides
+  up out of the way and the bar drops in from the top, rather than both changing in a blink; after
+  the combat the calendar slides back down. The drop used to wait for the combat to start. Reduced
+  motion turns both off.
 - **Any calendar steps aside.** The bar now hides whichever calendar D&D 5e is showing while it
   shows a combat, so Simple D&D Calendar and other replacements for D&D 5e's calendar get out of
   the way too, not just D&D 5e's own and Ember's.
