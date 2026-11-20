@@ -67,6 +67,8 @@ export function registerSettings(getBar) {
   register("showEffects", { type: Boolean });
   register("effectDescriptions", { type: String, choices: choices("effectDescriptions", ["none", "owner", "all"]) });
   register("groupTeams", { type: String, choices: choices("groupTeams", ["off", "visual", "bg3"]) });
+  // Read on the active GM's client when a swap is asked for: nothing on the bar changes with it.
+  register("allySwapConsent", { type: Boolean, onChange: invalidateSettings });
   register("sidebarOnCombat", { type: String, choices: choices("sidebarOnCombat", ["chat", "leave"]) });
   // Its choices are the world's playlists, which don't exist yet: ui/settings-group.mjs lists them.
   register("combatPlaylist", { type: String, onChange: invalidateSettings });

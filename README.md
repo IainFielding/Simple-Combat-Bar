@@ -52,6 +52,11 @@ Owners get a d20 on their card until they've rolled. You choose who gets D&D 5e'
 With **Dice So Nice** holding results back until its dice stop, the bar waits too: the card shows
 "…" and keeps its place until the roll lands.
 
+**Alert (2024 rules):** before the combat starts, a character with the Alert feat can swap
+initiative with an ally. Right-click their card and choose **Alert: Swap Initiative…**, then the
+ally. The ally's player is asked to agree (the GM, if that player isn't connected), unless you turn
+**Allies Must Agree to a Swap** off.
+
 ### Your Turn and Up Next
 A banner drops under the bar when your turn begins, and one turn earlier when you're the next to
 act. Each player chooses a small banner, a large one or none, in **My Turn** in the module's
@@ -137,7 +142,7 @@ buttons above it:
   badges.
 - **What Players See**: names, hit points, initiative, effect descriptions, and whether
   enemies are revealed as they act or removed when defeated.
-- **Turns & Initiative**: the initiative roll window, group turns and the action pips.
+- **Turns & Initiative**: the initiative roll window, Alert swaps, group turns and the action pips.
 - **Combat Start & End**: the sidebar switching to Chat, a playlist to play while the fight runs
   (what was playing before comes back afterwards), and the XP summary.
 - **My Turn**: open to every player, for their own turn banner and the on-your-turn conveniences

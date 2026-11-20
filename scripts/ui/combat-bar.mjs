@@ -24,6 +24,7 @@ import { groupContext, requestGroupTurn } from "./group-service.mjs";
 import { InitiativeHold, diceHoldInitiative } from "./initiative-hold.mjs";
 import { PortraitView } from "./portrait-view.mjs";
 import { canPanTo, portraitMenuOptions } from "./portrait-menu.mjs";
+import { requestSwap, swapLabel, swapTargets } from "./swap-service.mjs";
 import { portraitStyle } from "./portrait-styles.mjs";
 import { buildTooltip } from "./tooltip.mjs";
 import { openEventDialog } from "./event-dialog.mjs";
@@ -152,6 +153,9 @@ export class CombatBar {
   /** Bumped whenever the tooltip closes, so a tooltip still being prepared knows it's stale. */
   #tooltipGeneration = 0;
   #contextMenu = null;
+
+  /** The allies to swap initiative with, opened from the portrait menu's Alert entry. */
+  #swapMenu = null;
   /** @type {ResizeObserver|null} */
   #resizeObserver = null;
   /** @type {TurnNotice} */
@@ -260,6 +264,7 @@ export class CombatBar {
   destroy() {
     this.unbind();
     this.#contextMenu?.close?.();
+    if ( this.#swapMenu && (globalThis.ui?.context === this.#swapMenu) ) this.#swapMenu.close();
     this.#session.dispose();
     this.root.remove();
   }
@@ -737,10 +742,33 @@ export class CombatBar {
 
     const menu = portraitMenuOptions(this, {
       selectAndPan: combatant => this.#selectAndPan(combatant),
-      rollInitiative: (combatant, event) => this.#rollInitiative(combatant, event)
+      rollInitiative: (combatant, event) => this.#rollInitiative(combatant, event),
+      openSwapMenu: (combatant, target, event) => this.#openSwapMenu(combatant, target, event)
     });
     this.#contextMenu = new foundry.applications.ux.ContextMenu(root, `.${CSS}-portrait`, menu,
       { jQuery: false, fixed: true });
+    // Only ever opened from code: its event name is one nothing dispatches.
+    this.#swapMenu = new foundry.applications.ux.ContextMenu(root, `.${CSS}-portrait`, [],
+      { jQuery: false, fixed: true, eventName: `${MODULE_ID}.swapMenu` });
+  }
+
+  /**
+   * List the allies a combatant can swap initiative with, where the portrait menu was. The
+   * portrait menu closes itself once this returns.
+   * @param {Combatant} combatant
+   * @param {HTMLElement} target  The portrait.
+   * @param {Event} event         The click on the portrait menu's entry.
+   */
+  #openSwapMenu(combatant, target, event) {
+    const allies = swapTargets(combatant);
+    if ( !allies.length || !this.#swapMenu ) return;
+    this.#swapMenu.menuItems = allies.map(ally => ({
+      label: swapLabel(ally),
+      icon: '<i class="fa-solid fa-right-left"></i>',
+      onClick: () => requestSwap(combatant, ally)
+    }));
+    ui.context = this.#swapMenu;
+    this.#swapMenu.render(target, { event });
   }
 
   /** Recompute sizes only (window or sidebar resized). */

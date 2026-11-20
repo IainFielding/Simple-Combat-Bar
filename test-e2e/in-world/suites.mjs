@@ -186,6 +186,10 @@ export async function ordering() {
     const r = document.querySelector("#scb-root .scb-bar").getBoundingClientRect();
     return { left: Math.round(r.left * 10) / 10, width: Math.round(r.width * 10) / 10 };
   };
+  // The bar drops in when the combat is created (0.8.5): measure where it lands, not mid-drop.
+  const root = document.getElementById("scb-root");
+  await Promise.all((root?.getAnimations({ subtree: true }) ?? []).map(a => a.finished.catch(() => {})));
+  await settle(100);
   const firstBox = barBox();
 
   for ( let step = 0; step < combat.turns.length + 2; step++ ) {
@@ -771,4 +775,67 @@ export async function effectsTeardown(heroId) {
   const hero = game.combat?.combatants.get(heroId)?.actor;
   for ( const e of hero?.effects.filter(e => e.name === "Test Blessing") ?? [] ) await e.delete();
   await cleanup();
+}
+
+/* -------------------------------------------- */
+/*  Alert's initiative swap                     */
+/* -------------------------------------------- */
+
+let swapRestore = null;
+
+/**
+ * GM: before the fight, two heroes (the player's; the first has Alert), a friendly guard nobody
+ * owns, and a goblin. 2024 rules, allies must agree.
+ */
+export async function swapSetup() {
+  const combat = await freshCombat({ allies: 2, enemies: 2, enemyNames: ["Goblin"], initiative: false, start: false });
+  const heroes = combat.combatants.filter(c => c.actor?.type === "character");
+  const [guard, goblin] = combat.combatants.filter(c => c.actor?.type === "npc");
+  swapRestore = { rulesVersion: game.settings.get("dnd5e", "rulesVersion"), alert: heroes[0].actor.id };
+  if ( swapRestore.rulesVersion !== "modern" ) await game.settings.set("dnd5e", "rulesVersion", "modern");
+  await game.settings.set(MODULE_ID, "allySwapConsent", true);
+  await heroes[0].actor.setFlag("dnd5e", "initiativeAlert", true);
+  // Renamed: both NPCs are goblins, and the checks tell them apart by the names in the menu.
+  await guard.token.update({ disposition: CONST.TOKEN_DISPOSITIONS.FRIENDLY, name: "Guard" });
+  await guard.update({ name: "Guard" });
+  await combat.updateEmbeddedDocuments("Combatant", [
+    { _id: heroes[0].id, initiative: 18 }, { _id: heroes[1].id, initiative: 7 },
+    { _id: guard.id, initiative: 12 }, { _id: goblin.id, initiative: 15 }
+  ]);
+  await settle(200);
+  return { alert: heroes[0].id, hero: heroes[1].id, guard: guard.id, goblin: goblin.id };
+}
+
+export async function swapTeardown() {
+  if ( swapRestore ) {
+    await game.actors.get(swapRestore.alert)?.unsetFlag("dnd5e", "initiativeAlert");
+    if ( swapRestore.rulesVersion !== "modern" ) await game.settings.set("dnd5e", "rulesVersion", swapRestore.rulesVersion);
+    swapRestore = null;
+  }
+  await game.settings.set(MODULE_ID, "allySwapConsent", true);
+  await cleanup();
+}
+
+/** Anyone: each combatant's initiative. */
+export async function initiatives() {
+  await settle(300);
+  return Object.fromEntries(game.combat.combatants.map(c => [c.id, c.initiative]));
+}
+
+/** GM: put a status on a combatant's actor, or take it off. */
+export async function setStatus(combatantId, status, active) {
+  await game.combat.combatants.get(combatantId).actor.toggleStatusEffect(status, { active });
+  await settle(200);
+}
+
+/** GM: change one of our world settings. */
+export async function setWorldSetting(key, value) {
+  await game.settings.set(MODULE_ID, key, value);
+  await settle(100);
+}
+
+/** Player: ask the GM straight out for a swap the menu wouldn't offer. */
+export async function sneakySwap(swapperId, allyId) {
+  return game.users.activeGM.query(`${MODULE_ID}.swapInitiative`,
+    { combatId: game.combat.id, swapperId, allyId });
 }

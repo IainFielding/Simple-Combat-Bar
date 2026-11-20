@@ -63,7 +63,12 @@ Hooks.once("simpleCombatBar.init", api => {
     // Optional: the XP summary. xp returns what defeating this actor is worth (null for none);
     // awardCommand returns chat text the GM can use to hand out the total.
     xp: actor => actor.system.xp ?? null,
-    awardCommand: total => `/award ${total}`
+    awardCommand: total => `/award ${total}`,
+    // Optional: initiative swaps before the combat starts (dnd5e: the Alert feat, 2024 rules).
+    // initiativeSwap says whether this actor may swap with an ally; incapacitated rules either
+    // side out. Leave both out and the bar never offers a swap.
+    initiativeSwap: actor => !!actor.flags["my-system"]?.alert,
+    incapacitated: actor => actor.statuses.has("incapacitated")
   });
 });
 ```
