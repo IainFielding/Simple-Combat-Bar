@@ -1,12 +1,13 @@
 /**
- * The portrait right-click menu: make current, pan, ping, target, initiative, late arrival,
- * hide, defeat, edit and remove.
+ * The portrait right-click menu: make current, pan, ping, target, initiative, Alert's initiative
+ * swap, late arrival, hide, defeat, edit and remove.
  *
  * Each entry looks the combatant up from the clicked portrait when the menu opens, in whatever
  * combat the bar is showing then: the menu is built once per session, not per combat.
  */
 
 import { arrive, isWaiting, openArrivalDialog } from "./arrival-service.mjs";
+import { swapTargets } from "./swap-service.mjs";
 
 /**
  * The menu's entries, for core's ContextMenu.
@@ -14,9 +15,11 @@ import { arrive, isWaiting, openArrivalDialog } from "./arrival-service.mjs";
  * @param {object} actions  The bar's own behaviour, shared with clicks on the portrait itself.
  * @param {(combatant: Combatant) => Promise<void>} actions.selectAndPan
  * @param {(combatant: Combatant, event: Event) => Promise<void>} actions.rollInitiative
+ * @param {(combatant: Combatant, target: HTMLElement, event: Event) => void} actions.openSwapMenu
+ *        Open the list of allies to swap initiative with, where this menu was.
  * @returns {object[]}
  */
-export function portraitMenuOptions(bar, { selectAndPan, rollInitiative }) {
+export function portraitMenuOptions(bar, { selectAndPan, rollInitiative, openSwapMenu }) {
   const combatantOf = li => bar.combat?.combatants.get(li.dataset.combatantId);
   const gm = () => game.user.isGM;
   return [
@@ -73,6 +76,14 @@ export function portraitMenuOptions(bar, { selectAndPan, rollInitiative }) {
       icon: '<i class="fa-solid fa-eraser"></i>',
       visible: li => gm() && (combatantOf(li)?.initiative !== null),
       onClick: (_event, li) => combatantOf(li)?.update({ initiative: null })
+    },
+    {
+      // Alert (2024): before the combat starts, swap initiative with an ally. Core's menu can't
+      // nest, so this opens a second menu listing the allies.
+      label: "sogrom-simple-combat-bar.context.swapInitiative",
+      icon: '<i class="fa-solid fa-right-left"></i>',
+      visible: li => swapTargets(combatantOf(li)).length > 0,
+      onClick: (event, li) => combatantOf(li) && openSwapMenu(combatantOf(li), li, event)
     },
     {
       label: "sogrom-simple-combat-bar.context.arrivesLater",

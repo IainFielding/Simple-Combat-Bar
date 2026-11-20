@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { installFoundryShims } from "./helpers/foundry-shims.mjs";
 import { portraitMenuOptions } from "../scripts/ui/portrait-menu.mjs";
+import { swapTargets } from "../scripts/ui/swap-service.mjs";
+
+// Who may swap is swap-service's to decide (and test); the menu only asks it.
+vi.mock("../scripts/ui/swap-service.mjs", () => ({ swapTargets: vi.fn(() => []) }));
 
 const GM_ONLY = ["sogrom-simple-combat-bar.context.setCurrent", "COMBATANT.ACTIONS.Clear",
   "sogrom-simple-combat-bar.context.arrivesLater", "COMBATANT.Hide", "COMBATANT.MarkDefeated",
@@ -21,7 +25,8 @@ beforeEach(() => {
   const goblin = { id: "goblin" };
   bar = { combat: { started: true, turns: [goblin, ogre], combatant: goblin, update: vi.fn(),
     combatants: new Map([["goblin", goblin], ["ogre", ogre]]) } };
-  actions = { selectAndPan: vi.fn(), rollInitiative: vi.fn() };
+  actions = { selectAndPan: vi.fn(), rollInitiative: vi.fn(), openSwapMenu: vi.fn() };
+  swapTargets.mockReturnValue([]);
 });
 
 describe("portraitMenuOptions", () => {
@@ -49,5 +54,15 @@ describe("portraitMenuOptions", () => {
     bar.combat = later;
     options.find(o => o.label === "sogrom-simple-combat-bar.context.setCurrent").onClick(null, li);
     expect(later.update).toHaveBeenCalledWith({ turn: 1 });
+  });
+
+  it("offers Alert's swap when there's someone to swap with, and opens the list of allies", () => {
+    const swapLabel = "sogrom-simple-combat-bar.context.swapInitiative";
+    expect(visibleLabels()).not.toContain(swapLabel);
+    swapTargets.mockReturnValue([{ id: "goblin" }]);
+    expect(visibleLabels()).toContain(swapLabel);
+    const event = {};
+    portraitMenuOptions(bar, actions).find(o => o.label === swapLabel).onClick(event, li);
+    expect(actions.openSwapMenu).toHaveBeenCalledWith(bar.combat.combatants.get("ogre"), li, event);
   });
 });

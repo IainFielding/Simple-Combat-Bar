@@ -99,3 +99,35 @@ describe("adapter registry", () => {
     expect(typeof adapter.hp).toBe("function");
   });
 });
+
+describe("dnd5e Alert and Incapacitated", () => {
+  beforeEach(() => {
+    installFoundryShims();
+    globalThis.dnd5e = { settings: { rulesVersion: "modern" } };
+  });
+
+  const alert = { flags: { dnd5e: { initiativeAlert: true } } };
+
+  it("offers the swap with Alert under the 2024 rules", () => {
+    expect(dnd5eAdapter.initiativeSwap(alert)).toBe(true);
+    expect(dnd5eAdapter.initiativeSwap({ flags: {} })).toBe(false);
+    expect(dnd5eAdapter.initiativeSwap(null)).toBe(false);
+  });
+
+  it("has no swap under the 2014 rules, where Alert is only +5", () => {
+    globalThis.dnd5e.settings.rulesVersion = "legacy";
+    expect(dnd5eAdapter.initiativeSwap(alert)).toBe(false);
+  });
+
+  it("reads the rules version from the setting when dnd5e's global hasn't got it", () => {
+    globalThis.dnd5e = undefined;
+    game.settings._values.rulesVersion = "legacy";
+    expect(dnd5eAdapter.initiativeSwap(alert)).toBe(false);
+  });
+
+  it("reads Incapacitated from the actor's statuses", () => {
+    expect(dnd5eAdapter.incapacitated({ statuses: new Set(["incapacitated", "stunned"]) })).toBe(true);
+    expect(dnd5eAdapter.incapacitated({ statuses: new Set(["prone"]) })).toBe(false);
+    expect(dnd5eAdapter.incapacitated(null)).toBe(false);
+  });
+});

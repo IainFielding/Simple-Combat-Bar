@@ -7,7 +7,7 @@
  *   node run.mjs --iterations=20                      # longer churn for the lifecycle suite
  *
  * Suites: lifecycle, budget, timing, ordering, permissions, events, arrivals, trackers, settingsUi, responsive,
- * economy, legendary, groupTurns, effects, notices. The CTD world runs lifecycle, budget and timing only — the
+ * economy, legendary, groupTurns, swap, effects, notices. The CTD world runs lifecycle, budget and timing only — the
  * others test behaviour that is ours. The control world (no combat UI module) runs timing only, so the
  * comparison can say what each module adds on top of Foundry and dnd5e themselves.
  *
@@ -28,11 +28,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,timing,ordering,permissions,events,arrivals,trackers,settingsUi,responsive,economy,legendary,groupTurns,effects,notices").split(",");
+const wanted = option("suites", "lifecycle,budget,timing,ordering,permissions,events,arrivals,trackers,settingsUi,responsive,economy,legendary,groupTurns,swap,effects,notices").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions", "events", "arrivals", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns", "effects", "notices"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events", "arrivals", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns", "swap", "effects", "notices"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -305,6 +305,97 @@ const SUITES = {
     } finally {
       await player.close({ shutDownWorld: false });
       await gm.eval(() => __scb.groupTeardown());
+    }
+    return { pass: !failures.length, failures, lines: failures };
+  },
+
+  /**
+   * Alert's initiative swap, through the portrait menu as a player uses it: with their own other
+   * hero (nobody asked), with a friendly guard nobody owns (the GM agrees, then refuses), blocked by
+   * Incapacitated, straight away with consent off, and gone once the combat starts.
+   */
+  async swap(gm) {
+    const failures = [];
+    const check = (ok, message) => ok || failures.push(message);
+    const ids = await gm.eval(() => __scb.swapSetup());
+    const entry = "#context-menu .context-item";
+    const player = await Session.open({ user: PLAYER_USER });
+    const page = player.page;
+    /** Right-click the Alert hero; the labels of the menu that opens. */
+    const openMenu = async () => {
+      await page.mouse.click(5, 700);
+      await page.click(`#scb-root .scb-portrait[data-combatant-id="${ids.alert}"]`, { button: "right" });
+      await page.waitForTimeout(400);
+      return page.locator(entry).allInnerTexts();
+    };
+    /** Open the Alert entry's list of allies; their labels, or null if the entry isn't there. */
+    const openAllies = async () => {
+      const labels = await openMenu();
+      const alert = labels.findIndex(l => /Swap Initiative/.test(l));
+      if ( alert < 0 ) return null;
+      await page.locator(entry).nth(alert).click();
+      await page.waitForTimeout(500);
+      return page.locator(entry).allInnerTexts();
+    };
+    const pick = name => page.locator(entry, { hasText: name }).first().click();
+    const answer = async yes => {
+      const button = gm.page.locator(`.application.dialog button[data-action="${yes ? "yes" : "no"}"]`);
+      await button.waitFor({ timeout: 5000 });
+      await button.click();
+    };
+    try {
+      await loadSuites(player);
+      const names = await gm.eval(i => Object.fromEntries(Object.values(i)
+        .map(id => [id, game.combat.combatants.get(id).name])), ids);
+
+      let allies = await openAllies();
+      check(allies !== null, "the player isn't offered Alert's swap on their Alert hero");
+      check(allies?.some(l => l.includes(names[ids.hero])) && allies?.some(l => l.includes(names[ids.guard])),
+        `the ally list should name the other hero and the guard: ${JSON.stringify(allies)}`);
+      check(!allies?.some(l => l.includes(names[ids.goblin])), `the goblin is offered as an ally: ${JSON.stringify(allies)}`);
+
+      // Their own other hero: nobody needs asking.
+      await pick(names[ids.hero]);
+      let init = await player.eval(() => __scb.initiatives());
+      check(init[ids.alert] === 7 && init[ids.hero] === 18, `swapping with their own hero didn't swap: ${JSON.stringify(init)}`);
+
+      // The guard has no player, so the GM answers: yes, then no.
+      await openAllies();
+      await pick(names[ids.guard]);
+      await answer(true);
+      init = await player.eval(() => __scb.initiatives());
+      check(init[ids.alert] === 12 && init[ids.guard] === 7, `the GM agreed but nothing swapped: ${JSON.stringify(init)}`);
+      await openAllies();
+      await pick(names[ids.guard]);
+      await answer(false);
+      init = await player.eval(() => __scb.initiatives());
+      check(init[ids.alert] === 12 && init[ids.guard] === 7, `the GM refused but it swapped: ${JSON.stringify(init)}`);
+
+      // The GM won't swap with a goblin, however it's asked.
+      const sneaky = await player.eval(([a, b]) => __scb.sneakySwap(a, b), [ids.alert, ids.goblin]);
+      check(sneaky !== "done", "the GM let a player swap with a goblin");
+
+      // Incapacitated: a stunned guard drops off the list.
+      await gm.eval(id => __scb.setStatus(id, "stunned", true), ids.guard);
+      allies = await openAllies();
+      check(!allies?.some(l => l.includes(names[ids.guard])), `a stunned guard is still offered: ${JSON.stringify(allies)}`);
+      await gm.eval(id => __scb.setStatus(id, "stunned", false), ids.guard);
+
+      // Allies needn't agree: the guard swaps straight away.
+      await gm.eval(() => __scb.setWorldSetting("allySwapConsent", false));
+      await openAllies();
+      await pick(names[ids.guard]);
+      init = await player.eval(() => __scb.initiatives());
+      check(init[ids.alert] === 7 && init[ids.guard] === 12, `with consent off the swap didn't happen: ${JSON.stringify(init)}`);
+
+      // Once the combat starts, the entry is gone.
+      await gm.eval(() => __scb.startCombat());
+      const labels = await openMenu();
+      check(!labels.some(l => /Swap Initiative/.test(l)), "Alert's swap is still offered after the combat started");
+      await page.mouse.click(5, 700);
+    } finally {
+      await player.close({ shutDownWorld: false });
+      await gm.eval(() => __scb.swapTeardown());
     }
     return { pass: !failures.length, failures, lines: failures };
   },

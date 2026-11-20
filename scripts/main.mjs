@@ -15,6 +15,7 @@ import { expiredEvents } from "./model/events.mjs";
 import { activationSlot, anySpent, emptyEconomy } from "./model/economy.mjs";
 import { economyProvider, spendSlot } from "./systems/economy.mjs";
 import { groupContext, registerGroupQuery } from "./ui/group-service.mjs";
+import { registerSwapQueries } from "./ui/swap-service.mjs";
 import { afterTurnChange, skipBeforeUpdate } from "./ui/arrival-service.mjs";
 import { restoresEconomy } from "./model/group-turns.mjs";
 import { tallyDefeated } from "./model/xp-award.mjs";
@@ -39,6 +40,7 @@ Hooks.once("init", () => {
   registerSettings(() => bar);
   registerKeybindings(() => bar);
   registerGroupQuery();
+  registerSwapQueries();
   game.modules.get(MODULE_ID).api = api;
   Hooks.callAll(HOOKS.init, api);
   registerAdapterSettings(() => bar);

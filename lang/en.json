@@ -15,7 +15,8 @@
       "target": "Target",
       "untarget": "Untarget",
       "arrivesLater": "Arrives in Round…",
-      "arriveNow": "Arrive Now"
+      "arriveNow": "Arrive Now",
+      "swapInitiative": "Alert: Swap Initiative…"
     },
     "tooltip": {
       "hp": "HP",
@@ -148,6 +149,10 @@
           "players": "Player characters only",
           "all": "Everyone"
         }
+      },
+      "allySwapConsent": {
+        "name": "Allies Must Agree to a Swap",
+        "hint": "When a character with the Alert feat (2024 rules) swaps initiative with an ally before the combat starts, the ally's player is asked first. If that player isn't connected, the GM is asked instead. Turn this off to swap straight away."
       },
       "hideUnseenFirstRound": {
         "name": "Reveal Enemies as They Act",
@@ -327,6 +332,19 @@
       "ended": "Turn ended",
       "noGM": "A GM needs to be connected to change turns within a group.",
       "failed": "The GM's client didn't respond, so the turn didn't change. Try again."
+    },
+    "swap": {
+      "swapWith": "Swap with {name}",
+      "swapWithInitiative": "Swap with {name} ({initiative})",
+      "consentTitle": "Initiative Swap",
+      "consent": "{swapper} has the Alert feat and wants to swap initiative with {ally}. Do you agree?",
+      "consentNumbers": "{swapper} goes to {allyInitiative}, and {ally} goes to {swapperInitiative}.",
+      "done": "{swapper} used Alert to swap initiative with {ally}.",
+      "declined": "{ally} didn't agree to swap initiative.",
+      "unavailable": "That swap isn't possible any more: the combat may have started, or someone's initiative or condition changed.",
+      "busy": "A swap for one of them is already waiting for an answer.",
+      "noGM": "A GM needs to be connected to swap initiative.",
+      "failed": "The GM's client didn't respond, so initiative wasn't swapped. Try again."
     },
     "effects": {
       "removeTitle": "Remove Effect",

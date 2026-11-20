@@ -147,5 +147,28 @@ export const dnd5eAdapter = {
   /** dnd5e's award enricher: a GM-only button that opens its Award window with this much XP. */
   awardCommand(xp) {
     return `[[/award ${xp}xp]]`;
+  },
+
+  /**
+   * Alert's Initiative Swap. The Alert feat sets dnd5e's `initiativeAlert` flag (a GM can also tick
+   * it in the actor's initiative settings); under the 2014 rules Alert has no swap, only +5.
+   */
+  initiativeSwap(actor) {
+    if ( !actor?.flags?.dnd5e?.initiativeAlert ) return false;
+    return rulesVersion() !== "legacy";
+  },
+
+  /** Stunned, Paralyzed, Petrified and Unconscious each add dnd5e's Incapacitated status too. */
+  incapacitated(actor) {
+    return !!actor?.statuses?.has("incapacitated");
   }
 };
+
+/** dnd5e's rules version, "modern" (2024) or "legacy" (2014). */
+function rulesVersion() {
+  try {
+    return globalThis.dnd5e?.settings?.rulesVersion ?? game.settings.get("dnd5e", "rulesVersion");
+  } catch {
+    return "modern";
+  }
+}
