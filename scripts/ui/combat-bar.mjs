@@ -866,7 +866,8 @@ export class CombatBar {
       // Enriched only now, for this combatant's effects, and cached until an effect changes.
       const texts = descriptions && effects.length ? await effectDescriptions(effects) : new Map();
       if ( (generation !== this.#tooltipGeneration) || !li.isConnected ) return;
-      game.tooltip.activate(li, { html: buildTooltip(view.model, attributes, { effects, descriptions, texts }),
+      const levelText = e => adapter.conditionLevelText?.(e.statusId, e.level, actor) ?? null;
+      game.tooltip.activate(li, { html: buildTooltip(view.model, attributes, { effects, descriptions, texts, levelText }),
         direction: "DOWN", cssClass: `${CSS}-tooltip` });
     }, TOOLTIP_DELAY);
   }

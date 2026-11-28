@@ -21,6 +21,9 @@ All notable changes to Simple Combat Bar.
   Its tooltip says what it does under the rules in play: reroll any die (2024), or advantage on one
   roll (2014). The owner or GM clicks the star to use it, and the GM gives it from the card's
   right-click menu. Turn it off with the **Inspiration Star** setting, under Look.
+- **Exhaustion level on the card.** Exhaustion's icon shows its level, and the tooltip says what
+  that level does under the rules in play: under the 2024 rules, the total penalty to D20 Tests and
+  Speed (in the world's units); under the 2014 rules, every level's effect so far.
 
 ### Changed
 
@@ -34,6 +37,8 @@ All notable changes to Simple Combat Bar.
   `awardCommand` may return null for no Award button. See [docs/API.md](docs/API.md).
 - System adapters can show a character's Inspiration with two new optional members, `inspiration`
   and `setInspiration`.
+- System adapters can explain a leveled condition's current level in the tooltip with a new
+  optional member, `conditionLevelText`.
 
 ## 0.9.0
 

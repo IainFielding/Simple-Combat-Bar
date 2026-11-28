@@ -352,6 +352,20 @@
       "legacyHint": "Use it on an attack roll, saving throw or ability check to roll it with advantage.",
       "clickToUse": "{name}. Click to use it."
     },
+    "exhaustion": {
+      "modern": {
+        "penalty": "−{rolls} to every D20 Test, and Speed reduced by {speed}. A sixth level is death.",
+        "dead": "Six levels of Exhaustion: death."
+      },
+      "legacy": {
+        "1": "Disadvantage on ability checks.",
+        "2": "Speed halved.",
+        "3": "Disadvantage on attack rolls and saving throws.",
+        "4": "Hit point maximum halved.",
+        "5": "Speed reduced to 0.",
+        "6": "Death."
+      }
+    },
     "groupTurns": {
       "takeTurn": "Click to take this turn",
       "ended": "Turn ended",

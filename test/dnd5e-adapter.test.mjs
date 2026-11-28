@@ -150,6 +150,29 @@ describe("dnd5e Alert and Incapacitated", () => {
     expect(npc.update).not.toHaveBeenCalled();
   });
 
+  it("explains Exhaustion under the 2024 rules: a running penalty, in the actor's units", () => {
+    const key = "sogrom-simple-combat-bar.exhaustion.modern.penalty";
+    expect(dnd5eAdapter.conditionLevelText("exhaustion", 3, {})).toBe(`${key}:{"rolls":6,"speed":"15 ft"}`);
+    globalThis.dnd5e.utils = {
+      convertLength: (v, _from, { to }) => ({ value: to === "m" ? v * 0.3 : v, unit: to }),
+      formatLength: (v, unit) => `${v} ${unit}`
+    };
+    const metric = { system: { attributes: { movement: { units: "m" } } } };
+    expect(dnd5eAdapter.conditionLevelText("exhaustion", 2, metric)).toBe(`${key}:{"rolls":4,"speed":"3 m"}`);
+    expect(dnd5eAdapter.conditionLevelText("exhaustion", 6, {})).toBe("sogrom-simple-combat-bar.exhaustion.modern.dead");
+  });
+
+  it("explains Exhaustion under the 2014 rules: every level's effect so far", () => {
+    globalThis.dnd5e.settings.rulesVersion = "legacy";
+    const key = n => `sogrom-simple-combat-bar.exhaustion.legacy.${n}`;
+    expect(dnd5eAdapter.conditionLevelText("exhaustion", 3, {})).toBe([key(1), key(2), key(3)].join(" "));
+  });
+
+  it("explains nothing for other conditions or no level", () => {
+    expect(dnd5eAdapter.conditionLevelText("prone", 2, {})).toBeNull();
+    expect(dnd5eAdapter.conditionLevelText("exhaustion", 0, {})).toBeNull();
+  });
+
   it("reads Incapacitated from the actor's statuses", () => {
     expect(dnd5eAdapter.incapacitated({ statuses: new Set(["incapacitated", "stunned"]) })).toBe(true);
     expect(dnd5eAdapter.incapacitated({ statuses: new Set(["prone"]) })).toBe(false);

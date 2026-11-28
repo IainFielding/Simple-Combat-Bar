@@ -9,6 +9,7 @@ import { roundsLeft } from "../model/events.mjs";
 import { arrivalRound } from "../model/arrivals.mjs";
 import { followedId } from "../model/companions.mjs";
 import { secondaryBar } from "../model/trackers.mjs";
+import { effectLevel } from "../model/effects.mjs";
 import { economyProvider } from "../systems/economy.mjs";
 
 /**
@@ -98,8 +99,16 @@ export function readEffects(actor, { card = false } = {}) {
     .map(e => ({
       id: e.id, uuid: e.uuid, img: e.img, name: e.name,
       remaining: e.duration?.remaining ?? null, total: e.duration?.value ?? null,
-      label: e.duration?.label ?? "", description: e.description ?? "", modified: e._stats?.modifiedTime ?? null
+      label: e.duration?.label ?? "", description: e.description ?? "", modified: e._stats?.modifiedTime ?? null,
+      // A leveled condition (dnd5e's Exhaustion) carries its level, and which condition it is.
+      ...leveled(e)
     }));
+}
+
+/** A leveled condition's level and status id; nulls for any other effect. */
+function leveled(effect) {
+  const level = effectLevel(effect.system?.level);
+  return { level, statusId: level === null ? null : (effect.statuses?.values().next().value ?? null) };
 }
 
 /**

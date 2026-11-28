@@ -2,6 +2,7 @@
  * dnd5e 6.x adapter.
  */
 
+import { MODULE_ID } from "../config.mjs";
 import { adjustSpent } from "../model/legendary.mjs";
 
 /** dnd5e's resource keys for each legendary counter. */
@@ -177,6 +178,26 @@ export const dnd5eAdapter = {
   },
 
   /**
+   * What a level of Exhaustion does, under the rules in play. 2024: a running penalty, −2 to every
+   * d20 Test and −5 ft of Speed per level (in the actor's own units). 2014: the effects of each
+   * level up to this one, which add up. Six levels is death under both.
+   */
+  conditionLevelText(statusId, level, actor) {
+    if ( (statusId !== "exhaustion") || !(level > 0) ) return null;
+    const key = suffix => `${MODULE_ID}.exhaustion.${suffix}`;
+    if ( rulesVersion() === "legacy" ) {
+      return Array.from({ length: Math.min(level, 6) }, (_, i) => game.i18n.localize(key(`legacy.${i + 1}`))).join(" ");
+    }
+    if ( level >= 6 ) return game.i18n.localize(key("modern.dead"));
+    // dnd5e's own numbers, or the rule's when its automation is switched off.
+    const reduction = CONFIG.DND5E?.conditionTypes?.exhaustion?.reduction ?? { rolls: 2, speed: 5 };
+    return game.i18n.format(key("modern.penalty"), {
+      rolls: (reduction.rolls ?? 2) * level,
+      speed: formatSpeed((reduction.speed ?? 5) * level, actor?.system?.attributes?.movement?.units)
+    });
+  },
+
+  /**
    * Who summoned this creature. dnd5e's Summon activity stamps each summon with the uuid of the
    * item that summoned it (`flags.dnd5e.summon.origin`); that item's actor is the summoner.
    */
@@ -202,6 +223,22 @@ function levelingMode() {
     return game.settings.get("dnd5e", "levelingMode");
   } catch {
     return null;
+  }
+}
+
+/**
+ * A length in feet, in the actor's movement units, as dnd5e writes it ("15 ft", "4.5 m").
+ * @param {number} feet
+ * @param {string} [units]
+ */
+function formatSpeed(feet, units) {
+  const utils = globalThis.dnd5e?.utils;
+  if ( !units || !utils?.convertLength || !utils.formatLength ) return `${feet} ft`;
+  try {
+    const { value } = utils.convertLength(feet, "ft", { to: units, legacy: false });
+    return utils.formatLength(value, units);
+  } catch {
+    return `${feet} ft`;
   }
 }
 
