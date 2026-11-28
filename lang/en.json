@@ -16,7 +16,9 @@
       "untarget": "Untarget",
       "arrivesLater": "Arrives in Round…",
       "arriveNow": "Arrive Now",
-      "swapInitiative": "Alert: Swap Initiative…"
+      "swapInitiative": "Alert: Swap Initiative…",
+      "actOnOwner": "Act on Owner's Initiative…",
+      "actOnOwn": "Act on Own Initiative"
     },
     "tooltip": {
       "hp": "HP",
@@ -153,6 +155,10 @@
       "allySwapConsent": {
         "name": "Allies Must Agree to a Swap",
         "hint": "When a character with the Alert feat (2024 rules) swaps initiative with an ally before the combat starts, the ally's player is asked first. If that player isn't connected, the GM is asked instead. Turn this off to swap straight away."
+      },
+      "autoAddSummons": {
+        "name": "Add Summons to Combat",
+        "hint": "When a creature is summoned (with D&D 5e's Summon activity) by someone in a combat on the same scene, add it to that combat, acting right after its summoner."
       },
       "hideUnseenFirstRound": {
         "name": "Reveal Enemies as They Act",
@@ -345,6 +351,16 @@
       "busy": "A swap for one of them is already waiting for an answer.",
       "noGM": "A GM needs to be connected to swap initiative.",
       "failed": "The GM's client didn't respond, so initiative wasn't swapped. Try again."
+    },
+    "companions": {
+      "title": "Act on Owner's Initiative",
+      "choose": "Who should {name} act after?",
+      "follow": "Act After Them",
+      "actsAfter": "Acts after {name}",
+      "actsAfterOwner": "Acts after its owner",
+      "unavailable": "That can't be done any more: someone may have left the combat, or already follows someone.",
+      "noGM": "A GM needs to be connected to change who acts after whom.",
+      "failed": "The GM's client didn't respond, so nothing changed. Try again."
     },
     "effects": {
       "removeTitle": "Remove Effect",

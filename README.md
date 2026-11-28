@@ -57,6 +57,14 @@ initiative with an ally. Right-click their card and choose **Alert: Swap Initiat
 ally. The ally's player is asked to agree (the GM, if that player isn't connected), unless you turn
 **Allies Must Agree to a Swap** off.
 
+**Pets and summons:** a companion that acts right after its owner (a Beast Master's beast, a Steel
+Defender, a familiar) can follow them in the order. Right-click its card and choose **Act on
+Owner's Initiative…**. If only one character could be its owner, that's it; otherwise pick who it
+acts after. It then keeps its place right after them, even when they re-roll or swap, and its card
+shows their initiative and a paw. **Act on Own Initiative** undoes it. Players can do this for
+their own creatures; the GM can link anything to anyone. Turn on **Add Summons to Combat** and a
+creature summoned with D&D 5e's Summon activity joins the combat after its summoner by itself.
+
 ### Your Turn and Up Next
 A banner drops under the bar when your turn begins, and one turn earlier when you're the next to
 act. Each player chooses a small banner, a large one or none, in **My Turn** in the module's
@@ -142,7 +150,8 @@ buttons above it:
   badges.
 - **What Players See**: names, hit points, initiative, effect descriptions, and whether
   enemies are revealed as they act or removed when defeated.
-- **Turns & Initiative**: the initiative roll window, Alert swaps, group turns and the action pips.
+- **Turns & Initiative**: the initiative roll window, Alert swaps, adding summons, group turns and
+  the action pips.
 - **Combat Start & End**: the sidebar switching to Chat, a playlist to play while the fight runs
   (what was playing before comes back afterwards), and the XP summary.
 - **My Turn**: open to every player, for their own turn banner and the on-your-turn conveniences
@@ -164,7 +173,7 @@ defeated enemies and their total XP, with dnd5e's Award button to hand it out (t
 |------------|------------|
 | Foundry VTT | v14 |
 | D&D 5e System | 6.0+ |
-| Verified On | Foundry 14.369 / D&D 5e 6.0.6 |
+| Verified On | Foundry 14.371 / D&D 5e 6.1.2 |
 
 ### For Developers
 Other modules can add portrait styles and read the bar through its API: see

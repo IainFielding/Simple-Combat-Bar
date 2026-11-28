@@ -112,15 +112,15 @@ describe("module.json styles", () => {
     expect(listed.filter(f => f.startsWith("styles/portrait/")).sort()).toEqual(onDisk.sort());
   });
 
-  it("scopes every rule under .scb-root, the tooltip or the event dialog", () => {
+  it("scopes every rule under .scb-root, the tooltip or one of the bar's dialogs", () => {
     const bad = [];
     for ( const file of listed.filter(f => f !== "styles/fonts.css") ) {
       const css = stripComments(readFileSync(file, "utf8"));
       for ( const [, selectors] of css.matchAll(/(?:^|})\s*([^{}@]+?)\s*\{/g) ) {
         for ( const sel of splitSelectors(selectors) ) {
           if ( !sel || /^(from|to|\d+%)$/.test(sel) ) continue;
-          const scoped = [".scb-root", "#tooltip.scb-tooltip", ".scb-event-dialog", ".scb-trackers-config",
-            "body.scb-hide-calendar"]
+          const scoped = [".scb-root", "#tooltip.scb-tooltip", ".scb-event-dialog", ".scb-follow-dialog",
+            ".scb-trackers-config", "body.scb-hide-calendar"]
             .some(p => sel.startsWith(p));
           if ( !scoped ) bad.push(`${file}: ${sel}`);
         }

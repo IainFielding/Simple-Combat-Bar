@@ -7,7 +7,7 @@
  *   node run.mjs --iterations=20                      # longer churn for the lifecycle suite
  *
  * Suites: lifecycle, budget, timing, ordering, permissions, events, arrivals, trackers, settingsUi, responsive,
- * economy, legendary, groupTurns, swap, effects, notices. The CTD world runs lifecycle, budget and timing only — the
+ * economy, legendary, groupTurns, swap, companions, effects, notices. The CTD world runs lifecycle, budget and timing only — the
  * others test behaviour that is ours. The control world (no combat UI module) runs timing only, so the
  * comparison can say what each module adds on top of Foundry and dnd5e themselves.
  *
@@ -28,11 +28,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,timing,ordering,permissions,events,arrivals,trackers,settingsUi,responsive,economy,legendary,groupTurns,swap,effects,notices").split(",");
+const wanted = option("suites", "lifecycle,budget,timing,ordering,permissions,events,arrivals,trackers,settingsUi,responsive,economy,legendary,groupTurns,swap,companions,effects,notices").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions", "events", "arrivals", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns", "swap", "effects", "notices"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events", "arrivals", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns", "swap", "companions", "effects", "notices"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -95,6 +95,24 @@ async function listeners(session) {
 }
 
 const SUITES = {
+
+  /**
+   * Companions, for performance: each owner re-roll costs exactly one placement write, the bar
+   * redraws a bounded number of times, nothing keeps writing afterwards, and the right-click
+   * candidate lookup stays cheap at 30 combatants.
+   */
+  async companions(gm) {
+    const r = await gm.eval(() => __scb.companionsPerf());
+    const failures = [...r.failures];
+    if ( r.flushesPerReroll > 3 ) failures.push(`${r.flushesPerReroll} bar flushes per re-roll (budget 3)`);
+    if ( r.lookupMedianMs > 2 ) failures.push(`candidate lookup median ${r.lookupMedianMs}ms (budget 2ms)`);
+    const lines = [
+      `writes per re-roll ${r.writesPerReroll}, flushes per re-roll ${r.flushesPerReroll} (${r.rerolls} re-rolls)`,
+      `candidate lookup at 30 combatants: median ${r.lookupMedianMs}ms, max ${r.lookupMaxMs}ms`,
+      ...failures
+    ];
+    return { pass: !failures.length, failures, lines, metrics: r };
+  },
 
   /** Churn whole combats; everything must come back to where it started. */
   async lifecycle(session, subject) {

@@ -71,6 +71,13 @@ describe("buildPortraitModel", () => {
     expect(buildPortraitModel(facts({ initiative: 3, isOwner: true }), ctx()).canRoll).toBe(false);
   });
 
+  it("gives a companion no roll button: it goes when its owner does", () => {
+    const m = buildPortraitModel(facts({ initiative: null, isOwner: true, isCompanion: true, leaderName: "Aoth" }), ctx());
+    expect(m.canRoll).toBe(false);
+    expect(m.companion).toBe(true);
+    expect(m.leaderName).toBe("Aoth");
+  });
+
   it("is made only of primitives, so comparison is exact", () => {
     const m = buildPortraitModel(facts(), ctx());
     for ( const v of Object.values(m) ) expect(v === null || typeof v !== "object").toBe(true);

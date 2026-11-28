@@ -582,3 +582,27 @@
 .scb-root.is-compact .scb-portrait:not(.is-current) :is(.scb-name, .scb-effects, .scb-legendary) {
   display: none;
 }
+
+/* ---------------------------------------------------------------- companions
+   A pet or summon acting right after its owner (companion-service.mjs): a small paw on the
+   card's lower left. The tooltip says whose. */
+.scb-root .scb-portrait.is-companion::after {
+  content: "\f1b0";
+  position: absolute;
+  z-index: 2;
+  left: 3px;
+  bottom: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max(14px, calc(var(--scb-size) * 0.22));
+  height: max(14px, calc(var(--scb-size) * 0.22));
+  border-radius: 50%;
+  border: 1px solid var(--scb-side, var(--dnd5e-color-gold, #9f9275));
+  background: rgba(10, 10, 12, 0.9);
+  font-family: var(--font-awesome, "Font Awesome 7 Pro");
+  font-weight: 900;
+  font-size: max(8px, calc(var(--scb-size) * 0.12));
+  color: var(--scb-bright);
+  pointer-events: none;
+}

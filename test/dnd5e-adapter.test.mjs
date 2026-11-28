@@ -56,6 +56,13 @@ describe("dnd5e adapter", () => {
   it("writes the award enricher", () => {
     expect(dnd5eAdapter.awardCommand(450)).toBe("[[/award 450xp]]");
   });
+
+  it("offers no award when the world levels without XP", () => {
+    game.settings._values.levelingMode = "noxp";
+    expect(dnd5eAdapter.awardCommand(450)).toBeNull();
+    game.settings._values.levelingMode = "xpBoons";
+    expect(dnd5eAdapter.awardCommand(450)).toBe("[[/award 450xp]]");
+  });
 });
 
 describe("dnd5e initiative dialog", () => {

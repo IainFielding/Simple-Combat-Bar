@@ -17,6 +17,8 @@ import { economyProvider, spendSlot } from "./systems/economy.mjs";
 import { groupContext, registerGroupQuery } from "./ui/group-service.mjs";
 import { registerSwapQueries } from "./ui/swap-service.mjs";
 import { afterTurnChange, skipBeforeUpdate } from "./ui/arrival-service.mjs";
+import { addSummon, guardCompanionInitiative, installCompanionSort, registerCompanionQueries, schedulePlacement }
+  from "./ui/companion-service.mjs";
 import { restoresEconomy } from "./model/group-turns.mjs";
 import { tallyDefeated } from "./model/xp-award.mjs";
 import { DISPOSITIONS } from "./model/visibility.mjs";
@@ -41,6 +43,7 @@ Hooks.once("init", () => {
   registerKeybindings(() => bar);
   registerGroupQuery();
   registerSwapQueries();
+  registerCompanionQueries();
   game.modules.get(MODULE_ID).api = api;
   Hooks.callAll(HOOKS.init, api);
   registerAdapterSettings(() => bar);
@@ -66,6 +69,17 @@ Hooks.once("ready", () => {
     if ( ("round" in changes) || ("turn" in changes) ) startCombatMusic(combat);
     afterTurnChange(combat, changes, options);
   });
+  // Companions: a roll for one is put where it belongs before it's sent (on the sending client),
+  // and the active GM moves them after any change that could leave one out of place.
+  installCompanionSort();
+  Hooks.on("preUpdateCombatant", guardCompanionInitiative);
+  Hooks.on("updateCombatant", (combatant, changes) => {
+    const ours = changes.flags?.[MODULE_ID] ?? {};
+    if ( ("initiative" in changes) || ("follows" in ours) || ("-=follows" in ours) ) schedulePlacement(combatant.combat);
+  });
+  Hooks.on("createCombatant", combatant => schedulePlacement(combatant.combat));
+  Hooks.on("deleteCombatant", combatant => schedulePlacement(combatant.combat));
+  Hooks.on("createToken", tokenDoc => addSummon(tokenDoc));
   Hooks.on("canvasReady", sync);
   Hooks.on("renderCombatTracker", () => {
     // The sidebar's viewed combat can change without any combat document changing (the encounter
@@ -195,7 +209,8 @@ async function postXPSummary(combat) {
   const num = n => n.toLocaleString(game.i18n.lang);
   const items = lines.map(l => `<li>${t("xp.line", { count: l.count, name: `<strong>${esc(l.name)}</strong>` })}
     <span class="hint">(${t("xp.each", { xp: num(l.xp) })})</span></li>`);
-  const award = (total > 0) && adapter.awardCommand ? `<p>${adapter.awardCommand(total)}</p>` : "";
+  const command = (total > 0) ? adapter.awardCommand?.(total) : null;
+  const award = command ? `<p>${command}</p>` : "";
   await ChatMessage.create({
     content: `<h3>${t("xp.heading")}</h3><ul>${items.join("")}</ul>
       <p><strong>${t("xp.total", { xp: num(total) })}</strong></p>${award}`,

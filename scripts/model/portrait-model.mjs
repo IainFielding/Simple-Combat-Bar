@@ -27,7 +27,9 @@ import { effectIcons } from "./effects.mjs";
  * @property {boolean} isPC             Actor has a player owner.
  * @property {boolean} hidden
  * @property {boolean} defeated
- * @property {number|null} initiative
+ * @property {number|null} initiative  A companion's is its owner's.
+ * @property {boolean} [isCompanion]   Acts on its owner's initiative (model/companions.mjs).
+ * @property {string|null} [leaderName]  That owner's name, if this viewer may know it.
  * @property {number|null} tokenDisplayName
  * @property {{value: number|null, max: number|null, temp: number|null}|null} hp
  * @property {"healthy"|"bloodied"|"down"|null} [healthHint]
@@ -108,7 +110,10 @@ export function buildPortraitModel(facts, { settings, current, acted, run, activ
     defeated: facts.defeated,
     owner: facts.isOwner,
     initiative,
-    canRoll: !rolled && (facts.isOwner || facts.isGM) && !facts.isEvent,
+    // A companion rolls nothing: it goes when its owner does.
+    canRoll: !rolled && (facts.isOwner || facts.isGM) && !facts.isEvent && !facts.isCompanion,
+    companion: !!facts.isCompanion,
+    leaderName: facts.leaderName ?? null,
     hpShown: (hpMode !== "none") && ((hpPct !== null) || (hpState !== "unknown")),
     // The bar needs a number; a viewer who only knows the state gets the damage fill instead.
     hpBar: settings.hpBar && (hpMode !== "none") && (hpPct !== null),

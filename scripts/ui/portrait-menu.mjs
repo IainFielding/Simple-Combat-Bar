@@ -1,6 +1,6 @@
 /**
  * The portrait right-click menu: make current, pan, ping, target, initiative, Alert's initiative
- * swap, late arrival, hide, defeat, edit and remove.
+ * swap, companions, late arrival, hide, defeat, edit and remove.
  *
  * Each entry looks the combatant up from the clicked portrait when the menu opens, in whatever
  * combat the bar is showing then: the menu is built once per session, not per combat.
@@ -8,6 +8,7 @@
 
 import { arrive, isWaiting, openArrivalDialog } from "./arrival-service.mjs";
 import { swapTargets } from "./swap-service.mjs";
+import { followTargets, isCompanion, openFollowDialog, requestFollow } from "./companion-service.mjs";
 
 /**
  * The menu's entries, for core's ContextMenu.
@@ -67,15 +68,29 @@ export function portraitMenuOptions(bar, { selectAndPan, rollInitiative, openSwa
     {
       label: "COMBATANT.ACTIONS.Reroll",
       icon: '<i class="fa-solid fa-dice-d20"></i>',
-      visible: li => gm() || !!combatantOf(li)?.isOwner,
+      // A companion's initiative is its owner's: "Act on Own Initiative" first.
+      visible: li => (gm() || !!combatantOf(li)?.isOwner) && !isCompanion(combatantOf(li)),
       // The click event carries Shift / Ctrl, which skip the roll window as on the d20.
       onClick: (event, li) => combatantOf(li) && rollInitiative(combatantOf(li), event)
     },
     {
       label: "COMBATANT.ACTIONS.Clear",
       icon: '<i class="fa-solid fa-eraser"></i>',
-      visible: li => gm() && (combatantOf(li)?.initiative !== null),
+      visible: li => gm() && (combatantOf(li)?.initiative !== null) && !isCompanion(combatantOf(li)),
       onClick: (_event, li) => combatantOf(li)?.update({ initiative: null })
+    },
+    {
+      // A pet or summon acting right after its owner. Asks who, unless there's only one choice.
+      label: "sogrom-simple-combat-bar.context.actOnOwner",
+      icon: '<i class="fa-solid fa-paw"></i>',
+      visible: li => followTargets(combatantOf(li)).length > 0,
+      onClick: (_event, li) => combatantOf(li) && openFollowDialog(combatantOf(li))
+    },
+    {
+      label: "sogrom-simple-combat-bar.context.actOnOwn",
+      icon: '<i class="fa-solid fa-link-slash"></i>',
+      visible: li => isCompanion(combatantOf(li)) && (gm() || !!combatantOf(li)?.isOwner),
+      onClick: (_event, li) => combatantOf(li) && requestFollow(combatantOf(li), null)
     },
     {
       // Alert (2024): before the combat starts, swap initiative with an ally. Core's menu can't
