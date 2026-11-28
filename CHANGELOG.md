@@ -24,6 +24,11 @@ All notable changes to Simple Combat Bar.
 - **Exhaustion level on the card.** Exhaustion's icon shows its level, and the tooltip says what
   that level does under the rules in play: under the 2024 rules, the total penalty to D20 Tests and
   Speed (in the world's units); under the 2014 rules, every level's effect so far.
+- **Mark Surprised.** Before the combat starts, the GM can right-click a card and choose **Mark
+  Surprised**. Under the 2024 rules it rolls initiative with Disadvantage (D&D 5e applies that), and
+  the bar clears Surprised once that roll is in. Under the 2014 rules its card shows every pip spent
+  until its first turn ends, since it can't move, act or react until then, and the bar clears
+  Surprised as that turn ends. **Clear Surprised** takes it off by hand.
 
 ### Changed
 
@@ -39,6 +44,7 @@ All notable changes to Simple Combat Bar.
   and `setInspiration`.
 - System adapters can explain a leveled condition's current level in the tooltip with a new
   optional member, `conditionLevelText`.
+- System adapters can offer surprise with two new optional members, `surprise` and `setSurprised`.
 
 ## 0.9.0
 

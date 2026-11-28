@@ -26,7 +26,9 @@
       "use": {
         "heroic": "Use Heroic Inspiration",
         "legacy": "Use Inspiration"
-      }
+      },
+      "markSurprised": "Mark Surprised",
+      "clearSurprised": "Clear Surprised"
     },
     "tooltip": {
       "hp": "HP",
@@ -365,6 +367,10 @@
         "5": "Speed reduced to 0.",
         "6": "Death."
       }
+    },
+    "surprise": {
+      "modern": "Surprised: rolls initiative with Disadvantage.",
+      "legacy": "Surprised: can't move or take an action on its first turn, nor a reaction until that turn ends."
     },
     "groupTurns": {
       "takeTurn": "Click to take this turn",

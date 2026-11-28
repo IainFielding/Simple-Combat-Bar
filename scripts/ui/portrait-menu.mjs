@@ -10,6 +10,7 @@ import { arrive, isWaiting, openArrivalDialog } from "./arrival-service.mjs";
 import { swapTargets } from "./swap-service.mjs";
 import { followTargets, isCompanion, openFollowDialog, requestFollow } from "./companion-service.mjs";
 import { adapterFor } from "../systems/adapter.mjs";
+import { canClearSurprised, canMarkSurprised, setSurprised } from "./surprise-service.mjs";
 
 /**
  * The menu's entries, for core's ContextMenu.
@@ -102,6 +103,19 @@ export function portraitMenuOptions(bar, { selectAndPan, rollInitiative, openSwa
       onClick: (event, li) => combatantOf(li) && openSwapMenu(combatantOf(li), li, event)
     },
     ...inspirationOptions(combatantOf),
+    {
+      // Before the fight: who is caught off guard. The bar takes it off again (surprise-service.mjs).
+      label: "sogrom-simple-combat-bar.context.markSurprised",
+      icon: '<i class="fa-solid fa-bolt-lightning"></i>',
+      visible: li => canMarkSurprised(combatantOf(li)),
+      onClick: (_event, li) => setSurprised(combatantOf(li), true)
+    },
+    {
+      label: "sogrom-simple-combat-bar.context.clearSurprised",
+      icon: '<i class="fa-solid fa-bolt-lightning"></i>',
+      visible: li => canClearSurprised(combatantOf(li)),
+      onClick: (_event, li) => setSurprised(combatantOf(li), false)
+    },
     {
       label: "sogrom-simple-combat-bar.context.arrivesLater",
       icon: '<i class="fa-solid fa-door-open"></i>',

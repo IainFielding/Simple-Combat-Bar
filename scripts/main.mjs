@@ -17,6 +17,7 @@ import { economyProvider, spendSlot } from "./systems/economy.mjs";
 import { groupContext, registerGroupQuery } from "./ui/group-service.mjs";
 import { registerSwapQueries } from "./ui/swap-service.mjs";
 import { afterTurnChange, skipBeforeUpdate } from "./ui/arrival-service.mjs";
+import { afterInitiative, afterTurn } from "./ui/surprise-service.mjs";
 import { addSummon, guardCompanionInitiative, installCompanionSort, registerCompanionQueries, schedulePlacement }
   from "./ui/companion-service.mjs";
 import { restoresEconomy } from "./model/group-turns.mjs";
@@ -80,6 +81,9 @@ Hooks.once("ready", () => {
   Hooks.on("createCombatant", combatant => schedulePlacement(combatant.combat));
   Hooks.on("deleteCombatant", combatant => schedulePlacement(combatant.combat));
   Hooks.on("createToken", tokenDoc => addSummon(tokenDoc));
+  // Surprise wears off once it has done its work: the initiative roll (2024) or the first turn (2014).
+  Hooks.on("updateCombatant", (combatant, changes) => afterInitiative(combatant, changes));
+  Hooks.on("combatTurnChange", (combat, prior) => afterTurn(combat, prior));
   Hooks.on("canvasReady", sync);
   Hooks.on("renderCombatTracker", () => {
     // The sidebar's viewed combat can change without any combat document changing (the encounter

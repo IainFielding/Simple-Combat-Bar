@@ -86,6 +86,7 @@ export function buildTooltip(model, attributes = [],
     root.append(row("fa-solid fa-star", t(`inspiration.${model.inspiration}`)));
     root.append(el("p", "scb-tt-effect-desc", t(`inspiration.${model.inspiration}Hint`)));
   }
+  if ( model.surprised ) root.append(row("fa-solid fa-bolt-lightning", t(`surprise.${model.surprised}`)));
   if ( model.companion ) {
     root.append(row("fa-solid fa-paw", model.leaderName
       ? t("companions.actsAfter", { name: model.leaderName }) : t("companions.actsAfterOwner")));

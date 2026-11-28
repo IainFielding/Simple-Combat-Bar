@@ -198,6 +198,20 @@ export const dnd5eAdapter = {
   },
 
   /**
+   * dnd5e's Surprised status, and which rules it follows. 2024 ("modern"): Disadvantage on the
+   * initiative roll, which dnd5e applies itself, and nothing after. 2014 ("legacy"): no move,
+   * action or reaction on the creature's first turn, and no reaction until that turn ends.
+   */
+  surprise(actor) {
+    if ( !actor?.statuses ) return null;
+    return { surprised: actor.statuses.has("surprised"), rules: rulesVersion() === "legacy" ? "legacy" : "modern" };
+  },
+
+  async setSurprised(actor, active) {
+    await actor?.toggleStatusEffect?.("surprised", { active: !!active });
+  },
+
+  /**
    * Who summoned this creature. dnd5e's Summon activity stamps each summon with the uuid of the
    * item that summoned it (`flags.dnd5e.summon.origin`); that item's actor is the summoner.
    */
