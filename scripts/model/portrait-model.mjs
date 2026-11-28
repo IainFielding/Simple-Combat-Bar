@@ -41,6 +41,8 @@ import { effectIcons } from "./effects.mjs";
  * @property {{action: boolean, bonus: boolean, reaction: boolean}|null} [economy]  Spent slots.
  * @property {{active: boolean, rules: "heroic"|"legacy"}|null} [inspiration]  A character's Inspiration.
  * @property {"modern"|"legacy"|null} [surprised]  Surprised, and under which rules.
+ * @property {{used: string, speed: string, units: string, state: string}|null} [movement]
+ *           Moved this turn against its speed (model/movement.mjs).
  * @property {string|null} description
  * @property {boolean} isEvent          An "Add Event" pseudo-combatant.
  * @property {number|null} eventRoundsLeft
@@ -131,6 +133,9 @@ export function buildPortraitModel(facts, { settings, current, acted, run, activ
     inspiration: facts.inspiration?.active ? facts.inspiration.rules : null,
     canUseInspiration: !!facts.inspiration?.active && (facts.isOwner || facts.isGM),
     surprised: facts.surprised ?? null,
+    // Movement this turn: on the acting card only. Everyone else's history is what they were
+    // moved during someone else's turn, which isn't theirs to spend.
+    ...movementFields(facts, current),
     ...effectFields(facts),
     hpState,
     hpPct: hpMode === "none" ? null : hpPct,
@@ -152,6 +157,13 @@ export function buildPortraitModel(facts, { settings, current, acted, run, activ
 function effectFields(facts) {
   const { icons, extra } = effectIcons(facts.effects ?? []);
   return { effects: JSON.stringify(icons), effectsExtra: extra };
+}
+
+/** Flat movement fields: the model stays primitives only. */
+function movementFields(facts, current) {
+  const m = current ? facts.movement ?? null : null;
+  return { moveUsed: m?.used ?? null, moveSpeed: m?.speed ?? null, moveUnits: m?.units ?? null,
+    moveState: m?.state ?? null };
 }
 
 /** Flat legendary fields: the model stays primitives only. */

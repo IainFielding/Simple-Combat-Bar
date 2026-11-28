@@ -111,6 +111,7 @@ export class PortraitView {
     if ( changed.some(f => f.startsWith("leg") || (f === "canAdjustLegendary")) ) this.#patchLegendary(model);
     if ( changed.some(f => f.startsWith("effects")) ) this.#patchEffects(model);
     if ( changed.some(f => (f === "inspiration") || (f === "canUseInspiration")) ) this.#patchInspiration(model);
+    if ( changed.some(f => f.startsWith("move")) ) this.#patchMovement(model);
     this.model = model;
     return changed;
   }
@@ -182,6 +183,22 @@ export class PortraitView {
     star.setAttribute("aria-label", name);
     star.dataset.tooltip = model.canUseInspiration
       ? game.i18n.format("sogrom-simple-combat-bar.inspiration.clickToUse", { name }) : name;
+  }
+
+  #patchMovement(model) {
+    const box = this.#slots.move;
+    if ( !box ) return;
+    box.hidden = model.moveUsed === null;
+    if ( model.moveUsed === null ) {
+      delete box.dataset.state;
+      box.dataset.tooltip = "";
+      return;
+    }
+    const data = { used: model.moveUsed, speed: model.moveSpeed, units: model.moveUnits };
+    box.dataset.state = model.moveState;
+    box.querySelector("span").textContent = game.i18n.format("sogrom-simple-combat-bar.movement.card", data);
+    box.dataset.tooltip = game.i18n.format(`sogrom-simple-combat-bar.movement.${model.moveState}`, data);
+    box.setAttribute("aria-label", box.dataset.tooltip);
   }
 
   #patchLegendary(model) {

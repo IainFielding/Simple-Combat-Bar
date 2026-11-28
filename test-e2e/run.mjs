@@ -28,11 +28,11 @@ const argv = process.argv.slice(2);
 const option = (name, fallback) => argv.find(a => a.startsWith(`--${name}=`))?.split("=")[1] ?? fallback;
 const worlds = argv.filter(a => !a.startsWith("--"));
 if ( !worlds.length ) worlds.push("playwright-combat");
-const wanted = option("suites", "lifecycle,budget,timing,ordering,permissions,events,arrivals,trackers,settingsUi,responsive,economy,legendary,groupTurns,swap,companions,effects,notices").split(",");
+const wanted = option("suites", "lifecycle,budget,timing,ordering,permissions,events,arrivals,trackers,settingsUi,responsive,economy,legendary,groupTurns,swap,companions,movement,effects,notices").split(",");
 const iterations = Number(option("iterations", 10));
 
 /** Suites that only make sense for this module. */
-const SCB_ONLY = new Set(["ordering", "permissions", "events", "arrivals", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns", "swap", "companions", "effects", "notices"]);
+const SCB_ONLY = new Set(["ordering", "permissions", "events", "arrivals", "trackers", "settingsUi", "responsive", "economy", "legendary", "groupTurns", "swap", "companions", "movement", "effects", "notices"]);
 
 /**
  * Budgets the lifecycle suite enforces for this module. The CTD world is measured, not judged.
@@ -95,6 +95,12 @@ async function listeners(session) {
 }
 
 const SUITES = {
+
+  /** Movement this turn on the acting card: counts up, turns amber past speed, starts again next turn. */
+  async movement(gm) {
+    const r = await gm.eval(() => __scb.movementCheck());
+    return { pass: !r.failures.length, failures: r.failures, lines: r.failures };
+  },
 
   /**
    * Companions, for performance: each owner re-roll costs exactly one placement write, the bar

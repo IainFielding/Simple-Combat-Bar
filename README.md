@@ -126,6 +126,8 @@ losing ties), then right-click its portrait and choose **Arrives in Round…**.
 - **A gold star** while a character has Heroic Inspiration (2024 rules) or Inspiration (2014
   rules). Its tooltip says what it does under the rules in play. The owner or GM clicks it to use
   it; the GM gives it from the card's right-click menu.
+- **Movement this turn**, on the acting combatant's card: how far its token has moved against its
+  speed, as D&D 5e's ruler measures it. Amber past its speed (Dash), red past twice it.
 - **A second bar** under the hit points, for any resource with a maximum: legendary actions, spell
   slots, a class resource. Pick it in **Configure Trackers**.
 

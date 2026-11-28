@@ -212,6 +212,20 @@ export const dnd5eAdapter = {
   },
 
   /**
+   * A creature's speed for a movement action, as dnd5e's token ruler reads it: the action's own
+   * speed, or walking speed when that's higher and the action may fall back to walking (crawling,
+   * jumping). Exhaustion, conditions and encumbrance are already in it, under either rule set.
+   */
+  movementSpeed(actor, action) {
+    const speeds = actor?.system?.attributes?.movement?.speeds;
+    if ( !speeds || !actor.system.isCreature ) return null;
+    let speed = speeds[action] ?? 0;
+    const type = CONFIG.DND5E?.movementTypes?.[action];
+    if ( !type || type.walkFallback ) speed = Math.max(speed, speeds.walk ?? 0);
+    return Number.isFinite(speed) ? speed : null;
+  },
+
+  /**
    * Who summoned this creature. dnd5e's Summon activity stamps each summon with the uuid of the
    * item that summoned it (`flags.dnd5e.summon.origin`); that item's actor is the summoner.
    */

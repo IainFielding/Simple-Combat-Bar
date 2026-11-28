@@ -7,7 +7,7 @@
  *
  * Slots a style must contain (each marked with `data-slot`): img, initiative, hp, name, damage.
  * Slots it may contain, skipped where missing: bar2, rounds, arrives, pips, legendary, inspiration,
- * effects (the built-in styles take these from the shared fragments below).
+ * move, effects (the built-in styles take these from the shared fragments below).
  * Buttons it may contain (each marked with `data-action`): rollInitiative, useInspiration.
  */
 
@@ -58,6 +58,10 @@ const LEGENDARY = `
 const INSPIRATION = `
   <button type="button" class="scb-inspiration" data-slot="inspiration" data-action="useInspiration" tabindex="-1"
     hidden><i class="fa-solid fa-star"></i></button>`;
+
+/** Movement this turn against speed, bottom-right above the name, on the acting card. */
+const MOVEMENT = `
+  <span class="scb-move" data-slot="move" hidden><i class="fa-solid fa-shoe-prints"></i><span></span></span>`;
 
 /** Status effect icons, bottom-left above the name, each with a ring for the duration left. */
 const EFFECTS = `<ul class="scb-effects is-empty" data-slot="effects"></ul>`;
@@ -128,6 +132,7 @@ registerPortraitStyle({
       ${LEGENDARY}
       ${INSPIRATION}
       ${EFFECTS}
+      ${MOVEMENT}
     </div>
     <span class="scb-init" data-slot="initiative"></span>
     ${ROLL_BUTTON}
@@ -148,6 +153,7 @@ registerPortraitStyle({
       ${LEGENDARY}
       ${INSPIRATION}
       ${EFFECTS}
+      ${MOVEMENT}
       <span class="scb-init" data-slot="initiative"></span>
       ${ROLL_BUTTON}
       <span class="scb-name" data-slot="name"></span>

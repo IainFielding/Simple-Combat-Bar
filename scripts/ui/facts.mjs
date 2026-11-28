@@ -12,6 +12,7 @@ import { secondaryBar } from "../model/trackers.mjs";
 import { effectLevel } from "../model/effects.mjs";
 import { economyProvider } from "../systems/economy.mjs";
 import { surpriseOf } from "./surprise-service.mjs";
+import { formatDistance, movementAction, movementState, movementUsed } from "../model/movement.mjs";
 
 /**
  * @param {Combatant} combatant
@@ -76,6 +77,9 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
     economy: settings.trackEconomy && !isEvent
       ? ((surprised === "legacy") ? SURPRISED_ECONOMY : safe(() => economyProvider().read(combatant))) : null,
     surprised,
+    // Like HP numbers: only for viewers who receive the actor's data.
+    movement: settings.movementTracker && actor && tokenDoc && !isEvent && trustsHP && combatant.combat?.started
+      ? safe(() => readMovement(tokenDoc, actor, adapter)) : null,
     description: actor && !isEvent ? safe(() => adapter.describe(actor)) : null,
     isEvent,
     eventRoundsLeft,
@@ -85,6 +89,23 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
 
 /** Every slot spent: a combatant surprised under the 2014 rules has none to use yet. */
 const SURPRISED_ECONOMY = Object.freeze({ action: true, bonus: true, reaction: true });
+
+/**
+ * How far a combatant's token has moved this turn, against its speed for the way it's moving.
+ * @returns {{used: string, speed: string, units: string, state: "normal"|"dash"|"over"}|null}
+ */
+function readMovement(tokenDoc, actor, adapter) {
+  const history = tokenDoc.movementHistory ?? [];
+  const speed = adapter.movementSpeed?.(actor, movementAction(history, tokenDoc.movementAction));
+  if ( (speed === null) || (speed === undefined) ) return null;
+  // Core's plain measurement of each step's distance, for steps recorded without a canvas (costed at 0).
+  const measured = history.length > 1
+    ? (tokenDoc.measureMovementPath?.(history)?.waypoints ?? []).map(w => w?.backward?.distance ?? null) : [];
+  const moves = action => (action !== "displace") && !CONFIG.Token?.movement?.actions?.[action]?.teleport;
+  const used = movementUsed(history, measured, moves);
+  return { used: formatDistance(used), speed: formatDistance(speed), units: tokenDoc.parent?.grid?.units ?? "",
+    state: movementState(used, speed) };
+}
 
 /** Statuses the card already shows another way, left off its icons (the tooltip still lists them). */
 const CARD_SKIPS = Object.freeze(["bloodied"]);

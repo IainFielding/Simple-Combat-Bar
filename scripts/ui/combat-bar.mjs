@@ -213,6 +213,8 @@ export class CombatBar {
     life.hook("deleteChatMessage", message => hold.finished(message.id));
     life.hook("updateActor", (actor, changes) => this.#onUpdateActor(actor, changes));
     life.hook("updateToken", (token, changes) => this.#onUpdateToken(token, changes));
+    // Movement recorded or cleared (core clears it at each turn's start without an updateToken).
+    life.hook("recordToken", token => this.#onMovement(token));
     life.hook("createActiveEffect", effect => this.#onEffect(effect));
     life.hook("deleteActiveEffect", effect => this.#onEffect(effect));
     life.hook("updateActiveEffect", effect => this.#onEffect(effect));
@@ -409,6 +411,11 @@ export class CombatBar {
     const ids = this.#combatantIdsFor(c => c.token === token);
     if ( "disposition" in changes ) this.#scheduler.markOrder();
     for ( const id of ids ) this.#scheduler.markDirty(id);
+  }
+
+  #onMovement(token) {
+    if ( !settings().movementTracker ) return;
+    for ( const id of this.#combatantIdsFor(c => c.token === token) ) this.#scheduler.markDirty(id);
   }
 
   #onEffect(effect) {

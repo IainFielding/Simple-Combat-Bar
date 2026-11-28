@@ -29,6 +29,12 @@ All notable changes to Simple Combat Bar.
   the bar clears Surprised once that roll is in. Under the 2014 rules its card shows every pip spent
   until its first turn ends, since it can't move, act or react until then, and the bar clears
   Surprised as that turn ends. **Clear Surprised** takes it off by hand.
+- **Movement this turn.** The acting combatant's card shows how far its token has moved this turn
+  against its speed, for example **20/30 ft**, measured the way D&D 5e's ruler measures it
+  (difficult terrain included). It turns amber past its speed (Dash) and red past twice it, and
+  starts again each turn. Speed is D&D 5e's own, so Exhaustion, conditions and encumbrance already
+  count under either rule set. Shown to the GM and those who can see the creature's sheet; turn it
+  off with **Movement This Turn**, under Turns & Initiative.
 
 ### Changed
 
@@ -45,6 +51,8 @@ All notable changes to Simple Combat Bar.
 - System adapters can explain a leveled condition's current level in the tooltip with a new
   optional member, `conditionLevelText`.
 - System adapters can offer surprise with two new optional members, `surprise` and `setSurprised`.
+- System adapters can give a creature's speed for each movement action with a new optional member,
+  `movementSpeed`.
 
 ## 0.9.0
 
