@@ -500,7 +500,7 @@ export class CombatBar {
         this.stats.creates++;
       }
       if ( fresh || everything || ids.has(item.id) ) {
-        const facts = combatantFacts(combatant, { adapter, settings: cfg });
+        const facts = combatantFacts(combatant, { adapter, settings: cfg, current: item.current });
         const canTakeTurn = (cfg.groupTeams === "bg3") && item.activeRun && !item.ended && !item.current
           && !combatant.isDefeated && (combatant.isOwner || game.user.isGM);
         const model = buildPortraitModel(facts, { settings: cfg, current: item.current, acted: item.acted,
