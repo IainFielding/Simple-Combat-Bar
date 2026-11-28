@@ -6,7 +6,7 @@
   "compatibility": {
     "minimum": "14.359",
     "maximum": "14.999",
-    "verified": "14.369"
+    "verified": "14.371"
   },
   "authors": [
     {
@@ -23,7 +23,7 @@
         "compatibility": {
           "minimum": "6.0.0",
           "maximum": "6.99.99",
-          "verified": "6.0.6"
+          "verified": "6.1.2"
         }
       }
     ]
