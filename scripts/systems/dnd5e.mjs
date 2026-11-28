@@ -163,6 +163,20 @@ export const dnd5eAdapter = {
   },
 
   /**
+   * A character's Inspiration: Heroic Inspiration under the 2024 rules, plain Inspiration under the
+   * 2014 rules. dnd5e keeps both in the same switch; only what it does differs.
+   */
+  inspiration(actor) {
+    if ( actor?.type !== "character" ) return null;
+    return { active: !!actor.system?.attributes?.inspiration, rules: rulesVersion() === "legacy" ? "legacy" : "heroic" };
+  },
+
+  async setInspiration(actor, active) {
+    if ( actor?.type !== "character" ) return;
+    await actor.update({ "system.attributes.inspiration": !!active });
+  },
+
+  /**
    * Who summoned this creature. dnd5e's Summon activity stamps each summon with the uuid of the
    * item that summoned it (`flags.dnd5e.summon.origin`); that item's actor is the summoner.
    */

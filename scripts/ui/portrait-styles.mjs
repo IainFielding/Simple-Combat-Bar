@@ -6,9 +6,9 @@
  * lives in `styles/portrait/<id>.css`, scoped under `.scb-root[data-style="<id>"]`.
  *
  * Slots a style must contain (each marked with `data-slot`): img, initiative, hp, name, damage.
- * Slots it may contain, skipped where missing: bar2, rounds, arrives, pips, legendary, effects (the
- * built-in styles take these from the shared fragments below).
- * Buttons it may contain (each marked with `data-action`): rollInitiative.
+ * Slots it may contain, skipped where missing: bar2, rounds, arrives, pips, legendary, inspiration,
+ * effects (the built-in styles take these from the shared fragments below).
+ * Buttons it may contain (each marked with `data-action`): rollInitiative, useInspiration.
  */
 
 const SHARED_FLAGS = `
@@ -50,6 +50,14 @@ const LEGENDARY = `
     <button type="button" class="scb-leg scb-leg-resistances" data-action="legendary" data-kind="resistances"
       tabindex="-1"><i class="fa-solid fa-shield-halved"></i><span></span></button>
   </div>`;
+
+/**
+ * A character's (Heroic) Inspiration, under the initiative badge where a monster's legendary
+ * counters go (nobody has both). Shown only while they have it; the owner or GM clicks to use it.
+ */
+const INSPIRATION = `
+  <button type="button" class="scb-inspiration" data-slot="inspiration" data-action="useInspiration" tabindex="-1"
+    hidden><i class="fa-solid fa-star"></i></button>`;
 
 /** Status effect icons, bottom-left above the name, each with a ring for the duration left. */
 const EFFECTS = `<ul class="scb-effects is-empty" data-slot="effects"></ul>`;
@@ -118,6 +126,7 @@ registerPortraitStyle({
       ${SHARED_FLAGS}
       ${PIPS}
       ${LEGENDARY}
+      ${INSPIRATION}
       ${EFFECTS}
     </div>
     <span class="scb-init" data-slot="initiative"></span>
@@ -137,6 +146,7 @@ registerPortraitStyle({
       ${SHARED_FLAGS}
       ${PIPS}
       ${LEGENDARY}
+      ${INSPIRATION}
       ${EFFECTS}
       <span class="scb-init" data-slot="initiative"></span>
       ${ROLL_BUTTON}

@@ -110,6 +110,7 @@ export class PortraitView {
     if ( changed.some(f => f.startsWith("pip") || (f === "canTogglePips")) ) this.#patchPips(model);
     if ( changed.some(f => f.startsWith("leg") || (f === "canAdjustLegendary")) ) this.#patchLegendary(model);
     if ( changed.some(f => f.startsWith("effects")) ) this.#patchEffects(model);
+    if ( changed.some(f => (f === "inspiration") || (f === "canUseInspiration")) ) this.#patchInspiration(model);
     this.model = model;
     return changed;
   }
@@ -157,6 +158,23 @@ export class PortraitView {
     }
     list.replaceChildren(...items);
     list.classList.toggle("is-empty", !items.length);
+  }
+
+  #patchInspiration(model) {
+    const star = this.#slots.inspiration;
+    if ( !star ) return;
+    star.hidden = !model.inspiration;
+    star.disabled = !model.canUseInspiration;
+    if ( !model.inspiration ) {
+      star.dataset.tooltip = "";
+      star.removeAttribute("aria-label");
+      return;
+    }
+    const key = `sogrom-simple-combat-bar.inspiration.${model.inspiration}`;
+    const name = game.i18n.localize(key);
+    star.setAttribute("aria-label", name);
+    star.dataset.tooltip = model.canUseInspiration
+      ? game.i18n.format("sogrom-simple-combat-bar.inspiration.clickToUse", { name }) : name;
   }
 
   #patchLegendary(model) {

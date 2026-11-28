@@ -9,6 +9,7 @@
 import { arrive, isWaiting, openArrivalDialog } from "./arrival-service.mjs";
 import { swapTargets } from "./swap-service.mjs";
 import { followTargets, isCompanion, openFollowDialog, requestFollow } from "./companion-service.mjs";
+import { adapterFor } from "../systems/adapter.mjs";
 
 /**
  * The menu's entries, for core's ContextMenu.
@@ -100,6 +101,7 @@ export function portraitMenuOptions(bar, { selectAndPan, rollInitiative, openSwa
       visible: li => swapTargets(combatantOf(li)).length > 0,
       onClick: (event, li) => combatantOf(li) && openSwapMenu(combatantOf(li), li, event)
     },
+    ...inspirationOptions(combatantOf),
     {
       label: "sogrom-simple-combat-bar.context.arrivesLater",
       icon: '<i class="fa-solid fa-door-open"></i>',
@@ -149,6 +151,39 @@ export function portraitMenuOptions(bar, { selectAndPan, rollInitiative, openSwa
       onClick: (_event, li) => combatantOf(li)?.delete()
     }
   ];
+}
+
+/**
+ * Give (GM) or use (owner or GM) a character's Inspiration. Named for the rules in play: Heroic
+ * Inspiration (2024) or Inspiration (2014), so each entry comes in both and only one shows.
+ * @param {(li: HTMLElement) => Combatant|undefined} combatantOf
+ * @returns {object[]}
+ */
+function inspirationOptions(combatantOf) {
+  const read = li => {
+    const actor = combatantOf(li)?.actor;
+    return actor ? adapterFor(game.system.id).inspiration?.(actor) ?? null : null;
+  };
+  const entries = [];
+  for ( const rules of ["heroic", "legacy"] ) {
+    entries.push({
+      label: `sogrom-simple-combat-bar.context.give.${rules}`,
+      icon: '<i class="fa-regular fa-star"></i>',
+      visible: li => game.user.isGM && (read(li)?.rules === rules) && !read(li).active,
+      onClick: (_event, li) => setInspiration(combatantOf(li), true)
+    }, {
+      label: `sogrom-simple-combat-bar.context.use.${rules}`,
+      icon: '<i class="fa-solid fa-star"></i>',
+      visible: li => (game.user.isGM || !!combatantOf(li)?.isOwner) && (read(li)?.rules === rules) && read(li).active,
+      onClick: (_event, li) => setInspiration(combatantOf(li), false)
+    });
+  }
+  return entries;
+}
+
+function setInspiration(combatant, active) {
+  const actor = combatant?.actor;
+  if ( actor ) return adapterFor(game.system.id).setInspiration?.(actor, active);
 }
 
 /** Whether this user may select and pan to a combatant's token: it's on the canvas, and they observe it. */

@@ -52,6 +52,7 @@ export const DEFAULTS = Object.freeze({
   trackEconomy: true,
   autoSpendEconomy: true,
   legendaryBadges: true,
+  inspirationMarker: true,
   showEffects: true,
   effectDescriptions: "owner",
   sidebarOnCombat: "chat",
@@ -75,7 +76,7 @@ export const SETTING_GROUPS = Object.freeze({
   look: {
     icon: "fa-solid fa-palette",
     restricted: true,
-    keys: ["portraitStyle", "portraitImage", "damageFill", "hpBar", "showEffects", "legendaryBadges"]
+    keys: ["portraitStyle", "portraitImage", "damageFill", "hpBar", "showEffects", "legendaryBadges", "inspirationMarker"]
   },
   players: {
     icon: "fa-solid fa-eye",

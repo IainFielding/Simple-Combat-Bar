@@ -16,6 +16,11 @@ All notable changes to Simple Combat Bar.
   its owner leaving the combat.
 - **Add Summons to Combat** setting, under Turns & Initiative. Off by default. Turn it on and a
   creature summoned with D&D 5e's Summon activity joins its summoner's combat, right after them.
+- **Inspiration star.** A character's card shows a gold star while they have Heroic Inspiration
+  (2024 rules) or Inspiration (2014 rules), for the GM and those who can see the character's sheet.
+  Its tooltip says what it does under the rules in play: reroll any die (2024), or advantage on one
+  roll (2014). The owner or GM clicks the star to use it, and the GM gives it from the card's
+  right-click menu. Turn it off with the **Inspiration Star** setting, under Look.
 
 ### Changed
 
@@ -27,6 +32,8 @@ All notable changes to Simple Combat Bar.
 
 - System adapters can name a creature's summoner with a new optional member, `summoner`, and
   `awardCommand` may return null for no Award button. See [docs/API.md](docs/API.md).
+- System adapters can show a character's Inspiration with two new optional members, `inspiration`
+  and `setInspiration`.
 
 ## 0.9.0
 

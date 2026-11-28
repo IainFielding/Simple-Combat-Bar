@@ -71,6 +71,17 @@ describe("buildPortraitModel", () => {
     expect(buildPortraitModel(facts({ initiative: 3, isOwner: true }), ctx()).canRoll).toBe(false);
   });
 
+  it("shows the Inspiration star only while they have it, clickable by the owner or GM", () => {
+    const heroic = { active: true, rules: "heroic" };
+    expect(buildPortraitModel(facts({ inspiration: heroic, isOwner: true }), ctx()))
+      .toMatchObject({ inspiration: "heroic", canUseInspiration: true });
+    expect(buildPortraitModel(facts({ inspiration: { active: true, rules: "legacy" } }), ctx()))
+      .toMatchObject({ inspiration: "legacy", canUseInspiration: false });
+    expect(buildPortraitModel(facts({ inspiration: { active: false, rules: "heroic" }, isOwner: true }), ctx()))
+      .toMatchObject({ inspiration: null, canUseInspiration: false });
+    expect(buildPortraitModel(facts({ inspiration: null }), ctx()).inspiration).toBeNull();
+  });
+
   it("gives a companion no roll button: it goes when its owner does", () => {
     const m = buildPortraitModel(facts({ initiative: null, isOwner: true, isCompanion: true, leaderName: "Aoth" }), ctx());
     expect(m.canRoll).toBe(false);

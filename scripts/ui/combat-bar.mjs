@@ -906,6 +906,12 @@ export class CombatBar {
         if ( combatant && slot && (combatant.isOwner || game.user.isGM) ) return toggleSlot(combatant, slot);
         return;
       }
+      case "useInspiration": {
+        const adapter = adapterFor(game.system.id);
+        if ( !combatant?.actor || !adapter.setInspiration ) return;
+        if ( !combatant.isOwner && !game.user.isGM ) return;
+        return adapter.setInspiration(combatant.actor, false);
+      }
       case "endTurn": return this.endTurn();
       case "configure": return openSettings();
     }

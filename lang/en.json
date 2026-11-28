@@ -18,7 +18,15 @@
       "arriveNow": "Arrive Now",
       "swapInitiative": "Alert: Swap Initiative…",
       "actOnOwner": "Act on Owner's Initiative…",
-      "actOnOwn": "Act on Own Initiative"
+      "actOnOwn": "Act on Own Initiative",
+      "give": {
+        "heroic": "Give Heroic Inspiration",
+        "legacy": "Give Inspiration"
+      },
+      "use": {
+        "heroic": "Use Heroic Inspiration",
+        "legacy": "Use Inspiration"
+      }
     },
     "tooltip": {
       "hp": "HP",
@@ -176,6 +184,10 @@
         "name": "Spend Pips Automatically",
         "hint": "Using an ability spends the pip its activation needs. Pips come back at the start of each combatant's turn. With midi-qol active, midi-qol does this itself and the pips follow it."
       },
+      "inspirationMarker": {
+        "name": "Inspiration Star",
+        "hint": "Show a gold star on a character's card while they have Heroic Inspiration (2024 rules) or Inspiration (2014 rules), for the GM and those who can see the character's sheet. The owner or GM can click it to use it; the GM can give it from the card's right-click menu."
+      },
       "legendaryBadges": {
         "name": "Legendary Badges",
         "hint": "Show a legendary creature's legendary actions and resistances left on its card, for the GM and those who can see its sheet. Click one to spend it, Shift-click to give it back. D&D 5e spends and refills them itself as they're used."
@@ -332,6 +344,13 @@
       "resistances": "Legendary Resistances",
       "actionsTooltip": "Legendary Actions: {value} of {max} left. Click to spend one, Shift-click to give one back.",
       "resistancesTooltip": "Legendary Resistances: {value} of {max} left. Click to spend one, Shift-click to give one back."
+    },
+    "inspiration": {
+      "heroic": "Heroic Inspiration",
+      "legacy": "Inspiration",
+      "heroicHint": "Use it to reroll any die right after rolling it, keeping the new roll.",
+      "legacyHint": "Use it on an attack roll, saving throw or ability check to roll it with advantage.",
+      "clickToUse": "{name}. Click to use it."
     },
     "groupTurns": {
       "takeTurn": "Click to take this turn",
