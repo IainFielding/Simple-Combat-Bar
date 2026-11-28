@@ -7,6 +7,7 @@ import { MODULE_ID } from "../config.mjs";
 import { sideOf } from "../model/visibility.mjs";
 import { roundsLeft } from "../model/events.mjs";
 import { arrivalRound } from "../model/arrivals.mjs";
+import { followedId } from "../model/companions.mjs";
 import { secondaryBar } from "../model/trackers.mjs";
 import { economyProvider } from "../systems/economy.mjs";
 
@@ -30,6 +31,12 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
   let img = combatant.img;
   if ( (settings.portraitImage === "actor") && actor?.img && !isEvent ) img = actor.img;
 
+  // A companion shows its owner's initiative: its own sits just below it, to keep the order.
+  const leaderId = followedId(flags);
+  const leader = leaderId ? combatant.combat?.combatants.get(leaderId) ?? null : null;
+  const namesLeader = !!leader && (user.isGM || !!leader.actor?.hasPlayerOwner
+    || !!leader.actor?.testUserPermission(user, "OBSERVER"));
+
   const arrivesRound = arrivalRound(flags);
   // A waiting event's countdown starts when it arrives.
   const eventRoundsLeft = isEvent && (arrivesRound === null) ? roundsLeft(flags, combatant.combat?.round ?? 0) : null;
@@ -45,7 +52,9 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
     isPC: !!actor?.hasPlayerOwner,
     hidden: combatant.hidden,
     defeated: combatant.isDefeated,
-    initiative: combatant.initiative ?? null,
+    initiative: (leader ? leader.initiative : combatant.initiative) ?? null,
+    isCompanion: !!leader,
+    leaderName: namesLeader ? leader.name : null,
     tokenDisplayName: tokenDoc?.displayName ?? null,
     hp: actor && !isEvent && trustsHP ? safe(() => adapter.hp(actor)) : null,
     healthHint: actor && !isEvent && !trustsHP ? safe(() => adapter.healthState?.(actor)) : null,

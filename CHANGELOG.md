@@ -2,6 +2,31 @@
 
 All notable changes to Simple Combat Bar.
 
+## Unreleased
+
+### New
+
+- **Pets and summons act on their owner's initiative.** Right-click a companion's card (a Beast
+  Master's beast, a Steel Defender, a summon) and choose **Act on Owner's Initiative…**. It moves to
+  right after its owner and stays there when they re-roll, swap with Alert or have their initiative
+  changed. If more than one character could be its owner, a window asks who it follows; the
+  creature that summoned it, if D&D 5e knows, is offered first. Players can do this for their own
+  creatures, and the GM for any. A companion's card has no d20, shows its owner's initiative, and
+  wears a small paw; its tooltip says whose it is. **Act on Own Initiative** undoes it, and so does
+  its owner leaving the combat.
+- **Add Summons to Combat** setting, under Turns & Initiative. Off by default. Turn it on and a
+  creature summoned with D&D 5e's Summon activity joins its summoner's combat, right after them.
+
+### Changed
+
+- **No Award button when the world doesn't use XP.** With D&D 5e's leveling mode set to level
+  advancement without XP, the XP summary at the end of a combat leaves the Award button off.
+
+### For developers
+
+- System adapters can name a creature's summoner with a new optional member, `summoner`, and
+  `awardCommand` may return null for no Award button. See [docs/API.md](docs/API.md).
+
 ## 0.9.0
 
 ### New

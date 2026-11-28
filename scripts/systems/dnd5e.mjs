@@ -144,8 +144,12 @@ export const dnd5eAdapter = {
     return typeof xp === "number" ? xp : null;
   },
 
-  /** dnd5e's award enricher: a GM-only button that opens its Award window with this much XP. */
+  /**
+   * dnd5e's award enricher: a GM-only button that opens its Award window with this much XP. None
+   * when the world levels without XP (dnd5e's "noxp" leveling mode), as dnd5e hides XP itself then.
+   */
   awardCommand(xp) {
+    if ( levelingMode() === "noxp" ) return null;
     return `[[/award ${xp}xp]]`;
   },
 
@@ -158,11 +162,34 @@ export const dnd5eAdapter = {
     return rulesVersion() !== "legacy";
   },
 
+  /**
+   * Who summoned this creature. dnd5e's Summon activity stamps each summon with the uuid of the
+   * item that summoned it (`flags.dnd5e.summon.origin`); that item's actor is the summoner.
+   */
+  summoner(actor) {
+    const origin = actor?.flags?.dnd5e?.summon?.origin;
+    if ( !origin ) return null;
+    try {
+      return fromUuidSync(origin, { strict: false })?.actor ?? null;
+    } catch {
+      return null;
+    }
+  },
+
   /** Stunned, Paralyzed, Petrified and Unconscious each add dnd5e's Incapacitated status too. */
   incapacitated(actor) {
     return !!actor?.statuses?.has("incapacitated");
   }
 };
+
+/** dnd5e's leveling mode ("xp", "xpBoons" or "noxp"), or null if it can't be read. */
+function levelingMode() {
+  try {
+    return game.settings.get("dnd5e", "levelingMode");
+  } catch {
+    return null;
+  }
+}
 
 /** dnd5e's rules version, "modern" (2024) or "legacy" (2014). */
 function rulesVersion() {

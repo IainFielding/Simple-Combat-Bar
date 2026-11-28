@@ -48,6 +48,7 @@ export const DEFAULTS = Object.freeze({
   hideDefeated: false,
   groupTeams: "off",
   allySwapConsent: true,
+  autoAddSummons: false,
   trackEconomy: true,
   autoSpendEconomy: true,
   legendaryBadges: true,
@@ -85,7 +86,7 @@ export const SETTING_GROUPS = Object.freeze({
   turns: {
     icon: "fa-solid fa-dice-d20",
     restricted: true,
-    keys: ["initiativeDialog", "allySwapConsent", "groupTeams", "trackEconomy", "autoSpendEconomy"],
+    keys: ["initiativeDialog", "allySwapConsent", "autoAddSummons", "groupTeams", "trackEconomy", "autoSpendEconomy"],
     requires: { autoSpendEconomy: "trackEconomy" }
   },
   combat: {

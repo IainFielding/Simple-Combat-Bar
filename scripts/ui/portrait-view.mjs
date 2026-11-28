@@ -16,6 +16,7 @@ const CLASS_FIELDS = Object.freeze({
   pc: "is-pc",
   owner: "is-owner",
   isEvent: "is-event",
+  companion: "is-companion",
   canRoll: "can-roll",
   activeRun: "in-active-run",
   ended: "is-ended",

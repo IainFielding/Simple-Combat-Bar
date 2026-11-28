@@ -76,6 +76,10 @@ export function buildTooltip(model, attributes = [], { effects = [], description
   if ( model.isEvent && (model.eventRoundsLeft !== null) ) {
     root.append(row("fa-solid fa-hourglass-half", t("tooltip.roundsLeft", { rounds: model.eventRoundsLeft })));
   }
+  if ( model.companion ) {
+    root.append(row("fa-solid fa-paw", model.leaderName
+      ? t("companions.actsAfter", { name: model.leaderName }) : t("companions.actsAfterOwner")));
+  }
   if ( model.canTakeTurn ) root.append(row("fa-solid fa-hand-pointer", t("groupTurns.takeTurn")));
   else if ( model.ended ) root.append(row("fa-solid fa-check", t("groupTurns.ended")));
   if ( model.defeated ) root.append(row("fa-solid fa-skull", game.i18n.localize("COMBATANT.FIELDS.defeated.label")));

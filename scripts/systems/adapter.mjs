@@ -23,11 +23,14 @@
  *           change should refresh a portrait; other `system` changes are ignored. Null refreshes on
  *           every actor update. Changes to the name, image, ownership or flags always refresh.
  * @property {(actor: Actor) => number|null} [xp]  XP for defeating this actor, or null if it gives none.
- * @property {(xp: number) => string} [awardCommand]  Chat text that lets the GM award this much XP.
+ * @property {(xp: number) => string|null} [awardCommand]  Chat text that lets the GM award this much
+ *           XP, or null when the world doesn't award XP.
  * @property {(actor: Actor) => boolean} [initiativeSwap]  The actor may swap initiative with an ally
  *           after rolling it (dnd5e: Alert under the 2024 rules).
  * @property {(actor: Actor) => boolean} [incapacitated]   The actor has the Incapacitated condition,
  *           or one that includes it.
+ * @property {(actor: Actor) => Actor|null} [summoner]     The actor that summoned this one, if the
+ *           system records it. Offered first as its owner, and used to add summons to combat.
  */
 
 import { genericAdapter } from "./generic.mjs";
