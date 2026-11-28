@@ -40,6 +40,7 @@ import { effectIcons } from "./effects.mjs";
  * @property {{actions: {value: number, max: number}|null, resistances: {value: number, max: number}|null}|null} [legendary]
  * @property {{action: boolean, bonus: boolean, reaction: boolean}|null} [economy]  Spent slots.
  * @property {{active: boolean, rules: "heroic"|"legacy"}|null} [inspiration]  A character's Inspiration.
+ * @property {"modern"|"legacy"|null} [surprised]  Surprised, and under which rules.
  * @property {string|null} description
  * @property {boolean} isEvent          An "Add Event" pseudo-combatant.
  * @property {number|null} eventRoundsLeft
@@ -129,6 +130,7 @@ export function buildPortraitModel(facts, { settings, current, acted, run, activ
     // The star shows only while they have it; "heroic" (2024) or "legacy" (2014) picks its words.
     inspiration: facts.inspiration?.active ? facts.inspiration.rules : null,
     canUseInspiration: !!facts.inspiration?.active && (facts.isOwner || facts.isGM),
+    surprised: facts.surprised ?? null,
     ...effectFields(facts),
     hpState,
     hpPct: hpMode === "none" ? null : hpPct,

@@ -77,6 +77,11 @@ Hooks.once("simpleCombatBar.init", api => {
     // Optional: what a leveled condition does at its current level, shown in the tooltip under
     // that condition. Return null for conditions without levels.
     conditionLevelText: (statusId, level, actor) => (statusId === "fatigue" ? `−${level} to all rolls` : null),
+    // Optional: surprise. rules is "modern" (it only affects the initiative roll, so the bar clears
+    // it once that's rolled) or "legacy" (no move, action or reaction on the first turn, so the
+    // card shows every pip spent and the bar clears it when that turn ends).
+    surprise: actor => ({ surprised: actor.statuses.has("surprised"), rules: "modern" }),
+    setSurprised: async (actor, active) => actor.toggleStatusEffect("surprised", { active }),
     // Optional: the actor that summoned this one. It's offered first as a companion's owner, and
     // with "Add Summons to Combat" on, a summon whose summoner is in a combat joins it after them.
     summoner: actor => game.actors.get(actor.flags["my-system"]?.summonedBy) ?? null

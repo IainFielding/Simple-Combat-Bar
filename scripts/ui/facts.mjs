@@ -11,6 +11,7 @@ import { followedId } from "../model/companions.mjs";
 import { secondaryBar } from "../model/trackers.mjs";
 import { effectLevel } from "../model/effects.mjs";
 import { economyProvider } from "../systems/economy.mjs";
+import { surpriseOf } from "./surprise-service.mjs";
 
 /**
  * @param {Combatant} combatant
@@ -37,6 +38,10 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
   const leader = leaderId ? combatant.combat?.combatants.get(leaderId) ?? null : null;
   const namesLeader = !!leader && (user.isGM || !!leader.actor?.hasPlayerOwner
     || !!leader.actor?.testUserPermission(user, "OBSERVER"));
+
+  // Surprised under the 2014 rules: no action, bonus action or reaction until its first turn ends.
+  const surprise = actor && !isEvent ? surpriseOf(actor) : null;
+  const surprised = surprise?.surprised ? surprise.rules : null;
 
   const arrivesRound = arrivalRound(flags);
   // A waiting event's countdown starts when it arrives.
@@ -68,13 +73,18 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
     // Like the legendary badges: only for viewers who receive the actor's data.
     inspiration: settings.inspirationMarker && actor && !isEvent && trustsHP
       ? safe(() => adapter.inspiration?.(actor)) : null,
-    economy: settings.trackEconomy && !isEvent ? safe(() => economyProvider().read(combatant)) : null,
+    economy: settings.trackEconomy && !isEvent
+      ? ((surprised === "legacy") ? SURPRISED_ECONOMY : safe(() => economyProvider().read(combatant))) : null,
+    surprised,
     description: actor && !isEvent ? safe(() => adapter.describe(actor)) : null,
     isEvent,
     eventRoundsLeft,
     arrivesRound
   };
 }
+
+/** Every slot spent: a combatant surprised under the 2014 rules has none to use yet. */
+const SURPRISED_ECONOMY = Object.freeze({ action: true, bonus: true, reaction: true });
 
 /** Statuses the card already shows another way, left off its icons (the tooltip still lists them). */
 const CARD_SKIPS = Object.freeze(["bloodied"]);

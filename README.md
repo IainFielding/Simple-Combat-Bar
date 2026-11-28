@@ -57,6 +57,11 @@ initiative with an ally. Right-click their card and choose **Alert: Swap Initiat
 ally. The ally's player is asked to agree (the GM, if that player isn't connected), unless you turn
 **Allies Must Agree to a Swap** off.
 
+**Surprise:** before the combat starts, right-click a card and choose **Mark Surprised**. Under
+the 2024 rules that gives its initiative roll Disadvantage, and Surprised comes off once it's
+rolled. Under the 2014 rules its card shows every pip spent until its first turn ends, and Surprised
+comes off then.
+
 **Pets and summons:** a companion that acts right after its owner (a Beast Master's beast, a Steel
 Defender, a familiar) can follow them in the order. Right-click its card and choose **Act on
 Owner's Initiative…**. If only one character could be its owner, that's it; otherwise pick who it

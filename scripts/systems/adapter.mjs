@@ -35,6 +35,10 @@
  * @property {(actor: Actor, active: boolean) => Promise<void>} [setInspiration]  Give or use it.
  * @property {(statusId: string, level: number, actor: Actor) => string|null} [conditionLevelText]
  *           What a leveled condition (dnd5e: Exhaustion) does at this level, for the tooltip.
+ * @property {(actor: Actor) => ({surprised: boolean, rules: "modern"|"legacy"}|null)} [surprise]
+ *           Whether the actor is Surprised, and which rules apply: "modern" (it only affects the
+ *           initiative roll) or "legacy" (no move, action or reaction on its first turn).
+ * @property {(actor: Actor, active: boolean) => Promise<void>} [setSurprised]
  * @property {(actor: Actor) => Actor|null} [summoner]     The actor that summoned this one, if the
  *           system records it. Offered first as its owner, and used to add summons to combat.
  */

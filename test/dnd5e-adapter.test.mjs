@@ -173,6 +173,13 @@ describe("dnd5e Alert and Incapacitated", () => {
     expect(dnd5eAdapter.conditionLevelText("exhaustion", 0, {})).toBeNull();
   });
 
+  it("reads Surprised, and which rules it follows", () => {
+    expect(dnd5eAdapter.surprise({ statuses: new Set(["surprised"]) })).toEqual({ surprised: true, rules: "modern" });
+    globalThis.dnd5e.settings.rulesVersion = "legacy";
+    expect(dnd5eAdapter.surprise({ statuses: new Set() })).toEqual({ surprised: false, rules: "legacy" });
+    expect(dnd5eAdapter.surprise(null)).toBeNull();
+  });
+
   it("reads Incapacitated from the actor's statuses", () => {
     expect(dnd5eAdapter.incapacitated({ statuses: new Set(["incapacitated", "stunned"]) })).toBe(true);
     expect(dnd5eAdapter.incapacitated({ statuses: new Set(["prone"]) })).toBe(false);
