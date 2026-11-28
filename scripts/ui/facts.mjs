@@ -20,9 +20,11 @@ import { formatDistance, movementAction, movementState, movementUsed } from "../
  * @param {import("../systems/adapter.mjs").SystemAdapter} ctx.adapter
  * @param {object} ctx.settings
  * @param {User} [ctx.user=game.user]
+ * @param {boolean} [ctx.current=false]  Acting now. Movement this turn is read for this card only:
+ *   it's shown nowhere else, so measuring everyone's path would be work thrown away.
  * @returns {import("../model/portrait-model.mjs").CombatantFacts}
  */
-export function combatantFacts(combatant, { adapter, settings, user = game.user }) {
+export function combatantFacts(combatant, { adapter, settings, user = game.user, current = false }) {
   const actor = combatant.actor;
   const tokenDoc = combatant.token;
   const flags = combatant.flags?.[MODULE_ID] ?? {};
@@ -78,8 +80,8 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
       ? ((surprised === "legacy") ? SURPRISED_ECONOMY : safe(() => economyProvider().read(combatant))) : null,
     surprised,
     // Like HP numbers: only for viewers who receive the actor's data.
-    movement: settings.movementTracker && actor && tokenDoc && !isEvent && trustsHP && combatant.combat?.started
-      ? safe(() => readMovement(tokenDoc, actor, adapter)) : null,
+    movement: current && settings.movementTracker && actor && tokenDoc && !isEvent && trustsHP
+      && combatant.combat?.started ? safe(() => readMovement(tokenDoc, actor, adapter)) : null,
     description: actor && !isEvent ? safe(() => adapter.describe(actor)) : null,
     isEvent,
     eventRoundsLeft,
