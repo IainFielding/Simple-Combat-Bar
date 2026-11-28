@@ -74,6 +74,9 @@ Hooks.once("simpleCombatBar.init", api => {
     // can't have it. setInspiration gives (true) or uses (false) it.
     inspiration: actor => ({ active: !!actor.system.inspired, rules: "heroic" }),
     setInspiration: async (actor, active) => actor.update({ "system.inspired": active }),
+    // Optional: what a leveled condition does at its current level, shown in the tooltip under
+    // that condition. Return null for conditions without levels.
+    conditionLevelText: (statusId, level, actor) => (statusId === "fatigue" ? `−${level} to all rolls` : null),
     // Optional: the actor that summoned this one. It's offered first as a companion's owner, and
     // with "Add Summons to Combat" on, a summon whose summoner is in a combat joins it after them.
     summoner: actor => game.actors.get(actor.flags["my-system"]?.summonedBy) ?? null

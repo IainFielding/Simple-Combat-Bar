@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { MAX_ICONS, effectIcons, plainText, remainingPct, showsDescriptions, stripEnrichers } from "../scripts/model/effects.mjs";
+import { MAX_ICONS, effectIcons, effectLevel, plainText, remainingPct, showsDescriptions, stripEnrichers } from "../scripts/model/effects.mjs";
 import { DEFAULTS } from "../scripts/config.mjs";
 import { buildPortraitModel } from "../scripts/model/portrait-model.mjs";
 import { PortraitView } from "../scripts/ui/portrait-view.mjs";
@@ -103,3 +103,18 @@ describe("effects on a card", () => {
     expect(view.element.querySelector(".scb-effects").classList.contains("is-empty")).toBe(true);
   });
 });
+
+describe("leveled conditions", () => {
+  it("carries Exhaustion's level onto its icon, and nothing for other effects", () => {
+    const { icons } = effectIcons([
+      { uuid: "a", img: "x", name: "Exhaustion (3)", remaining: null, total: null, level: 3 },
+      { uuid: "b", img: "y", name: "Prone", remaining: null, total: null, level: null }
+    ]);
+    expect(icons.map(i => i.level)).toEqual([3, null]);
+  });
+
+  it("only takes whole levels from one up", () => {
+    expect([1, 6, 0, -1, 2.5, "3", undefined].map(effectLevel)).toEqual([1, 6, null, null, null, null, null]);
+  });
+});
+

@@ -148,6 +148,13 @@ export class PortraitView {
       img.src = icon.img;
       img.alt = "";
       li.append(img);
+      // A leveled condition (Exhaustion) wears its level.
+      if ( icon.level ) {
+        const level = document.createElement("span");
+        level.className = "scb-effect-level";
+        level.textContent = icon.level;
+        li.append(level);
+      }
       return li;
     });
     if ( model.effectsExtra ) {

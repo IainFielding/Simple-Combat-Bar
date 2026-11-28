@@ -19,6 +19,8 @@ export const MAX_ICONS = 4;
  * @property {number|null} total       The duration's value in the same units.
  * @property {string} [label]          Core's "3 rounds" style label.
  * @property {string} [description]    HTML.
+ * @property {number|null} [level]      A leveled condition's level (dnd5e's Exhaustion), else null.
+ * @property {string|null} [statusId]   That condition's status id.
  */
 
 /**
@@ -35,12 +37,23 @@ export function remainingPct(remaining, total) {
  * What a card draws.
  * @param {EffectInfo[]} effects
  * @param {number} [max]
- * @returns {{icons: Array<{uuid: string, img: string, name: string, pct: number|null}>, extra: number}}
+ * @returns {{icons: Array<{uuid: string, img: string, name: string, pct: number|null, level: number|null}>,
+ *   extra: number}}
  */
 export function effectIcons(effects, max = MAX_ICONS) {
   const list = effects ?? [];
-  const icons = list.slice(0, max).map(e => ({ uuid: e.uuid, img: e.img, name: e.name, pct: remainingPct(e.remaining, e.total) }));
+  const icons = list.slice(0, max).map(e => ({ uuid: e.uuid, img: e.img, name: e.name,
+    pct: remainingPct(e.remaining, e.total), level: effectLevel(e.level) }));
   return { icons, extra: Math.max(0, list.length - max) };
+}
+
+/**
+ * A leveled condition's level, or null for any other effect.
+ * @param {unknown} level
+ * @returns {number|null}
+ */
+export function effectLevel(level) {
+  return Number.isInteger(level) && (level > 0) ? level : null;
 }
 
 /**

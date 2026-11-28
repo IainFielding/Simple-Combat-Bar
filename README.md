@@ -114,7 +114,8 @@ losing ties), then right-click its portrait and choose **Arrives in Round…**.
 ## On Each Card
 
 - **Status effects**, the same icons the token shows on the map, each in a ring that drains as its
-  duration runs out. The owner or GM can right-click one to remove it.
+  duration runs out. The owner or GM can right-click one to remove it. Exhaustion shows its level,
+  and its tooltip says what that level does under the 2024 or 2014 rules, whichever are in play.
 - **Legendary actions and resistances** left, on legendary creatures. D&D 5e spends and refills
   them itself; click one to spend it by hand, Shift-click to give it back.
 - **A gold star** while a character has Heroic Inspiration (2024 rules) or Inspiration (2014

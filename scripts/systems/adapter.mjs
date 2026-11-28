@@ -33,6 +33,8 @@
  *           Whether a character has Inspiration, and which rules it follows: "heroic" (dnd5e 2024,
  *           reroll any die) or "legacy" (2014, advantage on one roll). Null for anyone who can't have it.
  * @property {(actor: Actor, active: boolean) => Promise<void>} [setInspiration]  Give or use it.
+ * @property {(statusId: string, level: number, actor: Actor) => string|null} [conditionLevelText]
+ *           What a leveled condition (dnd5e: Exhaustion) does at this level, for the tooltip.
  * @property {(actor: Actor) => Actor|null} [summoner]     The actor that summoned this one, if the
  *           system records it. Offered first as its owner, and used to add summons to combat.
  */
