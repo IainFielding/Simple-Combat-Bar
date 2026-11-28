@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { companionPlacements, companionUpdates, followedId, orphanedCompanions, ownerCandidates, sameInitiative }
+import { companionComparator, companionPlacements, companionUpdates, followedId, orphanedCompanions, ownerCandidates,
+  sameInitiative }
   from "../scripts/model/companions.mjs";
 
 const entry = (id, initiative, follows = null, since = 0) => ({ id, initiative, follows, since });
@@ -119,5 +120,30 @@ describe("sameInitiative", () => {
     expect(sameInitiative(null, null)).toBe(true);
     expect(sameInitiative(null, 0)).toBe(false);
     expect(sameInitiative(12, 13)).toBe(false);
+  });
+});
+
+describe("companionComparator", () => {
+  // dnd5e's order: initiative, then name on a tie.
+  const system = (a, b) => ((b.initiative ?? -Infinity) - (a.initiative ?? -Infinity)) || a.name.localeCompare(b.name);
+  const make = list => {
+    const byId = new Map(list.map(c => [c.id, c]));
+    return companionComparator(system, c => (c.follows ? byId.get(c.follows) ?? null : null), c => c.since ?? 0);
+  };
+  const c = (id, initiative, follows = null, since = 0) => ({ id, name: id, initiative, follows, since });
+
+  it("keeps a companion right after an owner tied with someone the system sorts after them", () => {
+    const list = [c("zed", 14), c("aoth", 14), c("wolf", 13.5, "aoth"), c("goblin", 13)];
+    expect(list.toSorted(make(list)).map(x => x.id)).toEqual(["aoth", "wolf", "zed", "goblin"]);
+  });
+
+  it("orders several companions as they were linked, whatever their numbers", () => {
+    const list = [c("owl", 1, "wiz", 2), c("orc", 15), c("spirit", 30, "wiz", 1), c("wiz", 18)];
+    expect(list.toSorted(make(list)).map(x => x.id)).toEqual(["wiz", "spirit", "owl", "orc"]);
+  });
+
+  it("leaves everyone else to the system", () => {
+    const list = [c("b", 10), c("a", 10), c("d", 3), c("c", null)];
+    expect(list.toSorted(make(list)).map(x => x.id)).toEqual(["a", "b", "d", "c"]);
   });
 });

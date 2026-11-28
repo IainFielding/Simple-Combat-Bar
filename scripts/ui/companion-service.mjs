@@ -13,19 +13,40 @@
  */
 
 import { MODULE_ID, settings, t } from "../config.mjs";
-import { companionPlacements, companionUpdates, followedId, orphanedCompanions, ownerCandidates }
-  from "../model/companions.mjs";
+import { companionComparator, companionPlacements, companionUpdates, followedId, orphanedCompanions,
+  ownerCandidates } from "../model/companions.mjs";
 import { adapterFor } from "../systems/adapter.mjs";
 
 export const FOLLOW_QUERY = `${MODULE_ID}.follow`;
 
-/** Marks the bar's own companion writes, so the guard lets them through. */
-const OWN_WRITE = Object.freeze({ [MODULE_ID]: { companions: true } });
+/** Options marking the bar's own companion writes, so the guard lets them through. Fresh each time:
+    Foundry adds to the options object it is given. */
+const ownWrite = () => ({ [MODULE_ID]: { companions: true } });
 
 const flagsOf = combatant => combatant?.flags?.[MODULE_ID] ?? {};
 
 /** Combats with a placement queued (GM side). */
 const queued = new Set();
+
+/** Marks a turn-order comparator this module has already wrapped. */
+const SORT_WRAPPED = Symbol(`${MODULE_ID}.companionSort`);
+
+/**
+ * Keep companions right after their owner in the combat's turn order itself, so core's tracker, the
+ * turn pointer and the bar all agree, ties included. `Combat#_sortCombatants` is the documented
+ * place for this (dnd5e overrides it too); it's wrapped, not replaced, so the system's tie-breaks
+ * still decide everything else. Core calls it unbound, so the wrapper needs no `this`.
+ * @param {typeof Combat} [cls]  The combat document class.
+ */
+export function installCompanionSort(cls = CONFIG.Combat?.documentClass) {
+  const proto = cls?.prototype;
+  const original = proto?._sortCombatants;
+  if ( (typeof original !== "function") || original[SORT_WRAPPED] ) return;
+  const sort = companionComparator(original, leaderOf, c => flagsOf(c).follows?.since ?? 0);
+  sort[SORT_WRAPPED] = true;
+  proto._sortCombatants = sort;
+  for ( const combat of game.combats ?? [] ) combat.setupTurns?.();
+}
 
 /** Register the query handler. Called at init, on every client. */
 export function registerCompanionQueries() {
@@ -50,19 +71,32 @@ export function isCompanion(combatant) {
 /**
  * The facts the companion rules need about one combatant.
  * @param {Combatant} combatant
+ * @param {object} ctx
+ * @param {Set<string>} ctx.followed  Ids of combatants someone follows (see {@link followedIds}).
+ * @param {User[]} ctx.players        The world's non-GM users.
  * @returns {import("../model/companions.mjs").CompanionFacts}
  */
-export function companionFacts(combatant) {
+export function companionFacts(combatant, { followed, players }) {
   const flags = flagsOf(combatant);
   return {
     id: combatant.id,
     actorId: combatant.actor?.id ?? null,
     isEvent: !!flags.event,
     follows: followedId(flags),
-    hasCompanions: !!combatant.combat?.combatants.some(c => followedId(flagsOf(c)) === combatant.id),
+    hasCompanions: followed.has(combatant.id),
     hidden: !!combatant.hidden,
-    playerOwnerIds: game.users.filter(u => !u.isGM && combatant.testUserPermission(u, "OWNER")).map(u => u.id)
+    playerOwnerIds: players.filter(u => combatant.testUserPermission(u, "OWNER")).map(u => u.id)
   };
+}
+
+/** Ids of the combatants in a combat that someone follows. One pass, not one per combatant. */
+function followedIds(combat) {
+  const ids = new Set();
+  for ( const c of combat.combatants ) {
+    const id = followedId(flagsOf(c));
+    if ( id ) ids.add(id);
+  }
+  return ids;
 }
 
 /**
@@ -75,8 +109,13 @@ export function companionFacts(combatant) {
 export function followTargets(pet, user = game.user) {
   const combat = pet?.combat;
   if ( !combat || !pet.actor || !(user.isGM || pet.testUserPermission(user, "OWNER")) ) return [];
+  // Cheap refusals first: this runs for every portrait right-clicked.
+  const followed = followedIds(combat);
+  if ( followedId(flagsOf(pet)) || followed.has(pet.id) || flagsOf(pet).event ) return [];
+  const ctx = { followed, players: game.users.filter(u => !u.isGM) };
   const summoner = summonerOf(pet.actor);
-  return ownerCandidates({ pet: companionFacts(pet), others: combat.turns.map(companionFacts), isGM: user.isGM,
+  return ownerCandidates({ pet: companionFacts(pet, ctx), others: combat.turns.map(c => companionFacts(c, ctx)),
+    isGM: user.isGM,
     summonerActorId: summoner?.id ?? null }).map(f => combat.combatants.get(f.id)).filter(Boolean);
 }
 
@@ -154,11 +193,11 @@ export async function handleFollowRequest({ combatId, companionId, ownerId = nul
   if ( !user.isGM && !pet.testUserPermission(user, "OWNER") ) return "invalid";
   if ( !ownerId ) {
     if ( !followedId(flagsOf(pet)) ) return "invalid";
-    await pet.update({ [`flags.${MODULE_ID}.follows`]: null }, OWN_WRITE);
+    await pet.update({ [`flags.${MODULE_ID}.follows`]: null }, ownWrite());
     return "done";
   }
   if ( !followTargets(pet, user).some(c => c.id === ownerId) ) return "invalid";
-  await pet.update({ [`flags.${MODULE_ID}.follows`]: { id: ownerId, since: Date.now() } }, OWN_WRITE);
+  await pet.update({ [`flags.${MODULE_ID}.follows`]: { id: ownerId, since: Date.now() } }, ownWrite());
   await placeCompanions(combat);
   return "done";
 }
@@ -187,7 +226,7 @@ export async function placeCompanions(combat) {
   const entries = placementEntries(combat);
   const updates = companionUpdates(entries).map(u => ({ _id: u.id, initiative: u.initiative }));
   for ( const id of orphanedCompanions(entries) ) updates.push({ _id: id, [`flags.${MODULE_ID}.follows`]: null });
-  if ( updates.length ) await combat.updateEmbeddedDocuments("Combatant", updates, OWN_WRITE);
+  if ( updates.length ) await combat.updateEmbeddedDocuments("Combatant", updates, ownWrite());
 }
 
 /**
@@ -241,7 +280,7 @@ export async function addSummon(tokenDoc) {
     await combat.createEmbeddedDocuments("Combatant", [{
       tokenId: tokenDoc.id, sceneId, actorId: tokenDoc.actorId, hidden: !!tokenDoc.hidden,
       flags: { [MODULE_ID]: { follows: { id: owner.id, since: Date.now() } } }
-    }], OWN_WRITE);
+    }], ownWrite());
     await placeCompanions(combat);
     return;
   }

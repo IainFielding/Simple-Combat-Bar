@@ -839,3 +839,61 @@ export async function sneakySwap(swapperId, allyId) {
   return game.users.activeGM.query(`${MODULE_ID}.swapInitiative`,
     { combatId: game.combat.id, swapperId, allyId });
 }
+
+/**
+ * GM: companions, for performance. Links a goblin to the first hero, re-rolls the hero ten times,
+ * and counts what each re-roll costs: combatant writes (the hero's own, plus the one placement
+ * write moving the pet; any more would be a write loop) and bar flushes. Also checks the pet ends
+ * up right after its owner every time, and times the right-click candidate lookup at 30 combatants.
+ */
+export async function companionsPerf() {
+  const service = await import(`/modules/${MODULE_ID}/scripts/ui/companion-service.mjs`);
+  const combat = await freshCombat({ allies: 4, enemies: 26, start: false });
+  const [owner] = combat.combatants.filter(c => c.actor?.type === "character");
+  const pet = combat.combatants.find(c => c.actor?.type === "npc");
+  const result = { failures: [] };
+
+  const lookup = [];
+  for ( let i = 0; i < 50; i++ ) {
+    const t0 = performance.now();
+    service.followTargets(pet);
+    lookup.push(performance.now() - t0);
+  }
+  lookup.sort((a, b) => a - b);
+  result.lookupMedianMs = Number(lookup[Math.floor(lookup.length / 2)].toFixed(3));
+  result.lookupMaxMs = Number(lookup.at(-1).toFixed(3));
+
+  if ( !(await service.requestFollow(pet, owner)) ) result.failures.push("the GM couldn't link the pet");
+  await settle(300);
+
+  let writes = 0;
+  const id = Hooks.on("updateCombatant", (_c, changes) => { if ( "initiative" in changes ) writes++; });
+  const flushes0 = api().bar.stats.flushes;
+  const values = [3, 28, 14, 1, 22, 9, 17, 25, 6, 11];
+  try {
+    for ( const v of values ) {
+      await owner.update({ initiative: v });
+      await settle(200);
+      const turns = combat.turns.map(c => c.id);
+      if ( turns[turns.indexOf(owner.id) + 1] !== pet.id ) {
+        result.failures.push(`at ${v} the pet isn't right after its owner`);
+      }
+    }
+  } finally {
+    Hooks.off("updateCombatant", id);
+  }
+  result.rerolls = values.length;
+  result.writesPerReroll = writes / values.length;
+  result.flushesPerReroll = (api().bar.stats.flushes - flushes0) / values.length;
+  if ( result.writesPerReroll > 2 ) result.failures.push(`${result.writesPerReroll} initiative writes per re-roll (expected 2)`);
+
+  // Settled: nothing more is written once everyone is in place.
+  let idle = 0;
+  const idleId = Hooks.on("updateCombatant", () => idle++);
+  await settle(500);
+  Hooks.off("updateCombatant", idleId);
+  if ( idle ) result.failures.push(`${idle} combatant writes after settling (a write loop)`);
+
+  await cleanup();
+  return result;
+}

@@ -138,6 +138,29 @@ export function ownerCandidates({ pet, others, isGM, summonerActorId = null }) {
   return eligible.sort((a, b) => (a.rank - b.rank) || (a.index - b.index)).map(({ o }) => o);
 }
 
+/**
+ * A turn-order comparator that keeps each companion right after its owner, wrapping the system's
+ * own. Initiative alone can't: dnd5e breaks a tie by name, so an owner tied with someone who sorts
+ * after them would put that someone between owner and pet. Everyone is compared as their owner
+ * (companions) or themselves; an owner and their companions then go owner first, companions in the
+ * order they were linked.
+ * @param {(a: object, b: object) => number} compare  The system's comparator.
+ * @param {(c: object) => object|null} leaderOf        A companion's owner, or null.
+ * @param {(c: object) => number} sinceOf              When a companion was linked.
+ * @returns {(a: object, b: object) => number}
+ */
+export function companionComparator(compare, leaderOf, sinceOf) {
+  return function(a, b) {
+    const la = leaderOf(a) ?? a;
+    const lb = leaderOf(b) ?? b;
+    if ( la !== lb ) return compare.call(this, la, lb);
+    if ( a === b ) return 0;
+    if ( a === la ) return -1;
+    if ( b === lb ) return 1;
+    return (sinceOf(a) - sinceOf(b)) || (a.id > b.id ? 1 : -1);
+  };
+}
+
 /** Whether two initiatives are the same, within floating-point noise. */
 export function sameInitiative(a, b) {
   if ( !isNumber(a) || !isNumber(b) ) return !isNumber(a) && !isNumber(b);

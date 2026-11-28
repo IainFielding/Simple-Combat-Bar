@@ -17,7 +17,7 @@ import { economyProvider, spendSlot } from "./systems/economy.mjs";
 import { groupContext, registerGroupQuery } from "./ui/group-service.mjs";
 import { registerSwapQueries } from "./ui/swap-service.mjs";
 import { afterTurnChange, skipBeforeUpdate } from "./ui/arrival-service.mjs";
-import { addSummon, guardCompanionInitiative, registerCompanionQueries, schedulePlacement }
+import { addSummon, guardCompanionInitiative, installCompanionSort, registerCompanionQueries, schedulePlacement }
   from "./ui/companion-service.mjs";
 import { restoresEconomy } from "./model/group-turns.mjs";
 import { tallyDefeated } from "./model/xp-award.mjs";
@@ -71,6 +71,7 @@ Hooks.once("ready", () => {
   });
   // Companions: a roll for one is put where it belongs before it's sent (on the sending client),
   // and the active GM moves them after any change that could leave one out of place.
+  installCompanionSort();
   Hooks.on("preUpdateCombatant", guardCompanionInitiative);
   Hooks.on("updateCombatant", (combatant, changes) => {
     const ours = changes.flags?.[MODULE_ID] ?? {};
