@@ -82,6 +82,13 @@ describe("buildPortraitModel", () => {
     expect(buildPortraitModel(facts({ inspiration: null }), ctx()).inspiration).toBeNull();
   });
 
+  it("shows movement this turn on the acting card only", () => {
+    const movement = { used: "35", speed: "30", units: "ft", state: "dash" };
+    expect(buildPortraitModel(facts({ movement }), { ...ctx(), current: true }))
+      .toMatchObject({ moveUsed: "35", moveSpeed: "30", moveUnits: "ft", moveState: "dash" });
+    expect(buildPortraitModel(facts({ movement }), ctx())).toMatchObject({ moveUsed: null, moveState: null });
+  });
+
   it("gives a companion no roll button: it goes when its owner does", () => {
     const m = buildPortraitModel(facts({ initiative: null, isOwner: true, isCompanion: true, leaderName: "Aoth" }), ctx());
     expect(m.canRoll).toBe(false);

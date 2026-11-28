@@ -53,6 +53,16 @@ describe("dnd5e adapter", () => {
     expect(dnd5eAdapter.xp({ type: "character", system: { details: { xp: { value: 900 } } } })).toBeNull();
   });
 
+  it("reads a creature's speed for how it's moving, falling back to walking as dnd5e's ruler does", () => {
+    globalThis.CONFIG.DND5E.movementTypes = { walk: {}, fly: {}, climb: { walkFallback: true } };
+    const actor = { system: { isCreature: true, attributes: { movement: { speeds: { walk: 30, fly: 60, climb: 0 } } } } };
+    expect(dnd5eAdapter.movementSpeed(actor, "fly")).toBe(60);
+    expect(dnd5eAdapter.movementSpeed(actor, "climb")).toBe(30);
+    expect(dnd5eAdapter.movementSpeed(actor, "jump")).toBe(30);
+    expect(dnd5eAdapter.movementSpeed({ system: { isCreature: false, attributes: { movement: { speeds: {} } } } }, "walk"))
+      .toBeNull();
+  });
+
   it("writes the award enricher", () => {
     expect(dnd5eAdapter.awardCommand(450)).toBe("[[/award 450xp]]");
   });

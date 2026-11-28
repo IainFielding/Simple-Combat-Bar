@@ -190,6 +190,10 @@
         "name": "Inspiration Star",
         "hint": "Show a gold star on a character's card while they have Heroic Inspiration (2024 rules) or Inspiration (2014 rules), for the GM and those who can see the character's sheet. The owner or GM can click it to use it; the GM can give it from the card's right-click menu."
       },
+      "movementTracker": {
+        "name": "Movement This Turn",
+        "hint": "On the acting combatant's card, show how far its token has moved this turn against its speed, as D&D 5e's ruler measures it (difficult terrain included). It turns amber past its speed (Dash) and red past twice it. Shown to the GM and those who can see the creature's sheet."
+      },
       "legendaryBadges": {
         "name": "Legendary Badges",
         "hint": "Show a legendary creature's legendary actions and resistances left on its card, for the GM and those who can see its sheet. Click one to spend it, Shift-click to give it back. D&D 5e spends and refills them itself as they're used."
@@ -371,6 +375,12 @@
     "surprise": {
       "modern": "Surprised: rolls initiative with Disadvantage.",
       "legacy": "Surprised: can't move or take an action on its first turn, nor a reaction until that turn ends."
+    },
+    "movement": {
+      "card": "{used}/{speed} {units}",
+      "normal": "Moved {used} of {speed} {units} this turn.",
+      "dash": "Moved {used} {units} this turn: past its {speed} {units} speed, so it needs to Dash.",
+      "over": "Moved {used} {units} this turn: more than twice its {speed} {units} speed."
     },
     "groupTurns": {
       "takeTurn": "Click to take this turn",

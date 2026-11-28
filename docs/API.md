@@ -82,6 +82,9 @@ Hooks.once("simpleCombatBar.init", api => {
     // card shows every pip spent and the bar clears it when that turn ends).
     surprise: actor => ({ surprised: actor.statuses.has("surprised"), rules: "modern" }),
     setSurprised: async (actor, active) => actor.toggleStatusEffect("surprised", { active }),
+    // Optional: movement this turn. The actor's speed for a movement action (core's
+    // CONFIG.Token.movement.actions keys), in the scene's units; null hides the count.
+    movementSpeed: (actor, action) => actor.system.speed?.[action] ?? actor.system.speed?.walk ?? null,
     // Optional: the actor that summoned this one. It's offered first as a companion's owner, and
     // with "Add Summons to Combat" on, a summon whose summoner is in a combat joins it after them.
     summoner: actor => game.actors.get(actor.flags["my-system"]?.summonedBy) ?? null

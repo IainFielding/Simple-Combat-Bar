@@ -409,6 +409,36 @@
   pointer-events: none;
 }
 
+/* ---------------------------------------------------------------- movement this turn
+   On the acting card, bottom-right above the name: moved / speed, amber past speed (Dash), red past
+   twice it. The colours follow dnd5e's ruler; the tooltip says it in words. */
+.scb-root .scb-move {
+  position: absolute;
+  z-index: 1;
+  right: 3px;
+  bottom: 24%;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 5px;
+  border-radius: 8px;
+  border: 1px solid var(--scb-frame);
+  background: rgba(10, 10, 12, 0.88);
+  font-family: var(--scb-font-display);
+  font-size: max(10px, calc(var(--scb-size) * 0.13));
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--scb-bright);
+  white-space: nowrap;
+}
+
+.scb-root .scb-move[hidden] { display: none; }
+.scb-root .scb-move i { font-size: 0.8em; color: var(--scb-frame); }
+.scb-root .scb-move[data-state="dash"] { border-color: #d89b2b; color: #f0c75e; }
+.scb-root .scb-move[data-state="dash"] i { color: #d89b2b; }
+.scb-root .scb-move[data-state="over"] { border-color: #b33a3a; color: #ff8a80; }
+.scb-root .scb-move[data-state="over"] i { color: #b33a3a; }
+
 /* ---------------------------------------------------------------- initiative / roll */
 .scb-root .scb-init {
   position: absolute;

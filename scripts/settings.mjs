@@ -63,6 +63,7 @@ export function registerSettings(getBar) {
   register("hideDefeated", { type: Boolean });
   register("trackEconomy", { type: Boolean });
   register("autoSpendEconomy", { type: Boolean });
+  register("movementTracker", { type: Boolean });
   register("legendaryBadges", { type: Boolean });
   register("inspirationMarker", { type: Boolean });
   register("showEffects", { type: Boolean });

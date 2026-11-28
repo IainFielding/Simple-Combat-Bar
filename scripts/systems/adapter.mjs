@@ -39,6 +39,8 @@
  *           Whether the actor is Surprised, and which rules apply: "modern" (it only affects the
  *           initiative roll) or "legacy" (no move, action or reaction on its first turn).
  * @property {(actor: Actor, active: boolean) => Promise<void>} [setSurprised]
+ * @property {(actor: Actor, action: string) => number|null} [movementSpeed]  The actor's speed for a
+ *           movement action (core's `CONFIG.Token.movement.actions` keys), in the scene's units.
  * @property {(actor: Actor) => Actor|null} [summoner]     The actor that summoned this one, if the
  *           system records it. Offered first as its owner, and used to add summons to combat.
  */

@@ -897,3 +897,39 @@ export async function companionsPerf() {
   await cleanup();
   return result;
 }
+
+/**
+ * GM: movement this turn. Moves the acting hero 4 squares, then 4 more (past a 30 ft speed), reads
+ * the acting card each time, then moves the turn on and checks the count starts again.
+ */
+export async function movementCheck() {
+  const combat = await freshCombat({ allies: 1, enemies: 2 });
+  const out = { failures: [], reads: [] };
+  const read = async () => {
+    await settle(400);
+    const el = document.querySelector(`#scb-root .scb-portrait[data-combatant-id="${combat.combatant.id}"] .scb-move`);
+    const r = el ? { hidden: el.hidden, text: el.textContent.trim(), state: el.dataset.state ?? null } : null;
+    out.reads.push(r);
+    return r;
+  };
+  const hero = combat.combatants.find(c => c.actor?.type === "character");
+  if ( combat.combatant !== hero ) await combat.update({ turn: combat.turns.indexOf(hero) });
+  await settle(300);
+  const token = hero.token;
+  const size = token.parent.grid.size;
+  let r = await read();
+  if ( !r || r.hidden || !/^0\//.test(r.text) ) out.failures.push(`at the start of the turn: ${JSON.stringify(r)}`);
+  await token.move({ x: token.x + (size * 4), y: token.y });
+  r = await read();
+  if ( !r || !/^20\//.test(r.text) || (r.state !== "normal") ) out.failures.push(`after 4 squares: ${JSON.stringify(r)}`);
+  await token.move({ x: token.x + (size * 4), y: token.y });
+  r = await read();
+  if ( !r || !/^40\//.test(r.text) || (r.state !== "dash") ) out.failures.push(`after 8 squares: ${JSON.stringify(r)}`);
+  await combat.nextTurn();
+  await settle(500);
+  await combat.update({ turn: combat.turns.indexOf(hero) });
+  r = await read();
+  if ( !r || !/^0\//.test(r.text) ) out.failures.push(`back on its turn, the count didn't start again: ${JSON.stringify(r)}`);
+  await cleanup();
+  return out;
+}
