@@ -117,6 +117,9 @@ losing ties), then right-click its portrait and choose **Arrives in Round…**.
   duration runs out. The owner or GM can right-click one to remove it.
 - **Legendary actions and resistances** left, on legendary creatures. D&D 5e spends and refills
   them itself; click one to spend it by hand, Shift-click to give it back.
+- **A gold star** while a character has Heroic Inspiration (2024 rules) or Inspiration (2014
+  rules). Its tooltip says what it does under the rules in play. The owner or GM clicks it to use
+  it; the GM gives it from the card's right-click menu.
 - **A second bar** under the hit points, for any resource with a maximum: legendary actions, spell
   slots, a class resource. Pick it in **Configure Trackers**.
 

@@ -302,6 +302,33 @@
 .scb-root .scb-leg.is-empty { color: #6b6f78; }
 .scb-root .scb-leg.is-empty i { color: #6b6f78; }
 
+/* ---------------------------------------------------------------- inspiration
+   A character's (Heroic) Inspiration: a gold star where a monster's legendary counters go. */
+.scb-root .scb-inspiration {
+  position: absolute;
+  z-index: 1;
+  top: calc(max(10px, var(--scb-size) * 0.16) * 1.4 + 7px);
+  right: 3px;
+  display: grid;
+  place-items: center;
+  width: max(16px, calc(var(--scb-size) * 0.24));
+  height: max(16px, calc(var(--scb-size) * 0.24));
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--dnd5e-color-gold, #9f9275);
+  border-radius: 50%;
+  background: rgba(10, 10, 12, 0.88);
+  color: #f0c75e;
+  font-size: max(9px, calc(var(--scb-size) * 0.13));
+  line-height: 1;
+  box-shadow: 0 0 6px rgba(240, 199, 94, 0.45);
+}
+
+.scb-root .scb-inspiration[hidden] { display: none; }
+.scb-root .scb-inspiration:not(:disabled) { cursor: pointer; }
+.scb-root .scb-inspiration:not(:disabled):hover { border-color: #f0c75e; }
+
 /* ---------------------------------------------------------------- status effects
    Bottom-left, above the name plate. Each icon sits in a gold ring that drains as its duration
    runs out; an effect without a duration has a plain frame. */

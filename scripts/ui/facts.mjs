@@ -64,6 +64,9 @@ export function combatantFacts(combatant, { adapter, settings, user = game.user 
     effects: settings.showEffects && actor && !isEvent ? safe(() => readEffects(actor, { card: true })) : null,
     legendary: settings.legendaryBadges && actor && !isEvent && trustsHP
       ? safe(() => adapter.legendary?.(actor)) : null,
+    // Like the legendary badges: only for viewers who receive the actor's data.
+    inspiration: settings.inspirationMarker && actor && !isEvent && trustsHP
+      ? safe(() => adapter.inspiration?.(actor)) : null,
     economy: settings.trackEconomy && !isEvent ? safe(() => economyProvider().read(combatant)) : null,
     description: actor && !isEvent ? safe(() => adapter.describe(actor)) : null,
     isEvent,

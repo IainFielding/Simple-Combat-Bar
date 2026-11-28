@@ -65,4 +65,26 @@ describe("portraitMenuOptions", () => {
     portraitMenuOptions(bar, actions).find(o => o.label === swapLabel).onClick(event, li);
     expect(actions.openSwapMenu).toHaveBeenCalledWith(bar.combat.combatants.get("ogre"), li, event);
   });
+
+  it("offers the GM Heroic Inspiration to give, then the owner to use it, named for the rules", async () => {
+    const ogre = bar.combat.combatants.get("ogre");
+    ogre.actor = { type: "character", system: { attributes: { inspiration: false } }, update: vi.fn() };
+    globalThis.dnd5e = { settings: { rulesVersion: "modern" } };
+    const give = "sogrom-simple-combat-bar.context.give.heroic";
+    const use = "sogrom-simple-combat-bar.context.use.heroic";
+    expect(visibleLabels()).toContain(give);
+    expect(visibleLabels()).not.toContain(use);
+    await portraitMenuOptions(bar, actions).find(o => o.label === give).onClick(null, li);
+    expect(ogre.actor.update).toHaveBeenCalledWith({ "system.attributes.inspiration": true });
+
+    ogre.actor.system.attributes.inspiration = true;
+    game.user = { isGM: false };
+    expect(visibleLabels()).not.toContain(use);
+    ogre.isOwner = true;
+    expect(visibleLabels()).toContain(use);
+
+    globalThis.dnd5e.settings.rulesVersion = "legacy";
+    expect(visibleLabels()).toContain("sogrom-simple-combat-bar.context.use.legacy");
+    expect(visibleLabels()).not.toContain(use);
+  });
 });

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { dnd5eAdapter, formatCR } from "../scripts/systems/dnd5e.mjs";
 import { adapterFor, registerAdapter } from "../scripts/systems/adapter.mjs";
 import { installFoundryShims } from "./helpers/foundry-shims.mjs";
@@ -130,6 +130,24 @@ describe("dnd5e Alert and Incapacitated", () => {
     globalThis.dnd5e = undefined;
     game.settings._values.rulesVersion = "legacy";
     expect(dnd5eAdapter.initiativeSwap(alert)).toBe(false);
+  });
+
+  it("reads a character's Inspiration as Heroic under the 2024 rules and plain under 2014", () => {
+    const hero = inspired => ({ type: "character", system: { attributes: { inspiration: inspired } } });
+    expect(dnd5eAdapter.inspiration(hero(true))).toEqual({ active: true, rules: "heroic" });
+    expect(dnd5eAdapter.inspiration(hero(false))).toEqual({ active: false, rules: "heroic" });
+    globalThis.dnd5e.settings.rulesVersion = "legacy";
+    expect(dnd5eAdapter.inspiration(hero(true))).toEqual({ active: true, rules: "legacy" });
+    expect(dnd5eAdapter.inspiration({ type: "npc", system: {} })).toBeNull();
+  });
+
+  it("gives and uses Inspiration on characters only", async () => {
+    const hero = { type: "character", update: vi.fn() };
+    await dnd5eAdapter.setInspiration(hero, true);
+    expect(hero.update).toHaveBeenCalledWith({ "system.attributes.inspiration": true });
+    const npc = { type: "npc", update: vi.fn() };
+    await dnd5eAdapter.setInspiration(npc, true);
+    expect(npc.update).not.toHaveBeenCalled();
   });
 
   it("reads Incapacitated from the actor's statuses", () => {

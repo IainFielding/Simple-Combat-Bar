@@ -69,6 +69,11 @@ Hooks.once("simpleCombatBar.init", api => {
     // side out. Leave both out and the bar never offers a swap.
     initiativeSwap: actor => !!actor.flags["my-system"]?.alert,
     incapacitated: actor => actor.statuses.has("incapacitated"),
+    // Optional: a character's Inspiration for the card's star. rules is "heroic" (reroll any die,
+    // as in dnd5e's 2024 rules) or "legacy" (advantage on one roll); return null for anyone who
+    // can't have it. setInspiration gives (true) or uses (false) it.
+    inspiration: actor => ({ active: !!actor.system.inspired, rules: "heroic" }),
+    setInspiration: async (actor, active) => actor.update({ "system.inspired": active }),
     // Optional: the actor that summoned this one. It's offered first as a companion's owner, and
     // with "Add Summons to Combat" on, a summon whose summoner is in a combat joins it after them.
     summoner: actor => game.actors.get(actor.flags["my-system"]?.summonedBy) ?? null
