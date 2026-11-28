@@ -2,7 +2,7 @@
 
 All notable changes to Simple Combat Bar.
 
-## Unreleased
+## 0.10.0
 
 ### New
 
@@ -21,6 +21,7 @@ All notable changes to Simple Combat Bar.
 
 - **No Award button when the world doesn't use XP.** With D&D 5e's leveling mode set to level
   advancement without XP, the XP summary at the end of a combat leaves the Award button off.
+- **Verified on Foundry 14.371 and D&D 5e 6.1.2.**
 
 ### For developers
 
